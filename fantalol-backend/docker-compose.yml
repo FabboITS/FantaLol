@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fantalol-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: fantalol
+      MYSQL_USER: fantalol
+      MYSQL_PASSWORD: fantalol
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - fantalol_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - fantalol-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fantalol-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fantalol
+      DB_USER: fantalol
+      DB_PASSWORD: fantalol
+      JWT_SECRET: cGVyLWZhdm9yZS1jYW1iaWEtcXVlc3RhLWNoaWF2ZS1zZWdyZXRhLWluLXByb2R1emlvbmUtMTIzNDU2Nzg=
+      JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - fantalol-network
+
+networks:
+  fantalol-network:
+    driver: bridge
+
+volumes:
+  fantalol_mysql_data:

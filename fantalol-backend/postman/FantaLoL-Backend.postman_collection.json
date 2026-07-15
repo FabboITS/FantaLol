@@ -1,0 +1,461 @@
+{
+  "info": {
+    "name": "Fanta LoL Backend - API Collection",
+    "_postman_id": "b6f1a4e0-2f3a-4c8e-9d2a-fantalol00001",
+    "description": "Collection Postman per il project work UF14 - Fanta LoL Backend. Copre autenticazione, utenti, team/player LEC, leghe, asta/rose, giornate/statistiche e formazioni.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "leagueInviteCode", "value": "DEMO1234", "type": "string" },
+    { "key": "fantaTeamId", "value": "", "type": "string" },
+    { "key": "lecPlayerId", "value": "10", "type": "string" },
+    { "key": "matchdayId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Autenticazione",
+      "item": [
+        {
+          "name": "Registrazione nuovo utente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"mago\",\n  \"email\": \"mago@fantalol.it\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login utente (salva token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('token', json.token); }",
+                  "pm.test('Login riuscito con status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"mago\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login admin (salva adminToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('adminToken', json.token); }",
+                  "pm.test('Login admin riuscito con status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin123!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Utenti",
+      "item": [
+        {
+          "name": "Profilo utente autenticato (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] }
+          }
+        },
+        {
+          "name": "Aggiorna profilo utente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/users/me/profile", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", "profile"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeVisualizzato\": \"Il Mago del Rift\",\n  \"bio\": \"Fan sfegatato del Fanta LoL\",\n  \"avatarUrl\": \"https://example.com/avatar.png\",\n  \"summonerName\": \"MagoDelRift#EUW\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Team LEC",
+      "item": [
+        {
+          "name": "Elenco team LEC (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/teams", "host": ["{{baseUrl}}"], "path": ["api", "teams"] }
+          }
+        },
+        {
+          "name": "Dettaglio team LEC (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/teams/1", "host": ["{{baseUrl}}"], "path": ["api", "teams", "1"] }
+          }
+        },
+        {
+          "name": "Crea nuovo team LEC (solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/teams", "host": ["{{baseUrl}}"], "path": ["api", "teams"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Rogue\",\n  \"sigla\": \"RGE\",\n  \"logoUrl\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Modifica team LEC (solo ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/teams/1", "host": ["{{baseUrl}}"], "path": ["api", "teams", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Team Vitality\",\n  \"sigla\": \"VIT\",\n  \"logoUrl\": \"https://example.com/vitality-logo.png\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Elimina team LEC (solo ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/teams/1", "host": ["{{baseUrl}}"], "path": ["api", "teams", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Player LEC",
+      "item": [
+        {
+          "name": "Elenco player LEC (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/players", "host": ["{{baseUrl}}"], "path": ["api", "players"] }
+          }
+        },
+        {
+          "name": "Elenco player filtrato per ruolo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/players?ruolo=MID",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "players"],
+              "query": [{ "key": "ruolo", "value": "MID" }]
+            }
+          }
+        },
+        {
+          "name": "Elenco player filtrato per team",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/players?teamId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "players"],
+              "query": [{ "key": "teamId", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Dettaglio player LEC (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/players/{{lecPlayerId}}", "host": ["{{baseUrl}}"], "path": ["api", "players", "{{lecPlayerId}}"] }
+          }
+        },
+        {
+          "name": "Crea nuovo player LEC (solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/players", "host": ["{{baseUrl}}"], "path": ["api", "players"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"Larssen\",\n  \"nomeReale\": \"Erlend Vaagbo Holm\",\n  \"nazionalita\": \"Norvegia\",\n  \"ruolo\": \"MID\",\n  \"quotazione\": 70,\n  \"teamId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Modifica player LEC (solo ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/players/{{lecPlayerId}}", "host": ["{{baseUrl}}"], "path": ["api", "players", "{{lecPlayerId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"Caps\",\n  \"nomeReale\": \"Rasmus Winther\",\n  \"nazionalita\": \"Danimarca\",\n  \"ruolo\": \"MID\",\n  \"quotazione\": 100,\n  \"teamId\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Elimina player LEC (solo ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/players/{{lecPlayerId}}", "host": ["{{baseUrl}}"], "path": ["api", "players", "{{lecPlayerId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Leghe",
+      "item": [
+        {
+          "name": "Elenco leghe",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/leagues", "host": ["{{baseUrl}}"], "path": ["api", "leagues"] }
+          }
+        },
+        {
+          "name": "Dettaglio lega",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/leagues/1", "host": ["{{baseUrl}}"], "path": ["api", "leagues", "1"] }
+          }
+        },
+        {
+          "name": "Crea nuova lega",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/leagues", "host": ["{{baseUrl}}"], "path": ["api", "leagues"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Lega tra amici\",\n  \"creditiIniziali\": 500\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Fanta Team & Asta",
+      "item": [
+        {
+          "name": "Iscriviti a una lega (join)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) { pm.collectionVariables.set('fantaTeamId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/fanta-teams/join", "host": ["{{baseUrl}}"], "path": ["api", "fanta-teams", "join"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codiceInvito\": \"{{leagueInviteCode}}\",\n  \"nomeSquadra\": \"I Signori del Rift\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Le mie squadre",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/fanta-teams/me", "host": ["{{baseUrl}}"], "path": ["api", "fanta-teams", "me"] }
+          }
+        },
+        {
+          "name": "Dettaglio Fanta Team",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/fanta-teams/{{fantaTeamId}}", "host": ["{{baseUrl}}"], "path": ["api", "fanta-teams", "{{fantaTeamId}}"] }
+          }
+        },
+        {
+          "name": "Squadre iscritte a una lega",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/fanta-teams/by-league/1", "host": ["{{baseUrl}}"], "path": ["api", "fanta-teams", "by-league", "1"] }
+          }
+        },
+        {
+          "name": "Acquista player all'asta",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/fanta-teams/{{fantaTeamId}}/rosa", "host": ["{{baseUrl}}"], "path": ["api", "fanta-teams", "{{fantaTeamId}}", "rosa"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lecPlayerId\": {{lecPlayerId}},\n  \"creditiOfferti\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "Rilascia player dalla rosa",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/fanta-teams/{{fantaTeamId}}/rosa/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fanta-teams", "{{fantaTeamId}}", "rosa", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Giornate & Statistiche",
+      "item": [
+        {
+          "name": "Elenco giornate (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/matchdays", "host": ["{{baseUrl}}"], "path": ["api", "matchdays"] }
+          }
+        },
+        {
+          "name": "Crea nuova giornata (solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/matchdays", "host": ["{{baseUrl}}"], "path": ["api", "matchdays"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": 2,\n  \"descrizione\": \"Spring Split 2026 - Week 2\",\n  \"data\": \"2026-07-20\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Statistiche di una giornata (pubblico)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/matchdays/{{matchdayId}}/stats", "host": ["{{baseUrl}}"], "path": ["api", "matchdays", "{{matchdayId}}", "stats"] }
+          }
+        },
+        {
+          "name": "Inserisci statistiche player (solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/matchdays/{{matchdayId}}/stats", "host": ["{{baseUrl}}"], "path": ["api", "matchdays", "{{matchdayId}}", "stats"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lecPlayerId\": {{lecPlayerId}},\n  \"votoBase\": 6.5,\n  \"kills\": 4,\n  \"morti\": 1,\n  \"assist\": 6,\n  \"mvp\": true,\n  \"vittoria\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Chiudi giornata e calcola i punteggi (solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/matchdays/{{matchdayId}}/chiudi", "host": ["{{baseUrl}}"], "path": ["api", "matchdays", "{{matchdayId}}", "chiudi"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Formazioni",
+      "item": [
+        {
+          "name": "Imposta formazione per una giornata",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/fanta-teams/{{fantaTeamId}}/formazioni",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fanta-teams", "{{fantaTeamId}}", "formazioni"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"matchdayId\": {{matchdayId}},\n  \"titolariIds\": [{{lecPlayerId}}],\n  \"capitanoId\": {{lecPlayerId}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Consulta formazione per giornata",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/fanta-teams/{{fantaTeamId}}/formazioni/{{matchdayId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fanta-teams", "{{fantaTeamId}}", "formazioni", "{{matchdayId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

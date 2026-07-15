@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.matchday</a> &gt; <span class="el_source">FormationService.java</span></div><h1>FormationService.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.matchday;
+
+import com.fantalol.backend.common.BusinessRuleException;
+import com.fantalol.backend.common.ResourceNotFoundException;
+import com.fantalol.backend.league.FantaTeam;
+import com.fantalol.backend.league.FantaTeamRepository;
+import com.fantalol.backend.league.RosterEntryRepository;
+import com.fantalol.backend.matchday.dto.FormationRequest;
+import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.LecPlayerRepository;
+import com.fantalol.backend.user.Role;
+import com.fantalol.backend.user.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Gestisce la formazione (titolari + capitano) che ogni FantaTeam schiera per una giornata.
+ */
+@Service
+@RequiredArgsConstructor
+public class FormationService {
+
+    private static final int NUMERO_TITOLARI = 5;
+
+    private final FormationRepository formationRepository;
+    private final FantaTeamRepository fantaTeamRepository;
+    private final RosterEntryRepository rosterEntryRepository;
+    private final LecPlayerRepository lecPlayerRepository;
+    private final MatchdayRepository matchdayRepository;
+    private final UserService userService;
+
+    @Transactional(readOnly = true)
+    public FormationResponse findByTeamAndMatchday(Long fantaTeamId, Long matchdayId) {
+<span class="nc" id="L40">        Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, matchdayId)</span>
+<span class="nc" id="L41">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Nessuna formazione trovata per la squadra e la giornata indicate&quot;));</span>
+<span class="nc" id="L42">        return FormationResponse.from(formation);</span>
+    }
+
+    /**
+     * Imposta (o sovrascrive) la formazione di una FantaTeam per una giornata.
+     * Regole di business:
+     * &lt;ul&gt;
+     *     &lt;li&gt;solo il proprietario della squadra può schierare la formazione&lt;/li&gt;
+     *     &lt;li&gt;devono essere schierati esattamente {@value #NUMERO_TITOLARI} titolari, uno per ruolo&lt;/li&gt;
+     *     &lt;li&gt;tutti i titolari devono appartenere alla rosa acquistata all'asta dalla squadra&lt;/li&gt;
+     *     &lt;li&gt;il capitano (opzionale) deve essere uno dei titolari schierati&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    @Transactional
+    public FormationResponse impostaFormazione(String username, Long fantaTeamId, FormationRequest request) {
+<span class="fc" id="L57">        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)</span>
+<span class="pc" id="L58">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;FantaTeam non trovata con id: &quot; + fantaTeamId));</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!fantaTeam.getOwner().getUsername().equals(username)</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                &amp;&amp; userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {</span>
+<span class="fc" id="L62">            throw new BusinessRuleException(&quot;Non sei il proprietario di questa squadra fantacalcistica&quot;);</span>
+        }
+
+<span class="fc" id="L65">        var matchday = matchdayRepository.findById(request.matchdayId())</span>
+<span class="pc" id="L66">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Giornata non trovata con id: &quot; + request.matchdayId()));</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (matchday.isChiusa()) {</span>
+<span class="fc" id="L69">            throw new BusinessRuleException(&quot;La giornata &quot; + matchday.getNumero() + &quot; è chiusa: non puoi modificare la formazione&quot;);</span>
+        }
+
+<span class="fc" id="L72">        List&lt;Long&gt; titolariIds = request.titolariIds();</span>
+<span class="pc bpc" id="L73" title="2 of 4 branches missed.">        if (titolariIds.size() != NUMERO_TITOLARI || new HashSet&lt;&gt;(titolariIds).size() != NUMERO_TITOLARI) {</span>
+<span class="nc" id="L74">            throw new BusinessRuleException(&quot;Devi schierare esattamente &quot; + NUMERO_TITOLARI + &quot; titolari diversi&quot;);</span>
+        }
+
+<span class="fc" id="L77">        Set&lt;LecPlayer&gt; titolari = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        for (Long playerId : titolariIds) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (!rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(fantaTeamId, playerId)) {</span>
+<span class="fc" id="L80">                throw new BusinessRuleException(&quot;Il player con id &quot; + playerId + &quot; non appartiene alla rosa di questa squadra&quot;);</span>
+            }
+<span class="fc" id="L82">            LecPlayer player = lecPlayerRepository.findById(playerId)</span>
+<span class="pc" id="L83">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + playerId));</span>
+<span class="fc" id="L84">            titolari.add(player);</span>
+<span class="fc" id="L85">        }</span>
+
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (titolari.stream().map(LecPlayer::getRuolo).distinct().count() != NUMERO_TITOLARI) {</span>
+<span class="nc" id="L88">            throw new BusinessRuleException(&quot;La formazione deve contenere un player per ruolo: TOP, JUNGLE, MID, ADC e SUPPORT&quot;);</span>
+        }
+
+<span class="fc" id="L91">        LecPlayer capitano = null;</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (request.capitanoId() != null) {</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (!titolariIds.contains(request.capitanoId())) {</span>
+<span class="fc" id="L94">                throw new BusinessRuleException(&quot;Il capitano deve essere uno dei titolari schierati&quot;);</span>
+            }
+<span class="fc" id="L96">            capitano = titolari.stream()</span>
+<span class="fc" id="L97">                    .filter(p -&gt; p.getId().equals(request.capitanoId()))</span>
+<span class="fc" id="L98">                    .findFirst()</span>
+<span class="pc" id="L99">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + request.capitanoId()));</span>
+        }
+
+<span class="fc" id="L102">        Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, request.matchdayId())</span>
+<span class="fc" id="L103">                .orElse(Formation.builder().fantaTeam(fantaTeam).matchday(matchday).build());</span>
+
+<span class="fc" id="L105">        formation.setTitolari(titolari);</span>
+<span class="fc" id="L106">        formation.setCapitano(capitano);</span>
+
+<span class="fc" id="L108">        return FormationResponse.from(formationRepository.save(formation));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

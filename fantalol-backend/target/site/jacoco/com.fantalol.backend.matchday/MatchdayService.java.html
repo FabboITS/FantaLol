@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchdayService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.matchday</a> &gt; <span class="el_source">MatchdayService.java</span></div><h1>MatchdayService.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.matchday;
+
+import com.fantalol.backend.common.BusinessRuleException;
+import com.fantalol.backend.common.ResourceNotFoundException;
+import com.fantalol.backend.league.League;
+import com.fantalol.backend.league.LeagueService;
+import com.fantalol.backend.matchday.dto.MatchdayRequest;
+import com.fantalol.backend.matchday.dto.MatchdayResponse;
+import com.fantalol.backend.matchday.dto.PlayerStatRequest;
+import com.fantalol.backend.matchday.dto.PlayerStatResponse;
+import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.LecPlayerRepository;
+import com.fantalol.backend.user.Role;
+import com.fantalol.backend.user.User;
+import com.fantalol.backend.user.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+/**
+ * Gestisce le giornate di campionato e l'inserimento (da parte dell'ADMIN) delle
+ * statistiche reali dei player, da cui viene derivato automaticamente il fantavoto.
+ */
+@Service
+@RequiredArgsConstructor
+public class MatchdayService {
+
+    private final MatchdayRepository matchdayRepository;
+    private final PlayerStatRepository playerStatRepository;
+    private final LecPlayerRepository lecPlayerRepository;
+    private final FantaScoreCalculator fantaScoreCalculator;
+    private final FormationRepository formationRepository;
+    private final LeagueService leagueService;
+    private final UserService userService;
+
+    @Transactional(readOnly = true)
+    public List&lt;MatchdayResponse&gt; findAll() {
+<span class="nc" id="L40">        return matchdayRepository.findAll().stream().map(MatchdayResponse::from).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public MatchdayResponse findById(Long id) {
+<span class="nc" id="L45">        return MatchdayResponse.from(getOrThrow(id));</span>
+    }
+
+    @Transactional
+    public MatchdayResponse create(String username, MatchdayRequest request) {
+<span class="nc" id="L50">        League league = leagueService.getOrThrow(request.leagueId());</span>
+<span class="nc" id="L51">        assertLeagueAdmin(username, league);</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (matchdayRepository.findByLeagueIdAndNumero(league.getId(), request.numero()).isPresent()) {</span>
+<span class="nc" id="L53">            throw new BusinessRuleException(&quot;Esiste già una giornata con numero: &quot; + request.numero());</span>
+        }
+<span class="nc" id="L55">        Matchday matchday = Matchday.builder()</span>
+<span class="nc" id="L56">                .league(league)</span>
+<span class="nc" id="L57">                .numero(request.numero())</span>
+<span class="nc" id="L58">                .descrizione(request.descrizione())</span>
+<span class="nc" id="L59">                .data(request.data())</span>
+<span class="nc" id="L60">                .build();</span>
+<span class="nc" id="L61">        return MatchdayResponse.from(matchdayRepository.save(matchday));</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;PlayerStatResponse&gt; findStats(Long matchdayId) {
+<span class="nc" id="L66">        return playerStatRepository.findByMatchdayId(matchdayId).stream().map(PlayerStatResponse::from).toList();</span>
+    }
+
+    /**
+     * Inserisce (o aggiorna) le statistiche di un player per una giornata e ne calcola
+     * automaticamente il fantavoto tramite {@link FantaScoreCalculator}.
+     */
+    @Transactional
+    public PlayerStatResponse inserisciStatistiche(String username, Long matchdayId, PlayerStatRequest request) {
+<span class="nc" id="L75">        Matchday matchday = getOrThrow(matchdayId);</span>
+<span class="nc" id="L76">        assertGlobalAdmin(username);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (matchday.isChiusa()) {</span>
+<span class="nc" id="L78">            throw new BusinessRuleException(&quot;La giornata &quot; + matchday.getNumero() + &quot; è già chiusa: impossibile modificare le statistiche&quot;);</span>
+        }
+
+<span class="nc" id="L81">        LecPlayer player = lecPlayerRepository.findById(request.lecPlayerId())</span>
+<span class="nc" id="L82">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + request.lecPlayerId()));</span>
+
+<span class="nc" id="L84">        PlayerStat stat = playerStatRepository.findByMatchdayIdAndLecPlayerId(matchdayId, player.getId())</span>
+<span class="nc" id="L85">                .orElse(PlayerStat.builder().matchday(matchday).lecPlayer(player).build());</span>
+
+<span class="nc" id="L87">        stat.setVotoBase(request.votoBase());</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        stat.setKills(request.kills() != null ? request.kills() : 0);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        stat.setMorti(request.morti() != null ? request.morti() : 0);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        stat.setAssist(request.assist() != null ? request.assist() : 0);</span>
+<span class="nc" id="L91">        stat.setMvp(request.mvp());</span>
+<span class="nc" id="L92">        stat.setVittoria(request.vittoria());</span>
+<span class="nc" id="L93">        stat.setFantavoto(fantaScoreCalculator.calcola(stat));</span>
+
+<span class="nc" id="L95">        return PlayerStatResponse.from(playerStatRepository.save(stat));</span>
+    }
+
+    /**
+     * Chiude la giornata: da questo momento le statistiche non sono più modificabili
+     * e viene calcolato il punteggio totale di ogni formazione schierata.
+     */
+    @Transactional
+    public MatchdayResponse chiudiGiornata(String username, Long matchdayId) {
+<span class="nc" id="L104">        Matchday matchday = getOrThrow(matchdayId);</span>
+<span class="nc" id="L105">        assertLeagueAdmin(username, matchday.getLeague());</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (matchday.isChiusa()) {</span>
+<span class="nc" id="L107">            throw new BusinessRuleException(&quot;La giornata &quot; + matchday.getNumero() + &quot; è già chiusa&quot;);</span>
+        }
+
+<span class="nc" id="L110">        List&lt;Formation&gt; formazioni = formationRepository.findByMatchdayId(matchdayId);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (Formation formazione : formazioni) {</span>
+<span class="nc" id="L112">            double totale = 0.0;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            for (var titolare : formazione.getTitolari()) {</span>
+<span class="nc" id="L114">                double fantavoto = playerStatRepository.findByMatchdayIdAndLecPlayerId(matchdayId, titolare.getId())</span>
+<span class="nc" id="L115">                        .map(PlayerStat::getFantavoto)</span>
+<span class="nc" id="L116">                        .orElse(0.0);</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">                boolean isCapitano = formazione.getCapitano() != null &amp;&amp; formazione.getCapitano().getId().equals(titolare.getId());</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                totale += isCapitano ? fantavoto * 2 : fantavoto;</span>
+<span class="nc" id="L119">            }</span>
+<span class="nc" id="L120">            formazione.setPunteggioTotale(totale);</span>
+<span class="nc" id="L121">        }</span>
+<span class="nc" id="L122">        formationRepository.saveAll(formazioni);</span>
+
+<span class="nc" id="L124">        matchday.setChiusa(true);</span>
+<span class="nc" id="L125">        return MatchdayResponse.from(matchdayRepository.save(matchday));</span>
+    }
+
+    Matchday getOrThrow(Long id) {
+<span class="nc" id="L129">        return matchdayRepository.findById(id)</span>
+<span class="nc" id="L130">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Giornata non trovata con id: &quot; + id));</span>
+    }
+
+    private void assertLeagueAdmin(String username, League league) {
+<span class="nc" id="L134">        User user = userService.findByUsernameOrThrow(username);</span>
+<span class="nc bnc" id="L135" title="All 4 branches missed.">        if (user.getRole() != Role.ADMIN &amp;&amp; !league.getAdmin().getUsername().equals(username)) {</span>
+<span class="nc" id="L136">            throw new BusinessRuleException(&quot;Solo l'admin della lega può gestire questa giornata&quot;);</span>
+        }
+<span class="nc" id="L138">    }</span>
+
+    private void assertGlobalAdmin(String username) {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {</span>
+<span class="nc" id="L142">            throw new BusinessRuleException(&quot;Solo l'amministratore globale può inserire le statistiche&quot;);</span>
+        }
+<span class="nc" id="L144">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

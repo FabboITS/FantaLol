@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuctionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.league</a> &gt; <span class="el_source">AuctionService.java</span></div><h1>AuctionService.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.league;
+
+import com.fantalol.backend.common.*;
+import com.fantalol.backend.league.dto.*;
+import com.fantalol.backend.team.*;
+import com.fantalol.backend.user.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AuctionService {
+    private static final int SECONDS_PER_BID = 10;
+    private static final int MAX_ROSTER = 10;
+    private static final int MAX_PER_ROLE = 2;
+
+    private final AuctionSessionRepository auctionRepository;
+    private final LeagueRepository leagueRepository;
+    private final FantaTeamRepository fantaTeamRepository;
+    private final RosterEntryRepository rosterRepository;
+    private final LecPlayerRepository playerRepository;
+    private final UserService userService;
+
+    @Transactional
+    public AuctionResponse start(String username, AuctionStartRequest request) {
+<span class="nc" id="L31">        League league = leagueRepository.findByIdForUpdate(request.leagueId())</span>
+<span class="nc" id="L32">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Lega non trovata con id: &quot; + request.leagueId()));</span>
+<span class="nc" id="L33">        assertParticipantOrAdmin(username, league);</span>
+<span class="nc" id="L34">        auctionRepository.findFirstByLeagueIdAndStatus(league.getId(), AuctionStatus.ACTIVE)</span>
+<span class="nc" id="L35">                .ifPresent(a -&gt; { throw new BusinessRuleException(&quot;C'è già un'asta attiva in questa lega&quot;); });</span>
+<span class="nc" id="L36">        LecPlayer player = playerRepository.findByIdForUpdate(request.lecPlayerId())</span>
+<span class="nc" id="L37">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player non trovato&quot;));</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if (rosterRepository.existsByFantaTeam_League_IdAndLecPlayerId(league.getId(), player.getId())) {</span>
+<span class="nc" id="L39">            throw new BusinessRuleException(&quot;Questo player è già assegnato nella lega&quot;);</span>
+        }
+<span class="nc" id="L41">        FantaTeam openingBidder = fantaTeamRepository.findById(request.fantaTeamId())</span>
+<span class="nc" id="L42">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;FantaTeam non trovata&quot;));</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (!openingBidder.getLeague().getId().equals(league.getId())) {</span>
+<span class="nc" id="L44">            throw new BusinessRuleException(&quot;La squadra non partecipa a questa lega&quot;);</span>
+        }
+<span class="nc" id="L46">        assertOwnerOrAdmin(username, openingBidder);</span>
+<span class="nc" id="L47">        validateRosterSlot(openingBidder, player);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (openingBidder.getCreditiResidui() &lt; player.getQuotazione()) {</span>
+<span class="nc" id="L49">            throw new BusinessRuleException(&quot;Crediti insufficienti per avviare l'asta&quot;);</span>
+        }
+<span class="nc" id="L51">        return AuctionResponse.from(auctionRepository.save(AuctionSession.builder()</span>
+<span class="nc" id="L52">                .league(league).player(player).currentBid(player.getQuotazione())</span>
+<span class="nc" id="L53">                .highestBidder(openingBidder)</span>
+<span class="nc" id="L54">                .endsAt(Instant.now().plus(SECONDS_PER_BID, ChronoUnit.SECONDS))</span>
+<span class="nc" id="L55">                .status(AuctionStatus.ACTIVE).build()));</span>
+    }
+
+    @Transactional
+    public AuctionResponse bid(String username, Long auctionId, AuctionBidRequest request) {
+<span class="nc" id="L60">        AuctionSession auction = auctionRepository.findByIdForUpdate(auctionId)</span>
+<span class="nc" id="L61">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Asta non trovata&quot;));</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        if (auction.getStatus() != AuctionStatus.ACTIVE || !auction.getEndsAt().isAfter(Instant.now())) {</span>
+<span class="nc" id="L63">            finalizeAuction(auction);</span>
+<span class="nc" id="L64">            throw new BusinessRuleException(&quot;L'asta è terminata&quot;);</span>
+        }
+<span class="nc" id="L66">        FantaTeam team = fantaTeamRepository.findById(request.fantaTeamId())</span>
+<span class="nc" id="L67">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;FantaTeam non trovata&quot;));</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (!team.getLeague().getId().equals(auction.getLeague().getId())) {</span>
+<span class="nc" id="L69">            throw new BusinessRuleException(&quot;La squadra non partecipa a questa lega&quot;);</span>
+        }
+<span class="nc" id="L71">        assertOwnerOrAdmin(username, team);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        int minimum = auction.getHighestBidder() == null ? auction.getCurrentBid() : auction.getCurrentBid() + 1;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (request.credits() &lt; minimum) throw new BusinessRuleException(&quot;L'offerta minima è &quot; + minimum + &quot; crediti&quot;);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (request.credits() &gt; team.getCreditiResidui()) throw new BusinessRuleException(&quot;Crediti insufficienti&quot;);</span>
+<span class="nc" id="L75">        validateRosterSlot(team, auction.getPlayer());</span>
+<span class="nc" id="L76">        auction.setHighestBidder(team);</span>
+<span class="nc" id="L77">        auction.setCurrentBid(request.credits());</span>
+<span class="nc" id="L78">        auction.setEndsAt(Instant.now().plus(SECONDS_PER_BID, ChronoUnit.SECONDS));</span>
+<span class="nc" id="L79">        return AuctionResponse.from(auctionRepository.save(auction));</span>
+    }
+
+    @Transactional(readOnly = true)
+    public AuctionResponse active(Long leagueId) {
+<span class="nc" id="L84">        return auctionRepository.findFirstByLeagueIdAndStatus(leagueId, AuctionStatus.ACTIVE)</span>
+<span class="nc" id="L85">                .map(AuctionResponse::from).orElse(null);</span>
+    }
+
+    @Scheduled(fixedDelay = 500)
+    @Transactional
+    public void finalizeExpired() {
+<span class="fc" id="L91">        auctionRepository.findByStatusAndEndsAtLessThanEqual(AuctionStatus.ACTIVE, Instant.now())</span>
+<span class="pc" id="L92">                .forEach(a -&gt; auctionRepository.findByIdForUpdate(a.getId()).ifPresent(this::finalizeAuction));</span>
+<span class="fc" id="L93">    }</span>
+
+    private void finalizeAuction(AuctionSession auction) {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (auction.getStatus() != AuctionStatus.ACTIVE) return;</span>
+<span class="nc" id="L97">        FantaTeam winner = auction.getHighestBidder();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (winner == null) {</span>
+<span class="nc" id="L99">            auction.setStatus(AuctionStatus.EXPIRED);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        } else if (winner.getCreditiResidui() &gt;= auction.getCurrentBid()</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                &amp;&amp; !rosterRepository.existsByFantaTeam_League_IdAndLecPlayerId(auction.getLeague().getId(), auction.getPlayer().getId())) {</span>
+<span class="nc" id="L102">            validateRosterSlot(winner, auction.getPlayer());</span>
+<span class="nc" id="L103">            winner.setCreditiResidui(winner.getCreditiResidui() - auction.getCurrentBid());</span>
+<span class="nc" id="L104">            fantaTeamRepository.save(winner);</span>
+<span class="nc" id="L105">            rosterRepository.save(RosterEntry.builder().fantaTeam(winner).lecPlayer(auction.getPlayer())</span>
+<span class="nc" id="L106">                    .creditiSpesi(auction.getCurrentBid()).build());</span>
+<span class="nc" id="L107">            auction.setStatus(AuctionStatus.WON);</span>
+        } else {
+<span class="nc" id="L109">            auction.setStatus(AuctionStatus.EXPIRED);</span>
+        }
+<span class="nc" id="L111">        auctionRepository.save(auction);</span>
+<span class="nc" id="L112">    }</span>
+
+    private void validateRosterSlot(FantaTeam team, LecPlayer player) {
+<span class="nc" id="L115">        List&lt;RosterEntry&gt; roster = rosterRepository.findByFantaTeamId(team.getId());</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (roster.size() &gt;= MAX_ROSTER) throw new BusinessRuleException(&quot;Rosa già completa&quot;);</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">        if (roster.stream().filter(e -&gt; e.getLecPlayer().getRuolo() == player.getRuolo()).count() &gt;= MAX_PER_ROLE)</span>
+<span class="nc" id="L118">            throw new BusinessRuleException(&quot;Hai già 2 player nel ruolo &quot; + player.getRuolo());</span>
+<span class="nc" id="L119">    }</span>
+
+    private void assertParticipantOrAdmin(String username, League league) {
+<span class="nc" id="L122">        User user = userService.findByUsernameOrThrow(username);</span>
+<span class="nc bnc" id="L123" title="All 4 branches missed.">        if (user.getRole() != Role.ADMIN &amp;&amp; fantaTeamRepository.findByLeagueIdAndOwnerUsername(league.getId(), username).isEmpty())</span>
+<span class="nc" id="L124">            throw new BusinessRuleException(&quot;Non partecipi a questa lega&quot;);</span>
+<span class="nc" id="L125">    }</span>
+
+    private void assertOwnerOrAdmin(String username, FantaTeam team) {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (!team.getOwner().getUsername().equals(username)</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                &amp;&amp; userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN)</span>
+<span class="nc" id="L130">            throw new BusinessRuleException(&quot;Non puoi offrire per questa squadra&quot;);</span>
+<span class="nc" id="L131">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

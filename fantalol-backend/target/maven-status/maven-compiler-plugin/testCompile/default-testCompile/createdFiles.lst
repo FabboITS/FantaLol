@@ -1,0 +1,7 @@
+com/fantalol/backend/matchday/FormationServiceTest.class
+com/fantalol/backend/league/FantaTeamServiceTest.class
+com/fantalol/backend/user/UserServiceTest.class
+com/fantalol/backend/team/LecPlayerServiceTest.class
+com/fantalol/backend/team/LecTeamServiceTest.class
+com/fantalol/backend/user/AuthIntegrationTest.class
+com/fantalol/backend/matchday/FantaScoreCalculatorTest.class

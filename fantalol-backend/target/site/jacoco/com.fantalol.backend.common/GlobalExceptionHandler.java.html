@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.common</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.common;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+
+/**
+ * Gestore centralizzato delle eccezioni per tutti i Controller REST.
+ * Traduce le eccezioni applicative in risposte HTTP coerenti tramite {@link ApiError}.
+ */
+@RestControllerAdvice
+<span class="fc" id="L19">public class GlobalExceptionHandler {</span>
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;ApiError&gt; handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+<span class="nc" id="L23">        return ResponseEntity.status(HttpStatus.NOT_FOUND)</span>
+<span class="nc" id="L24">                .body(ApiError.of(404, &quot;Not Found&quot;, ex.getMessage(), req.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity&lt;ApiError&gt; handleBusinessRule(BusinessRuleException ex, HttpServletRequest req) {
+<span class="nc" id="L29">        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)</span>
+<span class="nc" id="L30">                .body(ApiError.of(422, &quot;Unprocessable Entity&quot;, ex.getMessage(), req.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity&lt;ApiError&gt; handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
+<span class="nc" id="L35">        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)</span>
+<span class="nc" id="L36">                .body(ApiError.of(401, &quot;Unauthorized&quot;, &quot;Credenziali non valide&quot;, req.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity&lt;ApiError&gt; handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
+<span class="nc" id="L41">        return ResponseEntity.status(HttpStatus.FORBIDDEN)</span>
+<span class="nc" id="L42">                .body(ApiError.of(403, &quot;Forbidden&quot;, &quot;Non hai i permessi per eseguire questa operazione&quot;, req.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;ApiError&gt; handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+<span class="fc" id="L47">        List&lt;String&gt; details = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L48">                .map(f -&gt; f.getField() + &quot;: &quot; + f.getDefaultMessage())</span>
+<span class="fc" id="L49">                .toList();</span>
+<span class="fc" id="L50">        return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L51">                .body(ApiError.of(400, &quot;Bad Request&quot;, &quot;Errore di validazione dei dati&quot;, req.getRequestURI(), details));</span>
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity&lt;ApiError&gt; handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
+<span class="nc" id="L56">        return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="nc" id="L57">                .body(ApiError.of(400, &quot;Bad Request&quot;, ex.getMessage(), req.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ApiError&gt; handleGeneric(Exception ex, HttpServletRequest req) {
+<span class="nc" id="L62">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span>
+<span class="nc" id="L63">                .body(ApiError.of(500, &quot;Internal Server Error&quot;, &quot;Si è verificato un errore imprevisto&quot;, req.getRequestURI()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

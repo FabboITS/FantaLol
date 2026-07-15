@@ -15,7 +15,7 @@ import java.util.List;
         List&lt;String&gt; details
 ) {
     public static ApiError of(int status, String error, String message, String path) {
-<span class="nc" id="L18">        return new ApiError(Instant.now(), status, error, message, path, List.of());</span>
+<span class="fc" id="L18">        return new ApiError(Instant.now(), status, error, message, path, List.of());</span>
     }
 
     public static ApiError of(int status, String error, String message, String path, List&lt;String&gt; details) {

@@ -22,8 +22,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: fantalol-backend/Dockerfile
     container_name: fantalol-backend
     restart: unless-stopped
     depends_on:

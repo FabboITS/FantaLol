@@ -15,7 +15,7 @@ fantalol-backend,com.fantalol.backend.team,LecTeamController,26,4,0,0,5,1,4,1,4,
 fantalol-backend,com.fantalol.backend.team,LecTeamService,28,64,0,2,6,14,2,6,2,5
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.config,DataSeeder,2,480,2,4,2,37,2,4,0,3
-fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,245,0,0,0,35,0,11,0,11
+fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,249,0,0,0,35,0,11,0,11
 fantalol-backend,com.fantalol.backend.league,FantaTeamService,524,191,41,13,75,43,45,9,23,4
 fantalol-backend,com.fantalol.backend.league,LeagueService,102,0,6,0,19,0,11,0,8,0
 fantalol-backend,com.fantalol.backend.league,AuctionController,23,0,0,0,3,0,3,0,3,0
@@ -36,8 +36,8 @@ fantalol-backend,com.fantalol.backend.league.dto,LeagueResponse,46,0,2,0,4,0,3,0
 fantalol-backend,com.fantalol.backend.league.dto,RosterEntryResponse,0,41,0,0,0,8,0,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,AuctionBidRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AcquistoPlayerRequest,0,9,0,0,0,1,0,1,0,1
-fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,12,0,0,0,1,0,1,0,1,0
+fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AuctionResponse,75,0,4,0,6,0,4,0,2,0
 fantalol-backend,com.fantalol.backend.league.dto,FantaTeamResponse,2,54,1,1,0,5,1,2,0,2
 fantalol-backend,com.fantalol.backend.security,JwtAuthFilter,0,64,4,6,0,15,4,2,0,1
@@ -55,6 +55,6 @@ fantalol-backend,com.fantalol.backend.user,UserService,55,104,2,4,11,23,4,6,3,4
 fantalol-backend,com.fantalol.backend.user,Role,0,15,0,0,0,3,0,1,0,1
 fantalol-backend,com.fantalol.backend.user,AuthController,0,16,0,0,0,3,0,2,0,2
 fantalol-backend,com.fantalol.backend.common,ResourceNotFoundException,0,4,0,0,0,2,0,1,0,1
-fantalol-backend,com.fantalol.backend.common,GlobalExceptionHandler,63,28,0,0,12,6,6,3,6,3
+fantalol-backend,com.fantalol.backend.common,GlobalExceptionHandler,63,38,0,0,12,8,6,4,6,4
 fantalol-backend,com.fantalol.backend.common,BusinessRuleException,0,4,0,0,0,2,0,1,0,1
-fantalol-backend,com.fantalol.backend.common,ApiError,10,31,0,0,1,2,1,2,1,2
+fantalol-backend,com.fantalol.backend.common,ApiError,0,41,0,0,0,3,0,3,0,3

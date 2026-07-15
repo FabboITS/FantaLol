@@ -1,4 +1,5 @@
 com/fantalol/backend/matchday/FormationServiceTest.class
+com/fantalol/backend/common/StaticResourceIntegrationTest.class
 com/fantalol/backend/league/FantaTeamServiceTest.class
 com/fantalol/backend/user/UserServiceTest.class
 com/fantalol/backend/team/LecPlayerServiceTest.class

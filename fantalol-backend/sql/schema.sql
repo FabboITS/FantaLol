@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS lec_players (
     nickname VARCHAR(60) NOT NULL,
     nome_reale VARCHAR(120),
     nazionalita VARCHAR(60),
+    image_url VARCHAR(255),
     ruolo VARCHAR(20) NOT NULL,
     quotazione INT NOT NULL,
     team_id BIGINT NOT NULL,

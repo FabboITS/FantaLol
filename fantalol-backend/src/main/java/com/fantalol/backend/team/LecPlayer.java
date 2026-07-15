@@ -38,6 +38,9 @@ public class LecPlayer {
     @Column(length = 60)
     private String nazionalita;
 
+    @Column(length = 255)
+    private String imageUrl;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

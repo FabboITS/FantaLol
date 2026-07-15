@@ -38,7 +38,8 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (lecTeamRepository.count() > 0) {
-            return; // dati già presenti
+            backfillExistingAssetMetadata();
+            return;
         }
 
         seedTeam("Team Vitality", "VIT", List.of(
@@ -77,7 +78,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed("Maynter", PlayerRole.TOP, "Ucraina", 55),
                 new PlayerSeed("Rhilech", PlayerRole.JUNGLE, "Turchia", 60),
                 new PlayerSeed("Poby", PlayerRole.MID, "Corea del Sud", 55),
-                new PlayerSeed("Hans SamD", PlayerRole.ADC, "Corea del Sud", 55),
+                new PlayerSeed("SamD", PlayerRole.ADC, "Corea del Sud", 55),
                 new PlayerSeed("Parus", PlayerRole.SUPPORT, "Turchia", 50)
         ));
 
@@ -124,10 +125,25 @@ public class DataSeeder implements CommandLineRunner {
         seedAdminUser();
     }
 
+    private void backfillExistingAssetMetadata() {
+        for (LecTeam team : lecTeamRepository.findAll()) {
+            team.setLogoUrl(teamLogoUrl(team.getNome()));
+            lecTeamRepository.save(team);
+        }
+        for (LecPlayer player : lecPlayerRepository.findAll()) {
+            if ("Hans SamD".equals(player.getNickname())) {
+                player.setNickname("SamD");
+            }
+            player.setImageUrl(playerImageUrl(player.getNickname(), player.getRuolo()));
+            lecPlayerRepository.save(player);
+        }
+    }
+
     private void seedTeam(String nome, String sigla, List<PlayerSeed> giocatori) {
         LecTeam team = lecTeamRepository.save(LecTeam.builder()
                 .nome(nome)
                 .sigla(sigla)
+                .logoUrl(teamLogoUrl(nome))
                 .build());
 
         for (PlayerSeed seed : giocatori) {
@@ -135,10 +151,48 @@ public class DataSeeder implements CommandLineRunner {
                     .nickname(seed.nickname())
                     .ruolo(seed.ruolo())
                     .nazionalita(seed.nazionalita())
+                    .imageUrl(playerImageUrl(seed))
                     .quotazione(seed.quotazione())
                     .team(team)
                     .build());
         }
+    }
+
+    private String playerImageUrl(PlayerSeed player) {
+        return playerImageUrl(player.nickname(), player.ruolo());
+    }
+
+    private String playerImageUrl(String nickname, PlayerRole playerRole) {
+        String role = switch (playerRole) {
+            case TOP -> "Top";
+            case JUNGLE -> "Jungle";
+            case MID -> "Mid";
+            case ADC -> "Adc";
+            case SUPPORT -> "Support";
+        };
+        String filename = switch (nickname) {
+            case "Naak Nako" -> "Naak_Nako";
+            case "Hans Sama" -> "Hans_Sama";
+            case "Isma" -> "ISMA";
+            default -> nickname;
+        };
+        return "/Player_immage/" + role + "/" + filename + ".jpg";
+    }
+
+    private String teamLogoUrl(String teamName) {
+        return switch (teamName) {
+            case "Team Vitality" -> "/assets/team-logos/team-vitality.ico";
+            case "Karmine Corp" -> "/assets/team-logos/karmine-corp.png";
+            case "G2 Esports" -> "/assets/team-logos/g2-esports.png";
+            case "Movistar KOI" -> "/assets/team-logos/movistar-koi.png";
+            case "Natus Vincere" -> "/assets/team-logos/natus-vincere.ico";
+            case "GIANTX" -> "/assets/team-logos/giantx.svg";
+            case "Fnatic" -> "/assets/team-logos/fnatic.png";
+            case "SK Gaming" -> "/assets/team-logos/sk-gaming.ico";
+            case "Shifters" -> "/assets/team-logos/shifters.ico";
+            case "Team Heretics" -> "/assets/team-logos/team-heretics.png";
+            default -> null;
+        };
     }
 
     private void seedAdminUser() {

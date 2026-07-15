@@ -37,6 +37,19 @@ INSERT INTO lec_teams (nome, sigla) VALUES
 ('Shifters', 'SHFT'),
 ('Team Heretics', 'TH');
 
+UPDATE lec_teams SET logo_url = CASE nome
+WHEN 'Team Vitality' THEN '/assets/team-logos/team-vitality.ico'
+WHEN 'Karmine Corp' THEN '/assets/team-logos/karmine-corp.png'
+WHEN 'G2 Esports' THEN '/assets/team-logos/g2-esports.png'
+WHEN 'Movistar KOI' THEN '/assets/team-logos/movistar-koi.png'
+WHEN 'Natus Vincere' THEN '/assets/team-logos/natus-vincere.ico'
+WHEN 'GIANTX' THEN '/assets/team-logos/giantx.svg'
+WHEN 'Fnatic' THEN '/assets/team-logos/fnatic.png'
+WHEN 'SK Gaming' THEN '/assets/team-logos/sk-gaming.ico'
+WHEN 'Shifters' THEN '/assets/team-logos/shifters.ico'
+WHEN 'Team Heretics' THEN '/assets/team-logos/team-heretics.png'
+END;
+
 -- -------------------------------------------------------------------------
 -- Roster reali (Spring Split 2026) - 5 player per team (TOP, JUNGLE, MID, ADC, SUPPORT)
 -- -------------------------------------------------------------------------
@@ -78,7 +91,7 @@ INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, t
 ('Maynter', NULL, 'Ucraina', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere')),
 ('Rhilech', NULL, 'Turchia', 'JUNGLE', 60, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere')),
 ('Poby', NULL, 'Corea del Sud', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere')),
-('Hans SamD', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere')),
+('SamD', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere')),
 ('Parus', NULL, 'Turchia', 'SUPPORT', 50, (SELECT id FROM lec_teams WHERE nome = 'Natus Vincere'));
 
 -- GIANTX
@@ -120,6 +133,60 @@ INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, t
 ('Serin', NULL, 'Turchia', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
 ('Ice', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
 ('Stend', NULL, 'Francia', 'SUPPORT', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics'));
+
+-- Ritratti locali serviti dal frontend
+UPDATE lec_players SET image_url = CASE nickname
+WHEN 'Naak Nako' THEN '/Player_immage/Top/Naak_Nako.jpg'
+WHEN 'Lyncas' THEN '/Player_immage/Jungle/Lyncas.jpg'
+WHEN 'Humanoid' THEN '/Player_immage/Mid/Humanoid.jpg'
+WHEN 'Carzzy' THEN '/Player_immage/Adc/Carzzy.jpg'
+WHEN 'Fleshy' THEN '/Player_immage/Support/Fleshy.jpg'
+WHEN 'Canna' THEN '/Player_immage/Top/Canna.jpg'
+WHEN 'Yike' THEN '/Player_immage/Jungle/Yike.jpg'
+WHEN 'Kyeahoo' THEN '/Player_immage/Mid/Kyeahoo.jpg'
+WHEN 'Caliste' THEN '/Player_immage/Adc/Caliste.jpg'
+WHEN 'Busio' THEN '/Player_immage/Support/Busio.jpg'
+WHEN 'BrokenBlade' THEN '/Player_immage/Top/BrokenBlade.jpg'
+WHEN 'SkewMond' THEN '/Player_immage/Jungle/SkewMond.jpg'
+WHEN 'Caps' THEN '/Player_immage/Mid/Caps.jpg'
+WHEN 'Hans Sama' THEN '/Player_immage/Adc/Hans_Sama.jpg'
+WHEN 'Labrov' THEN '/Player_immage/Support/Labrov.jpg'
+WHEN 'Myrwn' THEN '/Player_immage/Top/Myrwn.jpg'
+WHEN 'Elyoya' THEN '/Player_immage/Jungle/Elyoya.jpg'
+WHEN 'Jojopyun' THEN '/Player_immage/Mid/Jojopyun.jpg'
+WHEN 'Supa' THEN '/Player_immage/Adc/Supa.jpg'
+WHEN 'Alvaro' THEN '/Player_immage/Support/Alvaro.jpg'
+WHEN 'Maynter' THEN '/Player_immage/Top/Maynter.jpg'
+WHEN 'Rhilech' THEN '/Player_immage/Jungle/Rhilech.jpg'
+WHEN 'Poby' THEN '/Player_immage/Mid/Poby.jpg'
+WHEN 'SamD' THEN '/Player_immage/Adc/SamD.jpg'
+WHEN 'Parus' THEN '/Player_immage/Support/Parus.jpg'
+WHEN 'Lot' THEN '/Player_immage/Top/Lot.jpg'
+WHEN 'Isma' THEN '/Player_immage/Jungle/ISMA.jpg'
+WHEN 'Jackies' THEN '/Player_immage/Mid/Jackies.jpg'
+WHEN 'Noah' THEN '/Player_immage/Adc/Noah.jpg'
+WHEN 'Jun' THEN '/Player_immage/Support/Jun.jpg'
+WHEN 'Empyros' THEN '/Player_immage/Top/Empyros.jpg'
+WHEN 'Razork' THEN '/Player_immage/Jungle/Razork.jpg'
+WHEN 'Vladi' THEN '/Player_immage/Mid/Vladi.jpg'
+WHEN 'Upset' THEN '/Player_immage/Adc/Upset.jpg'
+WHEN 'Lospa' THEN '/Player_immage/Support/Lospa.jpg'
+WHEN 'Wunder' THEN '/Player_immage/Top/Wunder.jpg'
+WHEN 'Skeanz' THEN '/Player_immage/Jungle/Skeanz.jpg'
+WHEN 'LIDER' THEN '/Player_immage/Mid/LIDER.jpg'
+WHEN 'Jopa' THEN '/Player_immage/Adc/Jopa.jpg'
+WHEN 'Mikyx' THEN '/Player_immage/Support/Mikyx.jpg'
+WHEN 'Rooster' THEN '/Player_immage/Top/Rooster.jpg'
+WHEN 'Boukada' THEN '/Player_immage/Jungle/Boukada.jpg'
+WHEN 'nuc' THEN '/Player_immage/Mid/nuc.jpg'
+WHEN 'Paduck' THEN '/Player_immage/Adc/Paduck.jpg'
+WHEN 'Trymbi' THEN '/Player_immage/Support/Trymbi.jpg'
+WHEN 'Tracyn' THEN '/Player_immage/Top/Tracyn.jpg'
+WHEN 'Sheo' THEN '/Player_immage/Jungle/Sheo.jpg'
+WHEN 'Serin' THEN '/Player_immage/Mid/Serin.jpg'
+WHEN 'Ice' THEN '/Player_immage/Adc/Ice.jpg'
+WHEN 'Stend' THEN '/Player_immage/Support/Stend.jpg'
+END;
 
 -- -------------------------------------------------------------------------
 -- Una lega demo con codice invito fisso, utile per i test da Postman

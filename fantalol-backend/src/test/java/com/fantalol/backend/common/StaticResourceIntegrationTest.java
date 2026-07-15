@@ -28,6 +28,33 @@ class StaticResourceIntegrationTest {
     }
 
     @Test
+    void servesPlayerPortraitWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/Player_immage/Mid/Caps.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("image/jpeg"));
+    }
+
+    @Test
+    void servesTeamLogoWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/assets/team-logos/g2-esports.png"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("image/png"));
+    }
+
+    @Test
+    void portraitStylesheetShowsTheCompletePlayerImage() throws Exception {
+        mockMvc.perform(get("/css/player-images.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("object-fit: contain")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("object-position: center bottom")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("max-height: 100%")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("max-width: 100%")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("min-width: 0")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("background: linear-gradient"))));
+    }
+
+    @Test
     void missingStaticResourceReturnsNotFound() throws Exception {
         mockMvc.perform(get("/favicon.ico"))
                 .andExpect(status().isNotFound())

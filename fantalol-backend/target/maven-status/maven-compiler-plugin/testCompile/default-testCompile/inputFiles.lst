@@ -1,8 +1,9 @@
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/common/StaticResourceIntegrationTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/FantaTeamServiceTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FantaScoreCalculatorTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FormationServiceTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/team/LecPlayerServiceTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/team/LecTeamServiceTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/user/AuthIntegrationTest.java
-/workspace/fantalol-backend/src/test/java/com/fantalol/backend/user/UserServiceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/common/SeedAssetReferenceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/common/StaticResourceIntegrationTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/league/FantaTeamServiceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FantaScoreCalculatorTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FormationServiceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/team/LecPlayerServiceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/team/LecTeamServiceTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/user/AuthIntegrationTest.java
+/repo/fantalol-backend/src/test/java/com/fantalol/backend/user/UserServiceTest.java

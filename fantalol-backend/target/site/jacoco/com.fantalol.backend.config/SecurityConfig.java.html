@@ -68,44 +68,45 @@ public class SecurityConfig {
 <span class="fc" id="L68">                .sessionManagement(sm -&gt; sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
 <span class="fc" id="L69">                .authorizeHttpRequests(auth -&gt; auth</span>
                         // Frontend statico servito direttamente da Spring Boot
-<span class="fc" id="L71">                        .requestMatchers(&quot;/&quot;, &quot;/index.html&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/favicon.ico&quot;, &quot;/favicon.svg&quot;).permitAll()</span>
+<span class="fc" id="L71">                        .requestMatchers(&quot;/&quot;, &quot;/index.html&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/assets/**&quot;,</span>
+<span class="fc" id="L72">                                &quot;/Player_immage/**&quot;, &quot;/favicon.ico&quot;, &quot;/favicon.svg&quot;).permitAll()</span>
 
                         // Endpoint pubblici: autenticazione e documentazione
-<span class="fc" id="L74">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
-<span class="fc" id="L75">                        .requestMatchers(&quot;/swagger-ui/**&quot;, &quot;/v3/api-docs/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
-<span class="fc" id="L76">                        .requestMatchers(&quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L75">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="fc" id="L76">                        .requestMatchers(&quot;/swagger-ui/**&quot;, &quot;/v3/api-docs/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
+<span class="fc" id="L77">                        .requestMatchers(&quot;/actuator/health&quot;).permitAll()</span>
 
                         // Consultazione pubblica dell'anagrafica LEC (team e player) e delle giornate
-<span class="fc" id="L79">                        .requestMatchers(HttpMethod.GET, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;, &quot;/api/matchdays/**&quot;).permitAll()</span>
+<span class="fc" id="L80">                        .requestMatchers(HttpMethod.GET, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;, &quot;/api/matchdays/**&quot;).permitAll()</span>
 
                         // Scrittura sull'anagrafica LEC: solo ADMIN
-<span class="fc" id="L82">                        .requestMatchers(HttpMethod.POST, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
-<span class="fc" id="L83">                        .requestMatchers(HttpMethod.PUT, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
-<span class="fc" id="L84">                        .requestMatchers(HttpMethod.DELETE, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L83">                        .requestMatchers(HttpMethod.POST, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L84">                        .requestMatchers(HttpMethod.PUT, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L85">                        .requestMatchers(HttpMethod.DELETE, &quot;/api/teams/**&quot;, &quot;/api/players/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
 
                         // Creazione giornate, inserimento statistiche e chiusura giornata: solo ADMIN
-<span class="fc" id="L87">                        .requestMatchers(HttpMethod.POST, &quot;/api/matchdays/**&quot;).authenticated()</span>
+<span class="fc" id="L88">                        .requestMatchers(HttpMethod.POST, &quot;/api/matchdays/**&quot;).authenticated()</span>
 
                         // Tutto il resto richiede autenticazione (leghe, rose, formazioni, profilo)
-<span class="fc" id="L90">                        .anyRequest().authenticated()</span>
+<span class="fc" id="L91">                        .anyRequest().authenticated()</span>
                 )
-<span class="fc" id="L92">                .authenticationProvider(authenticationProvider())</span>
-<span class="fc" id="L93">                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);</span>
+<span class="fc" id="L93">                .authenticationProvider(authenticationProvider())</span>
+<span class="fc" id="L94">                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);</span>
 
-<span class="fc" id="L95">        return http.build();</span>
+<span class="fc" id="L96">        return http.build();</span>
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-<span class="fc" id="L100">        CorsConfiguration configuration = new CorsConfiguration();</span>
-<span class="fc" id="L101">        configuration.setAllowedOriginPatterns(List.of(&quot;*&quot;));</span>
-<span class="fc" id="L102">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
-<span class="fc" id="L103">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
-<span class="fc" id="L104">        configuration.setAllowCredentials(true);</span>
+<span class="fc" id="L101">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="fc" id="L102">        configuration.setAllowedOriginPatterns(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L103">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L104">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L105">        configuration.setAllowCredentials(true);</span>
 
-<span class="fc" id="L106">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
-<span class="fc" id="L107">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
-<span class="fc" id="L108">        return source;</span>
+<span class="fc" id="L107">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L108">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="fc" id="L109">        return source;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

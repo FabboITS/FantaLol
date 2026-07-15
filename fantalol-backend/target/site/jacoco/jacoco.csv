@@ -1,7 +1,7 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-fantalol-backend,com.fantalol.backend.team.dto,LecPlayerResponse,21,58,2,2,3,6,3,2,1,2
+fantalol-backend,com.fantalol.backend.team.dto,LecPlayerResponse,23,63,2,2,3,7,3,2,1,2
 fantalol-backend,com.fantalol.backend.team.dto,LecTeamResponse,25,31,2,0,3,2,2,2,1,2
-fantalol-backend,com.fantalol.backend.team.dto,LecPlayerRequest,0,21,0,0,0,1,0,1,0,1
+fantalol-backend,com.fantalol.backend.team.dto,LecPlayerRequest,0,24,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.team.dto,LecTeamRequest,0,12,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.matchday,FormationController,14,0,0,0,2,0,2,0,2,0
 fantalol-backend,com.fantalol.backend.matchday,FantaScoreCalculator,19,36,0,4,2,5,1,4,1,2
@@ -10,12 +10,12 @@ fantalol-backend,com.fantalol.backend.matchday,FormationService,53,170,5,15,5,33
 fantalol-backend,com.fantalol.backend.matchday,MatchdayService,332,0,28,0,58,0,25,0,11,0
 fantalol-backend,com.fantalol.backend.team,LecPlayerController,32,0,0,0,6,0,5,0,5,0
 fantalol-backend,com.fantalol.backend.team,PlayerRole,0,33,0,0,0,6,0,1,0,1
-fantalol-backend,com.fantalol.backend.team,LecPlayerService,90,58,3,1,18,14,8,3,6,3
+fantalol-backend,com.fantalol.backend.team,LecPlayerService,94,61,3,1,19,15,8,3,6,3
 fantalol-backend,com.fantalol.backend.team,LecTeamController,26,4,0,0,5,1,4,1,4,1
 fantalol-backend,com.fantalol.backend.team,LecTeamService,28,64,0,2,6,14,2,6,2,5
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
-fantalol-backend,com.fantalol.backend.config,DataSeeder,2,480,2,4,2,37,2,4,0,3
-fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,249,0,0,0,35,0,11,0,11
+fantalol-backend,com.fantalol.backend.config,DataSeeder,64,559,9,23,15,63,7,23,1,6
+fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,257,0,0,0,36,0,11,0,11
 fantalol-backend,com.fantalol.backend.league,FantaTeamService,524,191,41,13,75,43,45,9,23,4
 fantalol-backend,com.fantalol.backend.league,LeagueService,102,0,6,0,19,0,11,0,8,0
 fantalol-backend,com.fantalol.backend.league,AuctionController,23,0,0,0,3,0,3,0,3,0

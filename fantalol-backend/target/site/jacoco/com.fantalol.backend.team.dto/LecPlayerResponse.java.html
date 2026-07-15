@@ -10,22 +10,24 @@ import com.fantalol.backend.team.LecPlayer;
         String ruolo,
         Integer quotazione,
         Long teamId,
-        String teamNome
+        String teamNome,
+        String imageUrl
 ) {
     public static LecPlayerResponse from(LecPlayer player) {
-<span class="fc" id="L16">        return new LecPlayerResponse(</span>
-<span class="fc" id="L17">                player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),</span>
-<span class="fc" id="L18">                player.getRuolo().name(), player.getQuotazione(),</span>
-<span class="pc bpc" id="L19" title="1 of 2 branches missed.">                player.getTeam() != null ? player.getTeam().getId() : null,</span>
-<span class="pc bpc" id="L20" title="1 of 2 branches missed.">                player.getTeam() != null ? player.getTeam().getNome() : null</span>
+<span class="fc" id="L17">        return new LecPlayerResponse(</span>
+<span class="fc" id="L18">                player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),</span>
+<span class="fc" id="L19">                player.getRuolo().name(), player.getQuotazione(),</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">                player.getTeam() != null ? player.getTeam().getId() : null,</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">                player.getTeam() != null ? player.getTeam().getNome() : null,</span>
+<span class="fc" id="L22">                player.getImageUrl()</span>
         );
     }
 
     /** Usata quando il player viene incluso dentro la risposta del team, per evitare ricorsione infinita. */
     public static LecPlayerResponse fromWithoutTeam(LecPlayer player) {
-<span class="nc" id="L26">        return new LecPlayerResponse(</span>
-<span class="nc" id="L27">                player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),</span>
-<span class="nc" id="L28">                player.getRuolo().name(), player.getQuotazione(), null, null</span>
+<span class="nc" id="L28">        return new LecPlayerResponse(</span>
+<span class="nc" id="L29">                player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),</span>
+<span class="nc" id="L30">                player.getRuolo().name(), player.getQuotazione(), null, null, player.getImageUrl()</span>
         );
     }
 }

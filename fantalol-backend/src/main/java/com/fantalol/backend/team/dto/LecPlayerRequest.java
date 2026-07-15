@@ -11,6 +11,7 @@ public record LecPlayerRequest(
         String nazionalita,
         @NotNull(message = "Il ruolo è obbligatorio") PlayerRole ruolo,
         @NotNull(message = "La quotazione è obbligatoria") @Positive Integer quotazione,
-        @NotNull(message = "Il team è obbligatorio") Long teamId
+        @NotNull(message = "Il team è obbligatorio") Long teamId,
+        String imageUrl
 ) {
 }

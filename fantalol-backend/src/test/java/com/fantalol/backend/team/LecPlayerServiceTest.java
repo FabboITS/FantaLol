@@ -30,7 +30,8 @@ class LecPlayerServiceTest {
     @Test
     void creaUnNuovoPlayerAssociatoAlTeam() {
         LecTeam team = LecTeam.builder().id(1L).nome("G2 Esports").build();
-        LecPlayerRequest request = new LecPlayerRequest("Caps", "Rasmus Winther", "Danimarca", PlayerRole.MID, 100, 1L);
+        LecPlayerRequest request = new LecPlayerRequest("Caps", "Rasmus Winther", "Danimarca", PlayerRole.MID, 100, 1L,
+                "/Player_immage/Mid/Caps.jpg");
 
         when(lecTeamRepository.findById(1L)).thenReturn(Optional.of(team));
         when(lecPlayerRepository.save(any(LecPlayer.class))).thenAnswer(inv -> {
@@ -44,11 +45,12 @@ class LecPlayerServiceTest {
         assertThat(response.nickname()).isEqualTo("Caps");
         assertThat(response.ruolo()).isEqualTo("MID");
         assertThat(response.teamNome()).isEqualTo("G2 Esports");
+        assertThat(response.imageUrl()).isEqualTo("/Player_immage/Mid/Caps.jpg");
     }
 
     @Test
     void lanciaEccezioneSeIlTeamNonEsiste() {
-        LecPlayerRequest request = new LecPlayerRequest("Caps", null, null, PlayerRole.MID, 100, 99L);
+        LecPlayerRequest request = new LecPlayerRequest("Caps", null, null, PlayerRole.MID, 100, 99L, null);
         when(lecTeamRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> lecPlayerService.create(request))

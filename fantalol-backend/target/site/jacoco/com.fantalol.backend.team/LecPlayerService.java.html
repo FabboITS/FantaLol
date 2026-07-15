@@ -43,38 +43,40 @@ public class LecPlayerService {
 <span class="fc" id="L43">                .nickname(request.nickname())</span>
 <span class="fc" id="L44">                .nomeReale(request.nomeReale())</span>
 <span class="fc" id="L45">                .nazionalita(request.nazionalita())</span>
-<span class="fc" id="L46">                .ruolo(request.ruolo())</span>
-<span class="fc" id="L47">                .quotazione(request.quotazione())</span>
-<span class="fc" id="L48">                .team(team)</span>
-<span class="fc" id="L49">                .build();</span>
+<span class="fc" id="L46">                .imageUrl(request.imageUrl())</span>
+<span class="fc" id="L47">                .ruolo(request.ruolo())</span>
+<span class="fc" id="L48">                .quotazione(request.quotazione())</span>
+<span class="fc" id="L49">                .team(team)</span>
+<span class="fc" id="L50">                .build();</span>
 
-<span class="fc" id="L51">        return LecPlayerResponse.from(lecPlayerRepository.save(player));</span>
+<span class="fc" id="L52">        return LecPlayerResponse.from(lecPlayerRepository.save(player));</span>
     }
 
     @Transactional
     public LecPlayerResponse update(Long id, LecPlayerRequest request) {
-<span class="nc" id="L56">        LecPlayer player = getOrThrow(id);</span>
-<span class="nc" id="L57">        LecTeam team = lecTeamRepository.findById(request.teamId())</span>
-<span class="nc" id="L58">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Team LEC non trovato con id: &quot; + request.teamId()));</span>
+<span class="nc" id="L57">        LecPlayer player = getOrThrow(id);</span>
+<span class="nc" id="L58">        LecTeam team = lecTeamRepository.findById(request.teamId())</span>
+<span class="nc" id="L59">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Team LEC non trovato con id: &quot; + request.teamId()));</span>
 
-<span class="nc" id="L60">        player.setNickname(request.nickname());</span>
-<span class="nc" id="L61">        player.setNomeReale(request.nomeReale());</span>
-<span class="nc" id="L62">        player.setNazionalita(request.nazionalita());</span>
-<span class="nc" id="L63">        player.setRuolo(request.ruolo());</span>
-<span class="nc" id="L64">        player.setQuotazione(request.quotazione());</span>
-<span class="nc" id="L65">        player.setTeam(team);</span>
+<span class="nc" id="L61">        player.setNickname(request.nickname());</span>
+<span class="nc" id="L62">        player.setNomeReale(request.nomeReale());</span>
+<span class="nc" id="L63">        player.setNazionalita(request.nazionalita());</span>
+<span class="nc" id="L64">        player.setImageUrl(request.imageUrl());</span>
+<span class="nc" id="L65">        player.setRuolo(request.ruolo());</span>
+<span class="nc" id="L66">        player.setQuotazione(request.quotazione());</span>
+<span class="nc" id="L67">        player.setTeam(team);</span>
 
-<span class="nc" id="L67">        return LecPlayerResponse.from(lecPlayerRepository.save(player));</span>
+<span class="nc" id="L69">        return LecPlayerResponse.from(lecPlayerRepository.save(player));</span>
     }
 
     @Transactional
     public void delete(Long id) {
-<span class="nc" id="L72">        lecPlayerRepository.delete(getOrThrow(id));</span>
-<span class="nc" id="L73">    }</span>
+<span class="nc" id="L74">        lecPlayerRepository.delete(getOrThrow(id));</span>
+<span class="nc" id="L75">    }</span>
 
     LecPlayer getOrThrow(Long id) {
-<span class="nc" id="L76">        return lecPlayerRepository.findById(id)</span>
-<span class="nc" id="L77">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + id));</span>
+<span class="nc" id="L78">        return lecPlayerRepository.findById(id)</span>
+<span class="nc" id="L79">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + id));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

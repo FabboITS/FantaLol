@@ -43,6 +43,7 @@ public class LecPlayerService {
                 .nickname(request.nickname())
                 .nomeReale(request.nomeReale())
                 .nazionalita(request.nazionalita())
+                .imageUrl(request.imageUrl())
                 .ruolo(request.ruolo())
                 .quotazione(request.quotazione())
                 .team(team)
@@ -60,6 +61,7 @@ public class LecPlayerService {
         player.setNickname(request.nickname());
         player.setNomeReale(request.nomeReale());
         player.setNazionalita(request.nazionalita());
+        player.setImageUrl(request.imageUrl());
         player.setRuolo(request.ruolo());
         player.setQuotazione(request.quotazione());
         player.setTeam(team);

@@ -10,14 +10,16 @@ public record LecPlayerResponse(
         String ruolo,
         Integer quotazione,
         Long teamId,
-        String teamNome
+        String teamNome,
+        String imageUrl
 ) {
     public static LecPlayerResponse from(LecPlayer player) {
         return new LecPlayerResponse(
                 player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),
                 player.getRuolo().name(), player.getQuotazione(),
                 player.getTeam() != null ? player.getTeam().getId() : null,
-                player.getTeam() != null ? player.getTeam().getNome() : null
+                player.getTeam() != null ? player.getTeam().getNome() : null,
+                player.getImageUrl()
         );
     }
 
@@ -25,7 +27,7 @@ public record LecPlayerResponse(
     public static LecPlayerResponse fromWithoutTeam(LecPlayer player) {
         return new LecPlayerResponse(
                 player.getId(), player.getNickname(), player.getNomeReale(), player.getNazionalita(),
-                player.getRuolo().name(), player.getQuotazione(), null, null
+                player.getRuolo().name(), player.getQuotazione(), null, null, player.getImageUrl()
         );
     }
 }

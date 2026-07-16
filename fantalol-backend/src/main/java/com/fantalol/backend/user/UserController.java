@@ -2,11 +2,14 @@ package com.fantalol.backend.user;
 
 import com.fantalol.backend.user.dto.UserProfileRequest;
 import com.fantalol.backend.user.dto.UserResponse;
+import com.fantalol.backend.user.dto.UserDirectoryEntry;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Endpoint per la gestione del profilo dell'utente autenticato ("/me").
@@ -19,6 +22,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping
+    public List<UserDirectoryEntry> getRegularUserDirectory() {
+        return userService.getRegularUserDirectory();
+    }
 
     @GetMapping("/me")
     public UserResponse getCurrentUser(Authentication authentication) {

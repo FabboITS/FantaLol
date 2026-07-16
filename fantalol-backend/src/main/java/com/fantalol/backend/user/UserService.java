@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Contiene la logica applicativa relativa a registrazione, login e gestione profilo utente.
  * Programmazione per interfacce: {@link UserRepository} e {@link PasswordEncoder} sono astrazioni
@@ -61,6 +63,13 @@ public class UserService {
     public UserResponse getByUsername(String username) {
         User user = findByUsernameOrThrow(username);
         return UserResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDirectoryEntry> getRegularUserDirectory() {
+        return userRepository.findAllByRoleOrderByUsernameAsc(Role.USER).stream()
+                .map(UserDirectoryEntry::from)
+                .toList();
     }
 
     @Transactional

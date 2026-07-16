@@ -87,6 +87,9 @@ public class SecurityConfig {
                         // Creazione giornate, inserimento statistiche e chiusura giornata: solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/matchdays/**").authenticated()
 
+                        // Directory degli username registrati: solo ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+
                         // Tutto il resto richiede autenticazione (leghe, rose, formazioni, profilo)
                         .anyRequest().authenticated()
                 )

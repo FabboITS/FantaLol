@@ -2,11 +2,14 @@
 
 import com.fantalol.backend.user.dto.UserProfileRequest;
 import com.fantalol.backend.user.dto.UserResponse;
+import com.fantalol.backend.user.dto.UserDirectoryEntry;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Endpoint per la gestione del profilo dell'utente autenticato (&quot;/me&quot;).
@@ -20,15 +23,20 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    public List&lt;UserDirectoryEntry&gt; getRegularUserDirectory() {
+<span class="fc" id="L28">        return userService.getRegularUserDirectory();</span>
+    }
+
     @GetMapping(&quot;/me&quot;)
     public UserResponse getCurrentUser(Authentication authentication) {
-<span class="fc" id="L25">        return userService.getByUsername(authentication.getName());</span>
+<span class="fc" id="L33">        return userService.getByUsername(authentication.getName());</span>
     }
 
     @PutMapping(&quot;/me/profile&quot;)
     public UserResponse updateProfile(Authentication authentication,
                                        @Valid @RequestBody UserProfileRequest request) {
-<span class="nc" id="L31">        return userService.updateProfile(authentication.getName(), request);</span>
+<span class="nc" id="L39">        return userService.updateProfile(authentication.getName(), request);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

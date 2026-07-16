@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -60,5 +61,23 @@ class StaticResourceIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.path").value("/favicon.ico"));
+    }
+
+    @Test
+    void homeContainsTheAdminUserDirectory() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"user-directory-dialog\"")))
+                .andExpect(content().string(containsString("id=\"user-directory-list\"")));
+    }
+
+    @Test
+    void javascriptHandlesTheAdminShortcut() throws Exception {
+        mockMvc.perform(get("/js/app.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("openUserDirectory")))
+                .andExpect(content().string(containsString("event.ctrlKey")))
+                .andExpect(content().string(containsString("state.user?.role!=='ADMIN'")))
+                .andExpect(content().string(containsString("api('/users')")));
     }
 }

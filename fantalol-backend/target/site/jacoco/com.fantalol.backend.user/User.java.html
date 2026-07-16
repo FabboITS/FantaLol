@@ -78,7 +78,7 @@ public class User implements UserDetails {
 
     @PrePersist
     void prePersist() {
-<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (createdAt == null) {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (createdAt == null) {</span>
 <span class="fc" id="L82">            createdAt = Instant.now();</span>
         }
 <span class="fc" id="L84">    }</span>

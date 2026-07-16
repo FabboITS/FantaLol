@@ -15,7 +15,7 @@ fantalol-backend,com.fantalol.backend.team,LecTeamController,26,4,0,0,5,1,4,1,4,
 fantalol-backend,com.fantalol.backend.team,LecTeamService,28,64,0,2,6,14,2,6,2,5
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.config,DataSeeder,64,559,9,23,15,63,7,23,1,6
-fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,257,0,0,0,36,0,11,0,11
+fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,268,0,0,0,37,0,11,0,11
 fantalol-backend,com.fantalol.backend.league,FantaTeamService,524,191,41,13,75,43,45,9,23,4
 fantalol-backend,com.fantalol.backend.league,LeagueService,102,0,6,0,19,0,11,0,8,0
 fantalol-backend,com.fantalol.backend.league,AuctionController,23,0,0,0,3,0,3,0,3,0
@@ -36,8 +36,8 @@ fantalol-backend,com.fantalol.backend.league.dto,LeagueResponse,46,0,2,0,4,0,3,0
 fantalol-backend,com.fantalol.backend.league.dto,RosterEntryResponse,0,41,0,0,0,8,0,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,AuctionBidRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AcquistoPlayerRequest,0,9,0,0,0,1,0,1,0,1
-fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,12,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1,0
+fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,12,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AuctionResponse,75,0,4,0,6,0,4,0,2,0
 fantalol-backend,com.fantalol.backend.league.dto,FantaTeamResponse,2,54,1,1,0,5,1,2,0,2
 fantalol-backend,com.fantalol.backend.security,JwtAuthFilter,0,64,4,6,0,15,4,2,0,1
@@ -45,13 +45,14 @@ fantalol-backend,com.fantalol.backend.security,JwtUtil,1,92,2,2,0,23,2,6,0,6
 fantalol-backend,com.fantalol.backend.security,CustomUserDetailsService,6,9,0,0,0,2,1,1,1,1
 fantalol-backend,com.fantalol.backend,FantaLolBackendApplication,5,3,0,0,2,1,1,1,1,1
 fantalol-backend,com.fantalol.backend.user.dto,UserProfileRequest,15,0,0,0,1,0,1,0,1,0
+fantalol-backend,com.fantalol.backend.user.dto,UserDirectoryEntry,0,12,0,0,0,2,0,2,0,2
 fantalol-backend,com.fantalol.backend.user.dto,RegisterRequest,0,12,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.user.dto,LoginRequest,0,9,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.user.dto,AuthResponse,0,23,0,0,0,2,0,2,0,2
 fantalol-backend,com.fantalol.backend.user.dto,UserResponse,4,37,1,1,0,3,1,2,0,2
-fantalol-backend,com.fantalol.backend.user,User,0,25,1,1,0,8,1,6,0,6
-fantalol-backend,com.fantalol.backend.user,UserController,7,6,0,0,1,1,1,1,1,1
-fantalol-backend,com.fantalol.backend.user,UserService,55,104,2,4,11,23,4,6,3,4
+fantalol-backend,com.fantalol.backend.user,User,0,25,0,2,0,8,0,7,0,6
+fantalol-backend,com.fantalol.backend.user,UserController,7,10,0,0,1,2,1,2,1,2
+fantalol-backend,com.fantalol.backend.user,UserService,55,113,2,4,11,26,4,7,3,5
 fantalol-backend,com.fantalol.backend.user,Role,0,15,0,0,0,3,0,1,0,1
 fantalol-backend,com.fantalol.backend.user,AuthController,0,16,0,0,0,3,0,2,0,2
 fantalol-backend,com.fantalol.backend.common,ResourceNotFoundException,0,4,0,0,0,2,0,1,0,1

@@ -1,0 +1,28 @@
+.directory-count {
+    color: var(--muted);
+    font-size: 12px;
+    margin: -10px 0 18px;
+}
+
+.user-directory {
+    display: grid;
+    gap: 8px;
+    max-height: 50vh;
+    overflow: auto;
+    padding-right: 5px;
+}
+
+.directory-user {
+    background: #0a0d11;
+    border: 1px solid #303640;
+    color: var(--white);
+    font: 600 14px var(--font-display);
+    padding: 12px 14px;
+}
+
+.directory-empty,
+.directory-loading {
+    color: var(--muted);
+    padding: 24px 10px;
+    text-align: center;
+}

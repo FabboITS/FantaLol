@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/css/player-images.css">
     <link rel="stylesheet" href="/css/auction.css">
     <link rel="stylesheet" href="/css/live-auction.css">
+    <link rel="stylesheet" href="/css/user-directory.css">
 </head>
 <body>
 <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -69,6 +70,8 @@
 <dialog id="formation-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Starting five</p><h2>FORMAZIONE</h2><form id="formation-form"><label>Giornata<select name="matchdayId" required></select></label><div id="formation-roles" class="formation-roles"></div><label>Capitano<select name="capitanoId" required><option value="">Seleziona prima i titolari</option></select></label><button class="button button-primary" type="submit">Schiera titolari →</button><p class="form-error" role="alert"></p></form></dialog>
 
 <dialog id="matchday-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Admin della lega</p><h2>APRI GIORNATA</h2><form id="matchday-form"><input type="hidden" name="leagueId"><label>Numero giornata<input type="number" name="numero" min="1" required></label><label>Descrizione<input name="descrizione" maxlength="100" placeholder="Es. Week 1"></label><label>Data<input type="date" name="data"></label><button class="button button-primary" type="submit">Apri giornata →</button><p class="form-error" role="alert"></p></form></dialog>
+
+<dialog id="user-directory-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Area amministratore</p><h2>UTENTI REGISTRATI</h2><p id="user-directory-count" class="directory-count"></p><div id="user-directory-list" class="user-directory" aria-live="polite"></div></dialog>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="/js/app.js" defer></script>

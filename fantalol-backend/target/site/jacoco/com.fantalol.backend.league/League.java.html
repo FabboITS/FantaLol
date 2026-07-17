@@ -53,6 +53,10 @@ public class League {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean auctionOpen = false;
+
     @OneToMany(mappedBy = &quot;league&quot;, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List&lt;FantaTeam&gt; fantaTeams = new ArrayList&lt;&gt;();
@@ -63,12 +67,12 @@ public class League {
 
     @PrePersist
     void prePersist() {
-<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (createdAt == null) {</span>
-<span class="nc" id="L67">            createdAt = Instant.now();</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (createdAt == null) {</span>
+<span class="nc" id="L71">            createdAt = Instant.now();</span>
         }
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (codiceInvito == null) {</span>
-<span class="nc" id="L70">            codiceInvito = UUID.randomUUID().toString().substring(0, 8).toUpperCase();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (codiceInvito == null) {</span>
+<span class="nc" id="L74">            codiceInvito = UUID.randomUUID().toString().substring(0, 8).toUpperCase();</span>
         }
-<span class="nc" id="L72">    }</span>
+<span class="nc" id="L76">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

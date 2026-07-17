@@ -37,6 +37,8 @@ class FantaTeamServiceTest {
     private UserService userService;
     @Mock
     private LecPlayerRepository lecPlayerRepository;
+    @Mock
+    private RosterPolicy rosterPolicy;
 
     @InjectMocks
     private FantaTeamService fantaTeamService;
@@ -52,6 +54,19 @@ class FantaTeamServiceTest {
         league = League.builder().id(1L).nome("Lega Test").codiceInvito("ABC12345").creditiIniziali(500).admin(user).build();
         fantaTeam = FantaTeam.builder().id(1L).nome("I Signori del Rift").creditiResidui(500).league(league).owner(user).build();
         player = LecPlayer.builder().id(10L).nickname("Caps").ruolo(PlayerRole.MID).quotazione(80).build();
+        lenient().when(rosterPolicy.forLeague(league)).thenReturn(new RosterPolicy.Limits(10, 2));
+    }
+
+    @Test
+    void nonPermetteUnaUndicesimaSquadra() {
+        when(userService.findByUsernameOrThrow("mago")).thenReturn(user);
+        when(leagueService.getByInviteCodeOrThrow("ABC12345")).thenReturn(league);
+        when(fantaTeamRepository.countByLeagueId(1L)).thenReturn(10L);
+
+        assertThatThrownBy(() -> fantaTeamService.joinLeague("mago",
+                new JoinLeagueRequest("ABC12345", "Team 11")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("La lega ha già raggiunto il limite di 10 squadre");
     }
 
     @Test

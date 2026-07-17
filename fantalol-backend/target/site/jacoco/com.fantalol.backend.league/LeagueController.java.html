@@ -45,5 +45,21 @@ public class LeagueController {
 <span class="nc" id="L45">        leagueService.delete(authentication.getName(), id);</span>
 <span class="nc" id="L46">        return ResponseEntity.noContent().build();</span>
     }
+
+    @PutMapping(&quot;/{id}/auction/open&quot;)
+    public LeagueResponse openAuction(Authentication authentication, @PathVariable Long id) {
+<span class="nc" id="L51">        return leagueService.openAuction(authentication.getName(), id);</span>
+    }
+
+    @PutMapping(&quot;/{id}/auction/close&quot;)
+    public LeagueResponse closeAuction(Authentication authentication, @PathVariable Long id) {
+<span class="nc" id="L56">        return leagueService.closeAuction(authentication.getName(), id);</span>
+    }
+
+    @PostMapping(&quot;/{id}/rosters/complete-randomly&quot;)
+    public List&lt;com.fantalol.backend.league.dto.FantaTeamResponse&gt; completeAllRostersRandomly(
+            Authentication authentication, @PathVariable Long id) {
+<span class="nc" id="L62">        return leagueService.completeAllRostersRandomly(authentication.getName(), id);</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

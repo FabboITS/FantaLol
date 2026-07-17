@@ -52,11 +52,6 @@ public class FantaTeamController {
                 .body(fantaTeamService.acquistaPlayerGratis(authentication.getName(), id));
     }
 
-    @PostMapping("/{id}/rosa/completa-casualmente")
-    public FantaTeamResponse completaRosaCasualmente(Authentication authentication, @PathVariable Long id) {
-        return fantaTeamService.completaRosaCasualmente(authentication.getName(), id);
-    }
-
     @DeleteMapping("/{id}/rosa/{rosterEntryId}")
     public ResponseEntity<Void> rilasciaPlayer(Authentication authentication,
                                                 @PathVariable Long id,

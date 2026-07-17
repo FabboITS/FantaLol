@@ -53,6 +53,10 @@ public class League {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean auctionOpen = false;
+
     @OneToMany(mappedBy = "league", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<FantaTeam> fantaTeams = new ArrayList<>();

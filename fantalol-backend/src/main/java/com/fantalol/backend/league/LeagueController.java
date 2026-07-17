@@ -45,4 +45,20 @@ public class LeagueController {
         leagueService.delete(authentication.getName(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/auction/open")
+    public LeagueResponse openAuction(Authentication authentication, @PathVariable Long id) {
+        return leagueService.openAuction(authentication.getName(), id);
+    }
+
+    @PutMapping("/{id}/auction/close")
+    public LeagueResponse closeAuction(Authentication authentication, @PathVariable Long id) {
+        return leagueService.closeAuction(authentication.getName(), id);
+    }
+
+    @PostMapping("/{id}/rosters/complete-randomly")
+    public List<com.fantalol.backend.league.dto.FantaTeamResponse> completeAllRostersRandomly(
+            Authentication authentication, @PathVariable Long id) {
+        return leagueService.completeAllRostersRandomly(authentication.getName(), id);
+    }
 }

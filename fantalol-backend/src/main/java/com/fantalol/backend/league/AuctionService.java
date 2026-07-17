@@ -16,8 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuctionService {
     private static final int SECONDS_PER_BID = 10;
-    private static final int MAX_ROSTER = 10;
-    private static final int MAX_PER_ROLE = 2;
 
     private final AuctionSessionRepository auctionRepository;
     private final LeagueRepository leagueRepository;
@@ -25,11 +23,13 @@ public class AuctionService {
     private final RosterEntryRepository rosterRepository;
     private final LecPlayerRepository playerRepository;
     private final UserService userService;
+    private final RosterPolicy rosterPolicy;
 
     @Transactional
     public AuctionResponse start(String username, AuctionStartRequest request) {
         League league = leagueRepository.findByIdForUpdate(request.leagueId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lega non trovata con id: " + request.leagueId()));
+        assertAuctionOpen(league);
         assertParticipantOrAdmin(username, league);
         auctionRepository.findFirstByLeagueIdAndStatus(league.getId(), AuctionStatus.ACTIVE)
                 .ifPresent(a -> { throw new BusinessRuleException("C'è già un'asta attiva in questa lega"); });
@@ -59,6 +59,7 @@ public class AuctionService {
     public AuctionResponse bid(String username, Long auctionId, AuctionBidRequest request) {
         AuctionSession auction = auctionRepository.findByIdForUpdate(auctionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asta non trovata"));
+        assertAuctionOpen(auction.getLeague());
         if (auction.getStatus() != AuctionStatus.ACTIVE || !auction.getEndsAt().isAfter(Instant.now())) {
             finalizeAuction(auction);
             throw new BusinessRuleException("L'asta è terminata");
@@ -113,9 +114,10 @@ public class AuctionService {
 
     private void validateRosterSlot(FantaTeam team, LecPlayer player) {
         List<RosterEntry> roster = rosterRepository.findByFantaTeamId(team.getId());
-        if (roster.size() >= MAX_ROSTER) throw new BusinessRuleException("Rosa già completa");
-        if (roster.stream().filter(e -> e.getLecPlayer().getRuolo() == player.getRuolo()).count() >= MAX_PER_ROLE)
-            throw new BusinessRuleException("Hai già 2 player nel ruolo " + player.getRuolo());
+        RosterPolicy.Limits limits = rosterPolicy.forLeague(team.getLeague());
+        if (roster.size() >= limits.maxRosterSize()) throw new BusinessRuleException("Rosa già completa");
+        if (roster.stream().filter(e -> e.getLecPlayer().getRuolo() == player.getRuolo()).count() >= limits.maxPerRole())
+            throw new BusinessRuleException("Hai già raggiunto il limite per il ruolo " + player.getRuolo());
     }
 
     private void assertParticipantOrAdmin(String username, League league) {
@@ -128,5 +130,11 @@ public class AuctionService {
         if (!team.getOwner().getUsername().equals(username)
                 && userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN)
             throw new BusinessRuleException("Non puoi offrire per questa squadra");
+    }
+
+    private void assertAuctionOpen(League league) {
+        if (!league.isAuctionOpen()) {
+            throw new BusinessRuleException("L'asta della lega non è aperta");
+        }
     }
 }

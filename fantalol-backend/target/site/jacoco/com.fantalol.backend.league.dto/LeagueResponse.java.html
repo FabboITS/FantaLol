@@ -2,18 +2,20 @@
 
 import com.fantalol.backend.league.League;
 
-<span class="nc" id="L5">public record LeagueResponse(</span>
+<span class="fc" id="L5">public record LeagueResponse(</span>
         Long id,
         String nome,
         String codiceInvito,
         Integer creditiIniziali,
         String adminUsername,
-        int numeroSquadre
+        int numeroSquadre,
+        boolean auctionOpen
 ) {
     public static LeagueResponse from(League league) {
-<span class="nc bnc" id="L14" title="All 2 branches missed.">        int numeroSquadre = league.getFantaTeams() == null ? 0 : league.getFantaTeams().size();</span>
-<span class="nc" id="L15">        return new LeagueResponse(league.getId(), league.getNome(), league.getCodiceInvito(),</span>
-<span class="nc" id="L16">                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre);</span>
+<span class="pc bpc" id="L15" title="1 of 2 branches missed.">        int numeroSquadre = league.getFantaTeams() == null ? 0 : league.getFantaTeams().size();</span>
+<span class="fc" id="L16">        return new LeagueResponse(league.getId(), league.getNome(), league.getCodiceInvito(),</span>
+<span class="fc" id="L17">                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre,</span>
+<span class="fc" id="L18">                league.isAuctionOpen());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -7,11 +7,21 @@ import com.fantalol.backend.league.dto.LeagueResponse;
 import com.fantalol.backend.user.User;
 import com.fantalol.backend.user.UserService;
 import com.fantalol.backend.user.Role;
+import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.LecPlayerRepository;
+import com.fantalol.backend.team.PlayerRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Gestisce la creazione e la consultazione delle leghe private.
@@ -22,48 +32,141 @@ public class LeagueService {
 
     private final LeagueRepository leagueRepository;
     private final UserService userService;
+    private final AuctionSessionRepository auctionSessionRepository;
+    private final FantaTeamRepository fantaTeamRepository;
+    private final RosterEntryRepository rosterEntryRepository;
+    private final LecPlayerRepository lecPlayerRepository;
+    private final RosterPolicy rosterPolicy;
 
     @Transactional(readOnly = true)
     public List&lt;LeagueResponse&gt; findAll() {
-<span class="nc" id="L28">        return leagueRepository.findAll().stream().map(LeagueResponse::from).toList();</span>
+<span class="nc" id="L43">        return leagueRepository.findAll().stream().map(LeagueResponse::from).toList();</span>
     }
 
     @Transactional(readOnly = true)
     public LeagueResponse findById(Long id) {
-<span class="nc" id="L33">        return LeagueResponse.from(getOrThrow(id));</span>
+<span class="nc" id="L48">        return LeagueResponse.from(getOrThrow(id));</span>
     }
 
     @Transactional
     public LeagueResponse create(String adminUsername, LeagueRequest request) {
-<span class="nc" id="L38">        User admin = userService.findByUsernameOrThrow(adminUsername);</span>
+<span class="nc" id="L53">        User admin = userService.findByUsernameOrThrow(adminUsername);</span>
 
-<span class="nc" id="L40">        League league = League.builder()</span>
-<span class="nc" id="L41">                .nome(request.nome())</span>
-<span class="nc bnc" id="L42" title="All 2 branches missed.">                .creditiIniziali(request.creditiIniziali() != null ? request.creditiIniziali() : 1000)</span>
-<span class="nc" id="L43">                .admin(admin)</span>
-<span class="nc" id="L44">                .build();</span>
+<span class="nc" id="L55">        League league = League.builder()</span>
+<span class="nc" id="L56">                .nome(request.nome())</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">                .creditiIniziali(request.creditiIniziali() != null ? request.creditiIniziali() : 1000)</span>
+<span class="nc" id="L58">                .admin(admin)</span>
+<span class="nc" id="L59">                .build();</span>
 
-<span class="nc" id="L46">        return LeagueResponse.from(leagueRepository.save(league));</span>
+<span class="nc" id="L61">        return LeagueResponse.from(leagueRepository.save(league));</span>
     }
 
     @Transactional
     public void delete(String username, Long leagueId) {
-<span class="nc" id="L51">        League league = getOrThrow(leagueId);</span>
-<span class="nc" id="L52">        User user = userService.findByUsernameOrThrow(username);</span>
-<span class="nc bnc" id="L53" title="All 4 branches missed.">        if (user.getRole() != Role.ADMIN &amp;&amp; !league.getAdmin().getUsername().equals(username)) {</span>
-<span class="nc" id="L54">            throw new BusinessRuleException(&quot;Solo l'admin della lega può cancellarla&quot;);</span>
+<span class="nc" id="L66">        League league = getOrThrow(leagueId);</span>
+<span class="nc" id="L67">        User user = userService.findByUsernameOrThrow(username);</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">        if (user.getRole() != Role.ADMIN &amp;&amp; !league.getAdmin().getUsername().equals(username)) {</span>
+<span class="nc" id="L69">            throw new BusinessRuleException(&quot;Solo l'admin della lega può cancellarla&quot;);</span>
         }
-<span class="nc" id="L56">        leagueRepository.delete(league);</span>
-<span class="nc" id="L57">    }</span>
+<span class="nc" id="L71">        leagueRepository.delete(league);</span>
+<span class="nc" id="L72">    }</span>
+
+    @Transactional
+    public LeagueResponse openAuction(String username, Long leagueId) {
+<span class="fc" id="L76">        League league = getForUpdateOrThrow(leagueId);</span>
+<span class="fc" id="L77">        assertLeagueCreatorOrGlobalAdmin(username, league);</span>
+<span class="fc" id="L78">        league.setAuctionOpen(true);</span>
+<span class="fc" id="L79">        return LeagueResponse.from(leagueRepository.save(league));</span>
+    }
+
+    @Transactional
+    public LeagueResponse closeAuction(String username, Long leagueId) {
+<span class="fc" id="L84">        League league = getForUpdateOrThrow(leagueId);</span>
+<span class="fc" id="L85">        assertLeagueCreatorOrGlobalAdmin(username, league);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (auctionSessionRepository.findFirstByLeagueIdAndStatus(leagueId, AuctionStatus.ACTIVE).isPresent()) {</span>
+<span class="fc" id="L87">            throw new BusinessRuleException(&quot;Attendi la fine dell'asta del player prima di terminare l'asta della lega&quot;);</span>
+        }
+<span class="fc" id="L89">        league.setAuctionOpen(false);</span>
+<span class="fc" id="L90">        return LeagueResponse.from(leagueRepository.save(league));</span>
+    }
+
+    @Transactional
+    public List&lt;com.fantalol.backend.league.dto.FantaTeamResponse&gt; completeAllRostersRandomly(
+            String username, Long leagueId) {
+<span class="fc" id="L96">        League league = getForUpdateOrThrow(leagueId);</span>
+<span class="fc" id="L97">        assertLeagueCreatorOrGlobalAdmin(username, league);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (league.isAuctionOpen()) {</span>
+<span class="fc" id="L99">            throw new BusinessRuleException(&quot;Termina l'asta della lega prima di completare casualmente le rose&quot;);</span>
+        }
+
+<span class="fc" id="L102">        RosterPolicy.Limits limits = rosterPolicy.forLeague(league);</span>
+<span class="fc" id="L103">        List&lt;FantaTeam&gt; teams = fantaTeamRepository.findByLeagueId(leagueId);</span>
+<span class="fc" id="L104">        List&lt;LecPlayer&gt; available = new ArrayList&lt;&gt;(lecPlayerRepository.findAll().stream()</span>
+<span class="fc" id="L105">                .filter(player -&gt; !rosterEntryRepository</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                        .existsByFantaTeam_League_IdAndLecPlayerId(leagueId, player.getId()))</span>
+<span class="fc" id="L107">                .toList());</span>
+<span class="fc" id="L108">        Collections.shuffle(available);</span>
+
+<span class="fc" id="L110">        Map&lt;PlayerRole, List&lt;LecPlayer&gt;&gt; byRole = available.stream()</span>
+<span class="fc" id="L111">                .collect(Collectors.groupingBy(LecPlayer::getRuolo,</span>
+<span class="fc" id="L112">                        () -&gt; new EnumMap&lt;&gt;(PlayerRole.class), Collectors.toCollection(ArrayList::new)));</span>
+<span class="fc" id="L113">        Map&lt;FantaTeam, List&lt;LecPlayer&gt;&gt; assignments = new java.util.LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        for (FantaTeam team : teams) {</span>
+<span class="fc" id="L116">            List&lt;RosterEntry&gt; current = rosterEntryRepository.findByFantaTeamId(team.getId());</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            if (current.size() &gt;= limits.maxRosterSize()) {</span>
+<span class="nc" id="L118">                continue;</span>
+            }
+<span class="fc" id="L120">            Map&lt;PlayerRole, Long&gt; counts = current.stream().collect(Collectors.groupingBy(</span>
+<span class="pc" id="L121">                    entry -&gt; entry.getLecPlayer().getRuolo(), () -&gt; new EnumMap&lt;&gt;(PlayerRole.class),</span>
+<span class="fc" id="L122">                    Collectors.counting()));</span>
+<span class="fc" id="L123">            List&lt;LecPlayer&gt; selected = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            for (PlayerRole role : PlayerRole.values()) {</span>
+<span class="fc" id="L125">                int missing = limits.maxPerRole() - counts.getOrDefault(role, 0L).intValue();</span>
+<span class="pc" id="L126">                List&lt;LecPlayer&gt; rolePool = byRole.computeIfAbsent(role, ignored -&gt; new ArrayList&lt;&gt;());</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                if (rolePool.size() &lt; missing) {</span>
+<span class="nc" id="L128">                    throw new BusinessRuleException(&quot;Non ci sono abbastanza player disponibili per completare tutte le rose&quot;);</span>
+                }
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                for (int i = 0; i &lt; missing; i++) {</span>
+<span class="fc" id="L131">                    selected.add(rolePool.remove(rolePool.size() - 1));</span>
+                }
+            }
+<span class="fc" id="L134">            assignments.put(team, selected);</span>
+<span class="fc" id="L135">        }</span>
+
+<span class="fc" id="L137">        Set&lt;Long&gt; assignedIds = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L138">        assignments.forEach((team, players) -&gt; players.forEach(player -&gt; {</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">            if (!assignedIds.add(player.getId())) {</span>
+<span class="nc" id="L140">                throw new BusinessRuleException(&quot;Un player casuale è stato selezionato più volte&quot;);</span>
+            }
+<span class="fc" id="L142">            RosterEntry entry = rosterEntryRepository.save(RosterEntry.builder()</span>
+<span class="fc" id="L143">                    .fantaTeam(team).lecPlayer(player).creditiSpesi(0).build());</span>
+<span class="fc" id="L144">            team.getRosa().add(entry);</span>
+<span class="fc" id="L145">        }));</span>
+
+<span class="fc" id="L147">        return teams.stream().map(com.fantalol.backend.league.dto.FantaTeamResponse::from).toList();</span>
+    }
 
     public League getOrThrow(Long id) {
-<span class="nc" id="L60">        return leagueRepository.findById(id)</span>
-<span class="nc" id="L61">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Lega non trovata con id: &quot; + id));</span>
+<span class="nc" id="L151">        return leagueRepository.findById(id)</span>
+<span class="nc" id="L152">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Lega non trovata con id: &quot; + id));</span>
     }
 
     League getByInviteCodeOrThrow(String codiceInvito) {
-<span class="nc" id="L65">        return leagueRepository.findByCodiceInvito(codiceInvito)</span>
-<span class="nc" id="L66">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Nessuna lega trovata con codice invito: &quot; + codiceInvito));</span>
+<span class="nc" id="L156">        return leagueRepository.findByCodiceInvito(codiceInvito)</span>
+<span class="nc" id="L157">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Nessuna lega trovata con codice invito: &quot; + codiceInvito));</span>
     }
+
+    private League getForUpdateOrThrow(Long id) {
+<span class="fc" id="L161">        return leagueRepository.findByIdForUpdate(id)</span>
+<span class="pc" id="L162">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Lega non trovata con id: &quot; + id));</span>
+    }
+
+    private void assertLeagueCreatorOrGlobalAdmin(String username, League league) {
+<span class="fc" id="L166">        User user = userService.findByUsernameOrThrow(username);</span>
+<span class="pc bpc" id="L167" title="1 of 4 branches missed.">        if (user.getRole() != Role.ADMIN &amp;&amp; !league.getAdmin().getUsername().equals(username)) {</span>
+<span class="fc" id="L168">            throw new BusinessRuleException(&quot;Solo il creatore della lega può gestire l'asta&quot;);</span>
+        }
+<span class="fc" id="L170">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

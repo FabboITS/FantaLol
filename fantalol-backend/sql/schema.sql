@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS leagues (
     nome VARCHAR(100) NOT NULL,
     codice_invito VARCHAR(12) NOT NULL UNIQUE,
     crediti_iniziali INT NOT NULL,
+    auction_open BOOLEAN NOT NULL DEFAULT FALSE,
     admin_id BIGINT NOT NULL,
     created_at DATETIME(6) NOT NULL,
     CONSTRAINT fk_league_admin FOREIGN KEY (admin_id) REFERENCES users (id)

@@ -80,4 +80,19 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("state.user?.role!=='ADMIN'")))
                 .andExpect(content().string(containsString("api('/users')")));
     }
+
+    @Test
+    void frontendContainsLeagueAuctionControlsAndAutomaticRefresh() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"auction-phase-controls\"")));
+
+        mockMvc.perform(get("/js/app.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/auction/${button.dataset.auctionPhase}")))
+                .andExpect(content().string(containsString("/rosters/complete-randomly")))
+                .andExpect(content().string(containsString("Non hai abbastanza crediti per rilanciare")))
+                .andExpect(content().string(containsString("refreshAfterAuctionEnded")))
+                .andExpect(content().string(containsString("await loadPrivateData()")));
+    }
 }

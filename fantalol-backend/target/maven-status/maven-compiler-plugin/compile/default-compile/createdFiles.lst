@@ -9,10 +9,12 @@ com/fantalol/backend/matchday/FantaScoreCalculator.class
 com/fantalol/backend/league/AuctionSessionRepository.class
 com/fantalol/backend/common/ResourceNotFoundException.class
 com/fantalol/backend/league/FantaTeamService.class
+com/fantalol/backend/league/RosterPolicy$Limits.class
 com/fantalol/backend/matchday/dto/MatchdayRequest.class
 com/fantalol/backend/common/BusinessRuleException.class
 com/fantalol/backend/team/LecPlayerController.class
 com/fantalol/backend/team/LecPlayerRepository.class
+com/fantalol/backend/league/RosterPolicy.class
 com/fantalol/backend/FantaLolBackendApplication.class
 com/fantalol/backend/matchday/FormationService.class
 com/fantalol/backend/team/LecTeamService.class

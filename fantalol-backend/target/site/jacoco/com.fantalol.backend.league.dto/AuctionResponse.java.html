@@ -3,15 +3,15 @@
 import com.fantalol.backend.league.AuctionSession;
 import java.time.Instant;
 
-<span class="nc" id="L6">public record AuctionResponse(Long id, Long leagueId, Long lecPlayerId, String playerNickname,</span>
+<span class="fc" id="L6">public record AuctionResponse(Long id, Long leagueId, Long lecPlayerId, String playerNickname,</span>
                               String playerRole, Integer currentBid, Long highestBidderId,
                               String highestBidderName, Instant endsAt, String status) {
     public static AuctionResponse from(AuctionSession a) {
-<span class="nc" id="L10">        return new AuctionResponse(a.getId(), a.getLeague().getId(), a.getPlayer().getId(),</span>
-<span class="nc" id="L11">                a.getPlayer().getNickname(), a.getPlayer().getRuolo().name(), a.getCurrentBid(),</span>
-<span class="nc bnc" id="L12" title="All 2 branches missed.">                a.getHighestBidder() == null ? null : a.getHighestBidder().getId(),</span>
-<span class="nc bnc" id="L13" title="All 2 branches missed.">                a.getHighestBidder() == null ? null : a.getHighestBidder().getNome(),</span>
-<span class="nc" id="L14">                a.getEndsAt(), a.getStatus().name());</span>
+<span class="fc" id="L10">        return new AuctionResponse(a.getId(), a.getLeague().getId(), a.getPlayer().getId(),</span>
+<span class="fc" id="L11">                a.getPlayer().getNickname(), a.getPlayer().getRuolo().name(), a.getCurrentBid(),</span>
+<span class="pc bpc" id="L12" title="1 of 2 branches missed.">                a.getHighestBidder() == null ? null : a.getHighestBidder().getId(),</span>
+<span class="pc bpc" id="L13" title="1 of 2 branches missed.">                a.getHighestBidder() == null ? null : a.getHighestBidder().getNome(),</span>
+<span class="fc" id="L14">                a.getEndsAt(), a.getStatus().name());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

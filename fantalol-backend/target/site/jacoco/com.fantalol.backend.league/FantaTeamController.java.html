@@ -52,17 +52,12 @@ public class FantaTeamController {
 <span class="nc" id="L52">                .body(fantaTeamService.acquistaPlayerGratis(authentication.getName(), id));</span>
     }
 
-    @PostMapping(&quot;/{id}/rosa/completa-casualmente&quot;)
-    public FantaTeamResponse completaRosaCasualmente(Authentication authentication, @PathVariable Long id) {
-<span class="nc" id="L57">        return fantaTeamService.completaRosaCasualmente(authentication.getName(), id);</span>
-    }
-
     @DeleteMapping(&quot;/{id}/rosa/{rosterEntryId}&quot;)
     public ResponseEntity&lt;Void&gt; rilasciaPlayer(Authentication authentication,
                                                 @PathVariable Long id,
                                                 @PathVariable Long rosterEntryId) {
-<span class="nc" id="L64">        fantaTeamService.rilasciaPlayer(authentication.getName(), id, rosterEntryId);</span>
-<span class="nc" id="L65">        return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L59">        fantaTeamService.rilasciaPlayer(authentication.getName(), id, rosterEntryId);</span>
+<span class="nc" id="L60">        return ResponseEntity.noContent().build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

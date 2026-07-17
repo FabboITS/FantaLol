@@ -8,11 +8,13 @@ public record LeagueResponse(
         String codiceInvito,
         Integer creditiIniziali,
         String adminUsername,
-        int numeroSquadre
+        int numeroSquadre,
+        boolean auctionOpen
 ) {
     public static LeagueResponse from(League league) {
         int numeroSquadre = league.getFantaTeams() == null ? 0 : league.getFantaTeams().size();
         return new LeagueResponse(league.getId(), league.getNome(), league.getCodiceInvito(),
-                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre);
+                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre,
+                league.isAuctionOpen());
     }
 }

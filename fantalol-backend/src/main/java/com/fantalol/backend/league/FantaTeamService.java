@@ -28,21 +28,21 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class FantaTeamService {
 
-    /** Numero massimo di player acquistabili da una singola FantaTeam. */
-    private static final int MAX_ROSA = 10;
-    /** Numero massimo di player per ruolo, per evitare rose sbilanciate. */
-    private static final int MAX_PER_RUOLO = 2;
-
     private final FantaTeamRepository fantaTeamRepository;
     private final RosterEntryRepository rosterEntryRepository;
     private final LeagueService leagueService;
     private final UserService userService;
     private final LecPlayerRepository lecPlayerRepository;
+    private final RosterPolicy rosterPolicy;
 
     @Transactional
     public FantaTeamResponse joinLeague(String username, JoinLeagueRequest request) {
         User user = userService.findByUsernameOrThrow(username);
         League league = leagueService.getByInviteCodeOrThrow(request.codiceInvito());
+
+        if (fantaTeamRepository.countByLeagueId(league.getId()) >= 10) {
+            throw new BusinessRuleException("La lega ha già raggiunto il limite di 10 squadre");
+        }
 
         if (fantaTeamRepository.existsByLeagueIdAndOwnerId(league.getId(), user.getId())) {
             throw new BusinessRuleException("Sei già iscritto a questa lega con una squadra");
@@ -81,7 +81,7 @@ public class FantaTeamService {
      *     <li>i crediti offerti non possono superare i crediti residui</li>
      *     <li>i crediti offerti non possono essere inferiori alla quotazione base del player</li>
      *     <li>il player non deve essere già stato acquistato da un'altra squadra della stessa lega</li>
-     *     <li>la rosa non può superare {@value #MAX_ROSA} player, né {@value #MAX_PER_RUOLO} player per ruolo</li>
+     *     <li>la rosa rispetta i limiti dinamici determinati dal numero di squadre nella lega</li>
      * </ul>
      */
     @Transactional
@@ -107,14 +107,15 @@ public class FantaTeamService {
         }
 
         List<RosterEntry> rosaAttuale = rosterEntryRepository.findByFantaTeamId(fantaTeam.getId());
-        if (rosaAttuale.size() >= MAX_ROSA) {
-            throw new BusinessRuleException("Rosa al completo: massimo " + MAX_ROSA + " player");
+        RosterPolicy.Limits limits = rosterPolicy.forLeague(fantaTeam.getLeague());
+        if (rosaAttuale.size() >= limits.maxRosterSize()) {
+            throw new BusinessRuleException("Rosa al completo: massimo " + limits.maxRosterSize() + " player");
         }
 
         long giocatoriStessoRuolo = rosaAttuale.stream()
                 .filter(entry -> entry.getLecPlayer().getRuolo() == player.getRuolo())
                 .count();
-        if (giocatoriStessoRuolo >= MAX_PER_RUOLO) {
+        if (giocatoriStessoRuolo >= limits.maxPerRole()) {
             throw new BusinessRuleException("Hai già raggiunto il numero massimo di player per il ruolo " + player.getRuolo());
         }
 
@@ -139,13 +140,14 @@ public class FantaTeamService {
         FantaTeam fantaTeam = getOrThrow(fantaTeamId);
         assertOwner(fantaTeam, username);
         List<RosterEntry> rosa = rosterEntryRepository.findByFantaTeamId(fantaTeamId);
-        if (rosa.size() >= MAX_ROSA) {
+        RosterPolicy.Limits limits = rosterPolicy.forLeague(fantaTeam.getLeague());
+        if (rosa.size() >= limits.maxRosterSize()) {
             throw new BusinessRuleException("La rosa è già completa");
         }
 
         boolean altreRoseComplete = fantaTeamRepository.findByLeagueId(fantaTeam.getLeague().getId()).stream()
                 .filter(team -> !team.getId().equals(fantaTeamId))
-                .allMatch(team -> rosterEntryRepository.findByFantaTeamId(team.getId()).size() >= MAX_ROSA);
+                .allMatch(team -> rosterEntryRepository.findByFantaTeamId(team.getId()).size() >= limits.maxRosterSize());
         if (!altreRoseComplete) {
             throw new BusinessRuleException("Il player gratis è disponibile solo quando tutte le altre squadre hanno completato la rosa");
         }
@@ -153,7 +155,7 @@ public class FantaTeamService {
         Map<com.fantalol.backend.team.PlayerRole, Long> perRuolo = rosa.stream().collect(Collectors.groupingBy(
                 entry -> entry.getLecPlayer().getRuolo(), Collectors.counting()));
         LecPlayer cheapest = lecPlayerRepository.findAll().stream()
-                .filter(player -> perRuolo.getOrDefault(player.getRuolo(), 0L) < MAX_PER_RUOLO)
+                .filter(player -> perRuolo.getOrDefault(player.getRuolo(), 0L) < limits.maxPerRole())
                 .filter(player -> !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(
                         fantaTeam.getLeague().getId(), player.getId()))
                 .min(Comparator.comparingInt(LecPlayer::getQuotazione))
@@ -182,12 +184,13 @@ public class FantaTeamService {
         FantaTeam team = getOrThrow(fantaTeamId);
         assertOwner(team, username);
         List<RosterEntry> roster = rosterEntryRepository.findByFantaTeamId(fantaTeamId);
-        if (roster.size() >= MAX_ROSA) throw new BusinessRuleException("La rosa è già completa");
+        RosterPolicy.Limits limits = rosterPolicy.forLeague(team.getLeague());
+        if (roster.size() >= limits.maxRosterSize()) throw new BusinessRuleException("La rosa è già completa");
 
         Map<com.fantalol.backend.team.PlayerRole, Long> counts = roster.stream().collect(Collectors.groupingBy(
                 e -> e.getLecPlayer().getRuolo(), Collectors.counting()));
         List<LecPlayer> available = lecPlayerRepository.findAll().stream()
-                .filter(p -> counts.getOrDefault(p.getRuolo(), 0L) < MAX_PER_RUOLO)
+                .filter(p -> counts.getOrDefault(p.getRuolo(), 0L) < limits.maxPerRole())
                 .filter(p -> !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(team.getLeague().getId(), p.getId()))
                 .toList();
         int cheapest = available.stream().mapToInt(LecPlayer::getQuotazione).min()
@@ -197,7 +200,7 @@ public class FantaTeamService {
 
         List<LecPlayer> selected = new ArrayList<>();
         for (var role : com.fantalol.backend.team.PlayerRole.values()) {
-            int missing = MAX_PER_RUOLO - counts.getOrDefault(role, 0L).intValue();
+            int missing = limits.maxPerRole() - counts.getOrDefault(role, 0L).intValue();
             List<LecPlayer> rolePlayers = new ArrayList<>(available.stream().filter(p -> p.getRuolo() == role).toList());
             Collections.shuffle(rolePlayers);
             if (rolePlayers.size() < missing)

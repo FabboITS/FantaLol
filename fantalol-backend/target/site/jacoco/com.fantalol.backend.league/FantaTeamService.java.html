@@ -28,21 +28,21 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class FantaTeamService {
 
-    /** Numero massimo di player acquistabili da una singola FantaTeam. */
-    private static final int MAX_ROSA = 10;
-    /** Numero massimo di player per ruolo, per evitare rose sbilanciate. */
-    private static final int MAX_PER_RUOLO = 2;
-
     private final FantaTeamRepository fantaTeamRepository;
     private final RosterEntryRepository rosterEntryRepository;
     private final LeagueService leagueService;
     private final UserService userService;
     private final LecPlayerRepository lecPlayerRepository;
+    private final RosterPolicy rosterPolicy;
 
     @Transactional
     public FantaTeamResponse joinLeague(String username, JoinLeagueRequest request) {
-<span class="fc" id="L44">        User user = userService.findByUsernameOrThrow(username);</span>
-<span class="fc" id="L45">        League league = leagueService.getByInviteCodeOrThrow(request.codiceInvito());</span>
+<span class="fc" id="L40">        User user = userService.findByUsernameOrThrow(username);</span>
+<span class="fc" id="L41">        League league = leagueService.getByInviteCodeOrThrow(request.codiceInvito());</span>
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (fantaTeamRepository.countByLeagueId(league.getId()) &gt;= 10) {</span>
+<span class="fc" id="L44">            throw new BusinessRuleException(&quot;La lega ha già raggiunto il limite di 10 squadre&quot;);</span>
+        }
 
 <span class="fc bfc" id="L47" title="All 2 branches covered.">        if (fantaTeamRepository.existsByLeagueIdAndOwnerId(league.getId(), user.getId())) {</span>
 <span class="fc" id="L48">            throw new BusinessRuleException(&quot;Sei già iscritto a questa lega con una squadra&quot;);</span>
@@ -81,7 +81,7 @@ public class FantaTeamService {
      *     &lt;li&gt;i crediti offerti non possono superare i crediti residui&lt;/li&gt;
      *     &lt;li&gt;i crediti offerti non possono essere inferiori alla quotazione base del player&lt;/li&gt;
      *     &lt;li&gt;il player non deve essere già stato acquistato da un'altra squadra della stessa lega&lt;/li&gt;
-     *     &lt;li&gt;la rosa non può superare {@value #MAX_ROSA} player, né {@value #MAX_PER_RUOLO} player per ruolo&lt;/li&gt;
+     *     &lt;li&gt;la rosa rispetta i limiti dinamici determinati dal numero di squadre nella lega&lt;/li&gt;
      * &lt;/ul&gt;
      */
     @Transactional
@@ -107,27 +107,28 @@ public class FantaTeamService {
         }
 
 <span class="fc" id="L109">        List&lt;RosterEntry&gt; rosaAttuale = rosterEntryRepository.findByFantaTeamId(fantaTeam.getId());</span>
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (rosaAttuale.size() &gt;= MAX_ROSA) {</span>
-<span class="nc" id="L111">            throw new BusinessRuleException(&quot;Rosa al completo: massimo &quot; + MAX_ROSA + &quot; player&quot;);</span>
+<span class="fc" id="L110">        RosterPolicy.Limits limits = rosterPolicy.forLeague(fantaTeam.getLeague());</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (rosaAttuale.size() &gt;= limits.maxRosterSize()) {</span>
+<span class="nc" id="L112">            throw new BusinessRuleException(&quot;Rosa al completo: massimo &quot; + limits.maxRosterSize() + &quot; player&quot;);</span>
         }
 
-<span class="fc" id="L114">        long giocatoriStessoRuolo = rosaAttuale.stream()</span>
-<span class="pc bnc" id="L115" title="All 2 branches missed.">                .filter(entry -&gt; entry.getLecPlayer().getRuolo() == player.getRuolo())</span>
-<span class="fc" id="L116">                .count();</span>
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (giocatoriStessoRuolo &gt;= MAX_PER_RUOLO) {</span>
-<span class="nc" id="L118">            throw new BusinessRuleException(&quot;Hai già raggiunto il numero massimo di player per il ruolo &quot; + player.getRuolo());</span>
+<span class="fc" id="L115">        long giocatoriStessoRuolo = rosaAttuale.stream()</span>
+<span class="pc bnc" id="L116" title="All 2 branches missed.">                .filter(entry -&gt; entry.getLecPlayer().getRuolo() == player.getRuolo())</span>
+<span class="fc" id="L117">                .count();</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (giocatoriStessoRuolo &gt;= limits.maxPerRole()) {</span>
+<span class="nc" id="L119">            throw new BusinessRuleException(&quot;Hai già raggiunto il numero massimo di player per il ruolo &quot; + player.getRuolo());</span>
         }
 
-<span class="fc" id="L121">        RosterEntry entry = RosterEntry.builder()</span>
-<span class="fc" id="L122">                .fantaTeam(fantaTeam)</span>
-<span class="fc" id="L123">                .lecPlayer(player)</span>
-<span class="fc" id="L124">                .creditiSpesi(request.creditiOfferti())</span>
-<span class="fc" id="L125">                .build();</span>
+<span class="fc" id="L122">        RosterEntry entry = RosterEntry.builder()</span>
+<span class="fc" id="L123">                .fantaTeam(fantaTeam)</span>
+<span class="fc" id="L124">                .lecPlayer(player)</span>
+<span class="fc" id="L125">                .creditiSpesi(request.creditiOfferti())</span>
+<span class="fc" id="L126">                .build();</span>
 
-<span class="fc" id="L127">        fantaTeam.setCreditiResidui(fantaTeam.getCreditiResidui() - request.creditiOfferti());</span>
-<span class="fc" id="L128">        fantaTeamRepository.save(fantaTeam);</span>
+<span class="fc" id="L128">        fantaTeam.setCreditiResidui(fantaTeam.getCreditiResidui() - request.creditiOfferti());</span>
+<span class="fc" id="L129">        fantaTeamRepository.save(fantaTeam);</span>
 
-<span class="fc" id="L130">        return RosterEntryResponse.from(rosterEntryRepository.save(entry));</span>
+<span class="fc" id="L131">        return RosterEntryResponse.from(rosterEntryRepository.save(entry));</span>
     }
 
     /**
@@ -136,114 +137,116 @@ public class FantaTeamService {
      */
     @Transactional
     public RosterEntryResponse acquistaPlayerGratis(String username, Long fantaTeamId) {
-<span class="nc" id="L139">        FantaTeam fantaTeam = getOrThrow(fantaTeamId);</span>
-<span class="nc" id="L140">        assertOwner(fantaTeam, username);</span>
-<span class="nc" id="L141">        List&lt;RosterEntry&gt; rosa = rosterEntryRepository.findByFantaTeamId(fantaTeamId);</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (rosa.size() &gt;= MAX_ROSA) {</span>
-<span class="nc" id="L143">            throw new BusinessRuleException(&quot;La rosa è già completa&quot;);</span>
+<span class="nc" id="L140">        FantaTeam fantaTeam = getOrThrow(fantaTeamId);</span>
+<span class="nc" id="L141">        assertOwner(fantaTeam, username);</span>
+<span class="nc" id="L142">        List&lt;RosterEntry&gt; rosa = rosterEntryRepository.findByFantaTeamId(fantaTeamId);</span>
+<span class="nc" id="L143">        RosterPolicy.Limits limits = rosterPolicy.forLeague(fantaTeam.getLeague());</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (rosa.size() &gt;= limits.maxRosterSize()) {</span>
+<span class="nc" id="L145">            throw new BusinessRuleException(&quot;La rosa è già completa&quot;);</span>
         }
 
-<span class="nc" id="L146">        boolean altreRoseComplete = fantaTeamRepository.findByLeagueId(fantaTeam.getLeague().getId()).stream()</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">                .filter(team -&gt; !team.getId().equals(fantaTeamId))</span>
-<span class="nc bnc" id="L148" title="All 2 branches missed.">                .allMatch(team -&gt; rosterEntryRepository.findByFantaTeamId(team.getId()).size() &gt;= MAX_ROSA);</span>
-<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (!altreRoseComplete) {</span>
-<span class="nc" id="L150">            throw new BusinessRuleException(&quot;Il player gratis è disponibile solo quando tutte le altre squadre hanno completato la rosa&quot;);</span>
+<span class="nc" id="L148">        boolean altreRoseComplete = fantaTeamRepository.findByLeagueId(fantaTeam.getLeague().getId()).stream()</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                .filter(team -&gt; !team.getId().equals(fantaTeamId))</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">                .allMatch(team -&gt; rosterEntryRepository.findByFantaTeamId(team.getId()).size() &gt;= limits.maxRosterSize());</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (!altreRoseComplete) {</span>
+<span class="nc" id="L152">            throw new BusinessRuleException(&quot;Il player gratis è disponibile solo quando tutte le altre squadre hanno completato la rosa&quot;);</span>
         }
 
-<span class="nc" id="L153">        Map&lt;com.fantalol.backend.team.PlayerRole, Long&gt; perRuolo = rosa.stream().collect(Collectors.groupingBy(</span>
-<span class="nc" id="L154">                entry -&gt; entry.getLecPlayer().getRuolo(), Collectors.counting()));</span>
-<span class="nc" id="L155">        LecPlayer cheapest = lecPlayerRepository.findAll().stream()</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">                .filter(player -&gt; perRuolo.getOrDefault(player.getRuolo(), 0L) &lt; MAX_PER_RUOLO)</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">                .filter(player -&gt; !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(</span>
-<span class="nc" id="L158">                        fantaTeam.getLeague().getId(), player.getId()))</span>
-<span class="nc" id="L159">                .min(Comparator.comparingInt(LecPlayer::getQuotazione))</span>
-<span class="nc" id="L160">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Non ci sono player disponibili per completare la rosa&quot;));</span>
+<span class="nc" id="L155">        Map&lt;com.fantalol.backend.team.PlayerRole, Long&gt; perRuolo = rosa.stream().collect(Collectors.groupingBy(</span>
+<span class="nc" id="L156">                entry -&gt; entry.getLecPlayer().getRuolo(), Collectors.counting()));</span>
+<span class="nc" id="L157">        LecPlayer cheapest = lecPlayerRepository.findAll().stream()</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                .filter(player -&gt; perRuolo.getOrDefault(player.getRuolo(), 0L) &lt; limits.maxPerRole())</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                .filter(player -&gt; !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(</span>
+<span class="nc" id="L160">                        fantaTeam.getLeague().getId(), player.getId()))</span>
+<span class="nc" id="L161">                .min(Comparator.comparingInt(LecPlayer::getQuotazione))</span>
+<span class="nc" id="L162">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Non ci sono player disponibili per completare la rosa&quot;));</span>
 
-<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (fantaTeam.getCreditiResidui() &gt;= cheapest.getQuotazione()) {</span>
-<span class="nc" id="L163">            throw new BusinessRuleException(&quot;Hai ancora abbastanza crediti per acquistare il player disponibile meno costoso&quot;);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (fantaTeam.getCreditiResidui() &gt;= cheapest.getQuotazione()) {</span>
+<span class="nc" id="L165">            throw new BusinessRuleException(&quot;Hai ancora abbastanza crediti per acquistare il player disponibile meno costoso&quot;);</span>
         }
 
-<span class="nc" id="L166">        LecPlayer lockedPlayer = lecPlayerRepository.findByIdForUpdate(cheapest.getId())</span>
-<span class="nc" id="L167">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + cheapest.getId()));</span>
-<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(fantaTeam.getLeague().getId(), lockedPlayer.getId())) {</span>
-<span class="nc" id="L169">            throw new BusinessRuleException(&quot;Il player è appena stato acquistato da un'altra squadra: riprova&quot;);</span>
+<span class="nc" id="L168">        LecPlayer lockedPlayer = lecPlayerRepository.findByIdForUpdate(cheapest.getId())</span>
+<span class="nc" id="L169">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player LEC non trovato con id: &quot; + cheapest.getId()));</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(fantaTeam.getLeague().getId(), lockedPlayer.getId())) {</span>
+<span class="nc" id="L171">            throw new BusinessRuleException(&quot;Il player è appena stato acquistato da un'altra squadra: riprova&quot;);</span>
         }
 
-<span class="nc" id="L172">        return RosterEntryResponse.from(rosterEntryRepository.save(RosterEntry.builder()</span>
-<span class="nc" id="L173">                .fantaTeam(fantaTeam)</span>
-<span class="nc" id="L174">                .lecPlayer(lockedPlayer)</span>
-<span class="nc" id="L175">                .creditiSpesi(0)</span>
-<span class="nc" id="L176">                .build()));</span>
+<span class="nc" id="L174">        return RosterEntryResponse.from(rosterEntryRepository.save(RosterEntry.builder()</span>
+<span class="nc" id="L175">                .fantaTeam(fantaTeam)</span>
+<span class="nc" id="L176">                .lecPlayer(lockedPlayer)</span>
+<span class="nc" id="L177">                .creditiSpesi(0)</span>
+<span class="nc" id="L178">                .build()));</span>
     }
 
     /** Completa gratuitamente e casualmente i ruoli mancanti quando nessun player idoneo è acquistabile. */
     @Transactional
     public FantaTeamResponse completaRosaCasualmente(String username, Long fantaTeamId) {
-<span class="nc" id="L182">        FantaTeam team = getOrThrow(fantaTeamId);</span>
-<span class="nc" id="L183">        assertOwner(team, username);</span>
-<span class="nc" id="L184">        List&lt;RosterEntry&gt; roster = rosterEntryRepository.findByFantaTeamId(fantaTeamId);</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (roster.size() &gt;= MAX_ROSA) throw new BusinessRuleException(&quot;La rosa è già completa&quot;);</span>
+<span class="nc" id="L184">        FantaTeam team = getOrThrow(fantaTeamId);</span>
+<span class="nc" id="L185">        assertOwner(team, username);</span>
+<span class="nc" id="L186">        List&lt;RosterEntry&gt; roster = rosterEntryRepository.findByFantaTeamId(fantaTeamId);</span>
+<span class="nc" id="L187">        RosterPolicy.Limits limits = rosterPolicy.forLeague(team.getLeague());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (roster.size() &gt;= limits.maxRosterSize()) throw new BusinessRuleException(&quot;La rosa è già completa&quot;);</span>
 
-<span class="nc" id="L187">        Map&lt;com.fantalol.backend.team.PlayerRole, Long&gt; counts = roster.stream().collect(Collectors.groupingBy(</span>
-<span class="nc" id="L188">                e -&gt; e.getLecPlayer().getRuolo(), Collectors.counting()));</span>
-<span class="nc" id="L189">        List&lt;LecPlayer&gt; available = lecPlayerRepository.findAll().stream()</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">                .filter(p -&gt; counts.getOrDefault(p.getRuolo(), 0L) &lt; MAX_PER_RUOLO)</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">                .filter(p -&gt; !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(team.getLeague().getId(), p.getId()))</span>
-<span class="nc" id="L192">                .toList();</span>
-<span class="nc" id="L193">        int cheapest = available.stream().mapToInt(LecPlayer::getQuotazione).min()</span>
-<span class="nc" id="L194">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Non ci sono abbastanza player disponibili&quot;));</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (team.getCreditiResidui() &gt;= cheapest)</span>
-<span class="nc" id="L196">            throw new BusinessRuleException(&quot;Puoi ancora permetterti un player disponibile: continua con l'asta&quot;);</span>
+<span class="nc" id="L190">        Map&lt;com.fantalol.backend.team.PlayerRole, Long&gt; counts = roster.stream().collect(Collectors.groupingBy(</span>
+<span class="nc" id="L191">                e -&gt; e.getLecPlayer().getRuolo(), Collectors.counting()));</span>
+<span class="nc" id="L192">        List&lt;LecPlayer&gt; available = lecPlayerRepository.findAll().stream()</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                .filter(p -&gt; counts.getOrDefault(p.getRuolo(), 0L) &lt; limits.maxPerRole())</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                .filter(p -&gt; !rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(team.getLeague().getId(), p.getId()))</span>
+<span class="nc" id="L195">                .toList();</span>
+<span class="nc" id="L196">        int cheapest = available.stream().mapToInt(LecPlayer::getQuotazione).min()</span>
+<span class="nc" id="L197">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Non ci sono abbastanza player disponibili&quot;));</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (team.getCreditiResidui() &gt;= cheapest)</span>
+<span class="nc" id="L199">            throw new BusinessRuleException(&quot;Puoi ancora permetterti un player disponibile: continua con l'asta&quot;);</span>
 
-<span class="nc" id="L198">        List&lt;LecPlayer&gt; selected = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">        for (var role : com.fantalol.backend.team.PlayerRole.values()) {</span>
-<span class="nc" id="L200">            int missing = MAX_PER_RUOLO - counts.getOrDefault(role, 0L).intValue();</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">            List&lt;LecPlayer&gt; rolePlayers = new ArrayList&lt;&gt;(available.stream().filter(p -&gt; p.getRuolo() == role).toList());</span>
-<span class="nc" id="L202">            Collections.shuffle(rolePlayers);</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">            if (rolePlayers.size() &lt; missing)</span>
-<span class="nc" id="L204">                throw new BusinessRuleException(&quot;Non ci sono abbastanza player disponibili nel ruolo &quot; + role);</span>
-<span class="nc" id="L205">            selected.addAll(rolePlayers.subList(0, missing));</span>
+<span class="nc" id="L201">        List&lt;LecPlayer&gt; selected = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        for (var role : com.fantalol.backend.team.PlayerRole.values()) {</span>
+<span class="nc" id="L203">            int missing = limits.maxPerRole() - counts.getOrDefault(role, 0L).intValue();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            List&lt;LecPlayer&gt; rolePlayers = new ArrayList&lt;&gt;(available.stream().filter(p -&gt; p.getRuolo() == role).toList());</span>
+<span class="nc" id="L205">            Collections.shuffle(rolePlayers);</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (rolePlayers.size() &lt; missing)</span>
+<span class="nc" id="L207">                throw new BusinessRuleException(&quot;Non ci sono abbastanza player disponibili nel ruolo &quot; + role);</span>
+<span class="nc" id="L208">            selected.addAll(rolePlayers.subList(0, missing));</span>
         }
-<span class="nc bnc" id="L207" title="All 2 branches missed.">        for (LecPlayer candidate : selected) {</span>
-<span class="nc" id="L208">            LecPlayer locked = lecPlayerRepository.findByIdForUpdate(candidate.getId())</span>
-<span class="nc" id="L209">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player non trovato&quot;));</span>
-<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(team.getLeague().getId(), locked.getId()))</span>
-<span class="nc" id="L211">                throw new BusinessRuleException(&quot;Un player casuale è appena stato assegnato: riprova&quot;);</span>
-<span class="nc" id="L212">            rosterEntryRepository.save(RosterEntry.builder().fantaTeam(team).lecPlayer(locked).creditiSpesi(0).build());</span>
-<span class="nc" id="L213">        }</span>
-<span class="nc" id="L214">        return FantaTeamResponse.from(team);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        for (LecPlayer candidate : selected) {</span>
+<span class="nc" id="L211">            LecPlayer locked = lecPlayerRepository.findByIdForUpdate(candidate.getId())</span>
+<span class="nc" id="L212">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Player non trovato&quot;));</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            if (rosterEntryRepository.existsByFantaTeam_League_IdAndLecPlayerId(team.getLeague().getId(), locked.getId()))</span>
+<span class="nc" id="L214">                throw new BusinessRuleException(&quot;Un player casuale è appena stato assegnato: riprova&quot;);</span>
+<span class="nc" id="L215">            rosterEntryRepository.save(RosterEntry.builder().fantaTeam(team).lecPlayer(locked).creditiSpesi(0).build());</span>
+<span class="nc" id="L216">        }</span>
+<span class="nc" id="L217">        return FantaTeamResponse.from(team);</span>
     }
 
     @Transactional
     public void rilasciaPlayer(String username, Long fantaTeamId, Long rosterEntryId) {
-<span class="nc" id="L219">        FantaTeam fantaTeam = getOrThrow(fantaTeamId);</span>
-<span class="nc" id="L220">        assertOwner(fantaTeam, username);</span>
+<span class="nc" id="L222">        FantaTeam fantaTeam = getOrThrow(fantaTeamId);</span>
+<span class="nc" id="L223">        assertOwner(fantaTeam, username);</span>
 
-<span class="nc" id="L222">        RosterEntry entry = rosterEntryRepository.findById(rosterEntryId)</span>
-<span class="nc" id="L223">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Voce di rosa non trovata con id: &quot; + rosterEntryId));</span>
+<span class="nc" id="L225">        RosterEntry entry = rosterEntryRepository.findById(rosterEntryId)</span>
+<span class="nc" id="L226">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Voce di rosa non trovata con id: &quot; + rosterEntryId));</span>
 
-<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (!entry.getFantaTeam().getId().equals(fantaTeam.getId())) {</span>
-<span class="nc" id="L226">            throw new BusinessRuleException(&quot;La voce di rosa indicata non appartiene a questa squadra&quot;);</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        if (!entry.getFantaTeam().getId().equals(fantaTeam.getId())) {</span>
+<span class="nc" id="L229">            throw new BusinessRuleException(&quot;La voce di rosa indicata non appartiene a questa squadra&quot;);</span>
         }
 
         // Rimborso parziale (50%) dei crediti spesi, per disincentivare acquisti/rilasci speculativi.
-<span class="nc" id="L230">        int rimborso = entry.getCreditiSpesi() / 2;</span>
-<span class="nc" id="L231">        fantaTeam.setCreditiResidui(fantaTeam.getCreditiResidui() + rimborso);</span>
-<span class="nc" id="L232">        fantaTeamRepository.save(fantaTeam);</span>
+<span class="nc" id="L233">        int rimborso = entry.getCreditiSpesi() / 2;</span>
+<span class="nc" id="L234">        fantaTeam.setCreditiResidui(fantaTeam.getCreditiResidui() + rimborso);</span>
+<span class="nc" id="L235">        fantaTeamRepository.save(fantaTeam);</span>
 
-<span class="nc" id="L234">        rosterEntryRepository.delete(entry);</span>
-<span class="nc" id="L235">    }</span>
+<span class="nc" id="L237">        rosterEntryRepository.delete(entry);</span>
+<span class="nc" id="L238">    }</span>
 
     private void assertOwner(FantaTeam fantaTeam, String username) {
-<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (!fantaTeam.getOwner().getUsername().equals(username)</span>
-<span class="pc bpc" id="L239" title="1 of 2 branches missed.">                &amp;&amp; userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {</span>
-<span class="fc" id="L240">            throw new BusinessRuleException(&quot;Non sei il proprietario di questa squadra fantacalcistica&quot;);</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">        if (!fantaTeam.getOwner().getUsername().equals(username)</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">                &amp;&amp; userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {</span>
+<span class="fc" id="L243">            throw new BusinessRuleException(&quot;Non sei il proprietario di questa squadra fantacalcistica&quot;);</span>
         }
-<span class="fc" id="L242">    }</span>
+<span class="fc" id="L245">    }</span>
 
     FantaTeam getOrThrow(Long id) {
-<span class="fc" id="L245">        return fantaTeamRepository.findById(id)</span>
-<span class="pc" id="L246">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;FantaTeam non trovata con id: &quot; + id));</span>
+<span class="fc" id="L248">        return fantaTeamRepository.findById(id)</span>
+<span class="pc" id="L249">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;FantaTeam non trovata con id: &quot; + id));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

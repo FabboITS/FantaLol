@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,6 +41,31 @@ class StaticResourceIntegrationTest {
         mockMvc.perform(get("/assets/team-logos/g2-esports.png"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("image/png"));
+    }
+
+    @Test
+    void homeUsesFantaLeagueBrandAndPlayerHeroImages() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<title>FantaLeague")))
+                .andExpect(content().string(containsString("aria-label=\"FantaLeague home\"")))
+                .andExpect(content().string(containsString("FANTA<span>LEAGUE</span>")))
+                .andExpect(content().string(containsString("src=\"/Player_immage/Mid/Caps.jpg\"")))
+                .andExpect(content().string(containsString("alt=\"Caps, mid laner for G2 Esports\"")))
+                .andExpect(content().string(containsString("src=\"/Player_immage/Jungle/SkewMond.jpg\"")))
+                .andExpect(content().string(containsString("alt=\"SkewMond, jungler\"")));
+    }
+
+    @Test
+    void mainStylesheetUsesBlueVioletTheme() throws Exception {
+        mockMvc.perform(get("/css/style.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("--lime:#4f8cff")))
+                .andExpect(content().string(containsString("--violet:#8b5cf6")))
+                .andExpect(content().string(containsString(".hero-player-image")))
+                .andExpect(content().string(containsString("linear-gradient")))
+                .andExpect(content().string(not(containsString("#c7ff37"))))
+                .andExpect(content().string(not(containsString("#d6ff6b"))));
     }
 
     @Test

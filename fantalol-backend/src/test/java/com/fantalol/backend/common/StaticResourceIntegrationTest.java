@@ -98,6 +98,15 @@ class StaticResourceIntegrationTest {
     }
 
     @Test
+    void loginDialogDoesNotExposeOrPrefillAdministratorCredentials() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Demo " + "admin"))))
+                .andExpect(content().string(not(containsString("name=\"username\" value="))))
+                .andExpect(content().string(not(containsString("name=\"password\" value="))));
+    }
+
+    @Test
     void javascriptHandlesTheAdminShortcut() throws Exception {
         mockMvc.perform(get("/js/app.js"))
                 .andExpect(status().isOk())

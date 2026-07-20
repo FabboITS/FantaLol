@@ -57,6 +57,7 @@ com/fantalol/backend/league/AuctionService.class
 com/fantalol/backend/matchday/Formation.class
 com/fantalol/backend/config/SecurityConfig.class
 com/fantalol/backend/league/RosterEntry$RosterEntryBuilder.class
+com/fantalol/backend/config/AdminAccountInitializer.class
 com/fantalol/backend/user/dto/UserProfileRequest.class
 com/fantalol/backend/common/GlobalExceptionHandler.class
 com/fantalol/backend/user/Role.class

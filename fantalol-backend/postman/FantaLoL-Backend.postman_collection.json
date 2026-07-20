@@ -9,6 +9,8 @@
     { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
     { "key": "token", "value": "", "type": "string" },
     { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "adminUsername", "value": "", "type": "string" },
+    { "key": "adminPassword", "value": "", "type": "secret" },
     { "key": "leagueInviteCode", "value": "DEMO1234", "type": "string" },
     { "key": "fantaTeamId", "value": "", "type": "string" },
     { "key": "lecPlayerId", "value": "10", "type": "string" },
@@ -74,7 +76,7 @@
             "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin123!\"\n}"
+              "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
             }
           }
         }

@@ -76,14 +76,11 @@ Prerequisiti: Java 17, Maven 3.9+, un'istanza MySQL 8.0 raggiungibile.
    mvn spring-boot:run
    ```
 
-## Credenziali demo (create dal DataSeeder)
+## Account amministratore
 
-| Username | Password     | Ruolo |
-|----------|--------------|-------|
-| admin    | Admin123!    | ADMIN |
-
-Con `sql/data-seed.sql` sono presenti anche gli utenti demo `mago` e `silva`
-(password `Password123!`), e una lega demo con codice invito `DEMO1234`.
+Il `DataSeeder` crea l'account amministratore senza pubblicarne le credenziali
+nell'interfaccia, nella documentazione o negli esempi API. Lo script SQL standalone
+crea soltanto tale account e una lega demo con codice invito `DEMO1234`.
 
 ## Esecuzione dei test e coverage
 

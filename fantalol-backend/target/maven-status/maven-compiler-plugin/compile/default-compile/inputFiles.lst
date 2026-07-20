@@ -3,6 +3,7 @@
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/common/BusinessRuleException.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/common/GlobalExceptionHandler.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/common/ResourceNotFoundException.java
+/workspace/fantalol-backend/src/main/java/com/fantalol/backend/config/AdminAccountInitializer.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/config/DataSeeder.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/config/SecurityConfig.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/league/AuctionController.java

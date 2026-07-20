@@ -14,7 +14,8 @@ fantalol-backend,com.fantalol.backend.team,LecPlayerService,94,61,3,1,19,15,8,3,
 fantalol-backend,com.fantalol.backend.team,LecTeamController,26,4,0,0,5,1,4,1,4,1
 fantalol-backend,com.fantalol.backend.team,LecTeamService,28,64,0,2,6,14,2,6,2,5
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
-fantalol-backend,com.fantalol.backend.config,DataSeeder,64,559,9,23,15,63,7,23,1,6
+fantalol-backend,com.fantalol.backend.config,AdminAccountInitializer,0,60,0,4,0,22,0,4,0,2
+fantalol-backend,com.fantalol.backend.config,DataSeeder,63,536,8,22,13,55,6,23,1,6
 fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,268,0,0,0,37,0,11,0,11
 fantalol-backend,com.fantalol.backend.league,RosterPolicy,0,22,0,2,0,2,0,2,0,1
 fantalol-backend,com.fantalol.backend.league,RosterPolicy.Limits,0,9,0,0,0,1,0,1,0,1
@@ -24,7 +25,7 @@ fantalol-backend,com.fantalol.backend.league,AuctionController,23,0,0,0,3,0,3,0,
 fantalol-backend,com.fantalol.backend.league,FantaTeamController,48,0,0,0,9,0,6,0,6,0
 fantalol-backend,com.fantalol.backend.league,AuctionStatus,0,21,0,0,0,2,0,1,0,1
 fantalol-backend,com.fantalol.backend.league,LeagueController,51,0,0,0,9,0,7,0,7,0
-fantalol-backend,com.fantalol.backend.league,League,18,0,4,0,5,0,3,0,1,0
+fantalol-backend,com.fantalol.backend.league,League,0,18,2,2,0,5,2,1,0,1
 fantalol-backend,com.fantalol.backend.league,AuctionService,313,157,30,12,48,31,30,8,11,6
 fantalol-backend,com.fantalol.backend.league,RosterEntry,7,0,2,0,3,0,2,0,1,0
 fantalol-backend,com.fantalol.backend.matchday.dto,FormationRequest,0,12,0,0,0,1,0,1,0,1
@@ -42,9 +43,9 @@ fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,0,12,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league.dto,AuctionResponse,4,71,2,2,0,6,2,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,FantaTeamResponse,2,54,1,1,0,5,1,2,0,2
-fantalol-backend,com.fantalol.backend.security,JwtAuthFilter,0,64,4,6,0,15,4,2,0,1
+fantalol-backend,com.fantalol.backend.security,JwtAuthFilter,0,67,4,6,0,18,4,2,0,1
 fantalol-backend,com.fantalol.backend.security,JwtUtil,1,92,2,2,0,23,2,6,0,6
-fantalol-backend,com.fantalol.backend.security,CustomUserDetailsService,6,9,0,0,0,2,1,1,1,1
+fantalol-backend,com.fantalol.backend.security,CustomUserDetailsService,0,15,0,0,0,2,0,2,0,2
 fantalol-backend,com.fantalol.backend,FantaLolBackendApplication,5,3,0,0,2,1,1,1,1,1
 fantalol-backend,com.fantalol.backend.user.dto,UserProfileRequest,15,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.user.dto,UserDirectoryEntry,0,12,0,0,0,2,0,2,0,2

@@ -11,16 +11,10 @@
 USE fantalol;
 
 -- -------------------------------------------------------------------------
--- Utenti demo
--- Password in chiaro per riferimento (hash BCrypt sotto):
---   admin      -> Admin123!
---   mago       -> Password123!
---   silva      -> Password123!
+-- Account amministratore. La password è conservata soltanto come hash BCrypt.
 -- -------------------------------------------------------------------------
 INSERT INTO users (username, email, password, role, enabled, created_at) VALUES
-('admin', 'admin@fantalol.local', '$2b$10$fqE.Eik8Ff.cqvip0sbGneft8oxi2CTPMeckjlKBJHgO6q.2UAAoC', 'ADMIN', TRUE, NOW()),
-('mago',  'mago@fantalol.it',     '$2b$10$9f6mZ1fUUnQTjWnBfvLC2.6NvUC4dj38.uV1mg1YWHKvbQYsNyXHi', 'USER',  TRUE, NOW()),
-('silva', 'silva@fantalol.it',    '$2b$10$9f6mZ1fUUnQTjWnBfvLC2.6NvUC4dj38.uV1mg1YWHKvbQYsNyXHi', 'USER',  TRUE, NOW());
+('Natsu_Admin', 'natsu-admin@fantalol.local', '$2y$12$5Cy4nTyT/1FSRnVVlFjgvuczPqt1Dj/6OtWCMkGTRLzuOyRvsYUTq', 'ADMIN', TRUE, NOW());
 
 -- -------------------------------------------------------------------------
 -- I 10 team della LEC (League of Legends EMEA Championship)
@@ -192,7 +186,7 @@ END;
 -- Una lega demo con codice invito fisso, utile per i test da Postman
 -- -------------------------------------------------------------------------
 INSERT INTO leagues (nome, codice_invito, crediti_iniziali, admin_id, created_at)
-VALUES ('Lega Demo Postman', 'DEMO1234', 1000, (SELECT id FROM users WHERE username = 'admin'), NOW());
+VALUES ('Lega Demo Postman', 'DEMO1234', 1000, (SELECT id FROM users WHERE username = 'Natsu_Admin'), NOW());
 
 -- -------------------------------------------------------------------------
 -- Una prima giornata di campionato, pronta per l'inserimento statistiche

@@ -5,12 +5,8 @@ import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.LecTeam;
 import com.fantalol.backend.team.LecTeamRepository;
 import com.fantalol.backend.team.PlayerRole;
-import com.fantalol.backend.user.Role;
-import com.fantalol.backend.user.User;
-import com.fantalol.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,7 +17,8 @@ import java.util.List;
  *     <li>i 10 team della LEC e i relativi roster reali (Spring Split 2026)</li>
  *     <li>un utente amministratore di default</li>
  * </ul>
- * L'inserimento avviene solo se il database è vuoto, per non duplicare i dati ad ogni riavvio.
+ * I dati LEC vengono inseriti solo se assenti; l'inizializzazione amministrativa
+ * viene invece verificata a ogni avvio ed esegue la migrazione legacy una sola volta.
  */
 @Component
 @RequiredArgsConstructor
@@ -29,8 +26,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private final LecTeamRepository lecTeamRepository;
     private final LecPlayerRepository lecPlayerRepository;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AdminAccountInitializer adminAccountInitializer;
 
     private record PlayerSeed(String nickname, PlayerRole ruolo, String nazionalita, int quotazione) {
     }
@@ -39,8 +35,14 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (lecTeamRepository.count() > 0) {
             backfillExistingAssetMetadata();
-            return;
+        } else {
+            seedLecTeams();
         }
+
+        adminAccountInitializer.initialize();
+    }
+
+    private void seedLecTeams() {
 
         seedTeam("Team Vitality", "VIT", List.of(
                 new PlayerSeed("Naak Nako", PlayerRole.TOP, "Turchia", 55),
@@ -122,7 +124,6 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed("Stend", PlayerRole.SUPPORT, "Francia", 55)
         ));
 
-        seedAdminUser();
     }
 
     private void backfillExistingAssetMetadata() {
@@ -195,17 +196,4 @@ public class DataSeeder implements CommandLineRunner {
         };
     }
 
-    private void seedAdminUser() {
-        if (userRepository.existsByUsername("admin")) {
-            return;
-        }
-        User admin = User.builder()
-                .username("admin")
-                .email("admin@fantalol.local")
-                .password(passwordEncoder.encode("Admin123!"))
-                .role(Role.ADMIN)
-                .enabled(true)
-                .build();
-        userRepository.save(admin);
-    }
 }

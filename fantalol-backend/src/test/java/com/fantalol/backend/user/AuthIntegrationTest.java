@@ -30,6 +30,9 @@ class AuthIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     void registrazioneELoginRestituisconoUnTokenValido() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest("integrazione", "integrazione@fantalol.it", "password123");
@@ -91,5 +94,31 @@ class AuthIntegrationTest {
         mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("profiluser"));
+    }
+
+    @Test
+    void tokenDiUnUtenteEliminatoRestituisceUnauthorized() throws Exception {
+        RegisterRequest request = new RegisterRequest(
+                "deleted-token-user",
+                "deleted-token-user@fantalol.it",
+                "password123");
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        String loginResponse = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new LoginRequest("deleted-token-user", "password123"))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String token = objectMapper.readTree(loginResponse).get("token").asText();
+
+        userRepository.delete(userRepository.findByUsername("deleted-token-user").orElseThrow());
+
+        mockMvc.perform(get("/api/users/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminAccountInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.config</a> &gt; <span class="el_source">AdminAccountInitializer.java</span></div><h1>AdminAccountInitializer.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.config;
+
+import com.fantalol.backend.league.AuctionSessionRepository;
+import com.fantalol.backend.league.FantaTeamRepository;
+import com.fantalol.backend.league.LeagueRepository;
+import com.fantalol.backend.league.RosterEntryRepository;
+import com.fantalol.backend.matchday.FormationRepository;
+import com.fantalol.backend.matchday.MatchdayRepository;
+import com.fantalol.backend.matchday.PlayerStatRepository;
+import com.fantalol.backend.user.Role;
+import com.fantalol.backend.user.User;
+import com.fantalol.backend.user.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class AdminAccountInitializer {
+
+    static final String ADMIN_USERNAME = &quot;Natsu_Admin&quot;;
+    private static final String LEGACY_ADMIN_USERNAME = &quot;admin&quot;;
+    private static final String ADMIN_EMAIL = &quot;natsu-admin@fantalol.local&quot;;
+    private static final String ADMIN_PASSWORD_HASH =
+            &quot;$2y$12$5Cy4nTyT/1FSRnVVlFjgvuczPqt1Dj/6OtWCMkGTRLzuOyRvsYUTq&quot;;
+
+    private final FormationRepository formationRepository;
+    private final PlayerStatRepository playerStatRepository;
+    private final MatchdayRepository matchdayRepository;
+    private final AuctionSessionRepository auctionSessionRepository;
+    private final RosterEntryRepository rosterEntryRepository;
+    private final FantaTeamRepository fantaTeamRepository;
+    private final LeagueRepository leagueRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public void initialize() {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (userRepository.existsByUsername(LEGACY_ADMIN_USERNAME)) {</span>
+<span class="fc" id="L39">            deleteLegacyUserData();</span>
+        }
+
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (!userRepository.existsByUsername(ADMIN_USERNAME)) {</span>
+<span class="fc" id="L43">            userRepository.save(User.builder()</span>
+<span class="fc" id="L44">                    .username(ADMIN_USERNAME)</span>
+<span class="fc" id="L45">                    .email(ADMIN_EMAIL)</span>
+<span class="fc" id="L46">                    .password(ADMIN_PASSWORD_HASH)</span>
+<span class="fc" id="L47">                    .role(Role.ADMIN)</span>
+<span class="fc" id="L48">                    .enabled(true)</span>
+<span class="fc" id="L49">                    .build());</span>
+        }
+<span class="fc" id="L51">    }</span>
+
+    private void deleteLegacyUserData() {
+<span class="fc" id="L54">        formationRepository.deleteAll();</span>
+<span class="fc" id="L55">        formationRepository.flush();</span>
+<span class="fc" id="L56">        playerStatRepository.deleteAllInBatch();</span>
+<span class="fc" id="L57">        matchdayRepository.deleteAllInBatch();</span>
+<span class="fc" id="L58">        auctionSessionRepository.deleteAllInBatch();</span>
+<span class="fc" id="L59">        rosterEntryRepository.deleteAllInBatch();</span>
+<span class="fc" id="L60">        fantaTeamRepository.deleteAllInBatch();</span>
+<span class="fc" id="L61">        leagueRepository.deleteAllInBatch();</span>
+<span class="fc" id="L62">        userRepository.deleteAllInBatch();</span>
+<span class="fc" id="L63">        userRepository.flush();</span>
+<span class="fc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

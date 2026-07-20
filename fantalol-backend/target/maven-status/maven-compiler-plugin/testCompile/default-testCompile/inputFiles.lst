@@ -1,5 +1,6 @@
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/common/SeedAssetReferenceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/common/StaticResourceIntegrationTest.java
+/workspace/fantalol-backend/src/test/java/com/fantalol/backend/config/AdminAccountInitializerIntegrationTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/AuctionServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/FantaTeamServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/LeagueAuctionPhaseServiceTest.java

@@ -109,7 +109,6 @@ footer a{text-decoration:none}
 .modal input{background:#0a0d11;border:1px solid #303640;color:white;padding:13px;outline:none}
 .modal input:focus{border-color:var(--lime)}
 .form-error{color:#ff7a60;font-size:12px;min-height:16px;margin:0}
-.demo-hint{font-size:11px;color:#777f8c;text-align:center}
 .toast{position:fixed;right:25px;bottom:25px;background:var(--white);color:var(--ink);padding:14px 20px;font-size:12px;font-weight:700;transform:translateY(100px);opacity:0;transition:.25s;z-index:50}
 .toast.show{transform:none;opacity:1}
 .toast.error{background:#ff6a4d;color:#fff}

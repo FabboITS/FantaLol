@@ -5,12 +5,8 @@ import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.LecTeam;
 import com.fantalol.backend.team.LecTeamRepository;
 import com.fantalol.backend.team.PlayerRole;
-import com.fantalol.backend.user.Role;
-import com.fantalol.backend.user.User;
-import com.fantalol.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,7 +17,8 @@ import java.util.List;
  *     &lt;li&gt;i 10 team della LEC e i relativi roster reali (Spring Split 2026)&lt;/li&gt;
  *     &lt;li&gt;un utente amministratore di default&lt;/li&gt;
  * &lt;/ul&gt;
- * L'inserimento avviene solo se il database è vuoto, per non duplicare i dati ad ogni riavvio.
+ * I dati LEC vengono inseriti solo se assenti; l'inizializzazione amministrativa
+ * viene invece verificata a ogni avvio ed esegue la migrazione legacy una sola volta.
  */
 @Component
 @RequiredArgsConstructor
@@ -29,20 +26,25 @@ public class DataSeeder implements CommandLineRunner {
 
     private final LecTeamRepository lecTeamRepository;
     private final LecPlayerRepository lecPlayerRepository;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AdminAccountInitializer adminAccountInitializer;
 
-<span class="fc" id="L35">    private record PlayerSeed(String nickname, PlayerRole ruolo, String nazionalita, int quotazione) {</span>
+<span class="fc" id="L31">    private record PlayerSeed(String nickname, PlayerRole ruolo, String nazionalita, int quotazione) {</span>
     }
 
     @Override
     public void run(String... args) {
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (lecTeamRepository.count() &gt; 0) {</span>
-<span class="nc" id="L41">            backfillExistingAssetMetadata();</span>
-<span class="nc" id="L42">            return;</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (lecTeamRepository.count() &gt; 0) {</span>
+<span class="nc" id="L37">            backfillExistingAssetMetadata();</span>
+        } else {
+<span class="fc" id="L39">            seedLecTeams();</span>
         }
 
-<span class="fc" id="L45">        seedTeam(&quot;Team Vitality&quot;, &quot;VIT&quot;, List.of(</span>
+<span class="fc" id="L42">        adminAccountInitializer.initialize();</span>
+<span class="fc" id="L43">    }</span>
+
+    private void seedLecTeams() {
+
+<span class="fc" id="L47">        seedTeam(&quot;Team Vitality&quot;, &quot;VIT&quot;, List.of(</span>
                 new PlayerSeed(&quot;Naak Nako&quot;, PlayerRole.TOP, &quot;Turchia&quot;, 55),
                 new PlayerSeed(&quot;Lyncas&quot;, PlayerRole.JUNGLE, &quot;Lituania&quot;, 50),
                 new PlayerSeed(&quot;Humanoid&quot;, PlayerRole.MID, &quot;Repubblica Ceca&quot;, 75),
@@ -50,7 +52,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Fleshy&quot;, PlayerRole.SUPPORT, &quot;Turchia&quot;, 55)
         ));
 
-<span class="fc" id="L53">        seedTeam(&quot;Karmine Corp&quot;, &quot;KC&quot;, List.of(</span>
+<span class="fc" id="L55">        seedTeam(&quot;Karmine Corp&quot;, &quot;KC&quot;, List.of(</span>
                 new PlayerSeed(&quot;Canna&quot;, PlayerRole.TOP, &quot;Corea del Sud&quot;, 90),
                 new PlayerSeed(&quot;Yike&quot;, PlayerRole.JUNGLE, &quot;Danimarca&quot;, 80),
                 new PlayerSeed(&quot;Kyeahoo&quot;, PlayerRole.MID, &quot;Corea del Sud&quot;, 65),
@@ -58,7 +60,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Busio&quot;, PlayerRole.SUPPORT, &quot;Stati Uniti&quot;, 80)
         ));
 
-<span class="fc" id="L61">        seedTeam(&quot;G2 Esports&quot;, &quot;G2&quot;, List.of(</span>
+<span class="fc" id="L63">        seedTeam(&quot;G2 Esports&quot;, &quot;G2&quot;, List.of(</span>
                 new PlayerSeed(&quot;BrokenBlade&quot;, PlayerRole.TOP, &quot;Germania/Turchia&quot;, 85),
                 new PlayerSeed(&quot;SkewMond&quot;, PlayerRole.JUNGLE, &quot;Francia/Libano&quot;, 80),
                 new PlayerSeed(&quot;Caps&quot;, PlayerRole.MID, &quot;Danimarca&quot;, 100),
@@ -66,7 +68,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Labrov&quot;, PlayerRole.SUPPORT, &quot;Grecia&quot;, 80)
         ));
 
-<span class="fc" id="L69">        seedTeam(&quot;Movistar KOI&quot;, &quot;MKOI&quot;, List.of(</span>
+<span class="fc" id="L71">        seedTeam(&quot;Movistar KOI&quot;, &quot;MKOI&quot;, List.of(</span>
                 new PlayerSeed(&quot;Myrwn&quot;, PlayerRole.TOP, &quot;Spagna&quot;, 65),
                 new PlayerSeed(&quot;Elyoya&quot;, PlayerRole.JUNGLE, &quot;Spagna&quot;, 95),
                 new PlayerSeed(&quot;Jojopyun&quot;, PlayerRole.MID, &quot;Stati Uniti&quot;, 85),
@@ -74,7 +76,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Alvaro&quot;, PlayerRole.SUPPORT, &quot;Spagna&quot;, 75)
         ));
 
-<span class="fc" id="L77">        seedTeam(&quot;Natus Vincere&quot;, &quot;NAVI&quot;, List.of(</span>
+<span class="fc" id="L79">        seedTeam(&quot;Natus Vincere&quot;, &quot;NAVI&quot;, List.of(</span>
                 new PlayerSeed(&quot;Maynter&quot;, PlayerRole.TOP, &quot;Ucraina&quot;, 55),
                 new PlayerSeed(&quot;Rhilech&quot;, PlayerRole.JUNGLE, &quot;Turchia&quot;, 60),
                 new PlayerSeed(&quot;Poby&quot;, PlayerRole.MID, &quot;Corea del Sud&quot;, 55),
@@ -82,7 +84,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Parus&quot;, PlayerRole.SUPPORT, &quot;Turchia&quot;, 50)
         ));
 
-<span class="fc" id="L85">        seedTeam(&quot;GIANTX&quot;, &quot;GX&quot;, List.of(</span>
+<span class="fc" id="L87">        seedTeam(&quot;GIANTX&quot;, &quot;GX&quot;, List.of(</span>
                 new PlayerSeed(&quot;Lot&quot;, PlayerRole.TOP, &quot;Turchia&quot;, 55),
                 new PlayerSeed(&quot;Isma&quot;, PlayerRole.JUNGLE, &quot;Francia&quot;, 55),
                 new PlayerSeed(&quot;Jackies&quot;, PlayerRole.MID, &quot;Repubblica Ceca&quot;, 60),
@@ -90,7 +92,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Jun&quot;, PlayerRole.SUPPORT, &quot;Corea del Sud&quot;, 55)
         ));
 
-<span class="fc" id="L93">        seedTeam(&quot;Fnatic&quot;, &quot;FNC&quot;, List.of(</span>
+<span class="fc" id="L95">        seedTeam(&quot;Fnatic&quot;, &quot;FNC&quot;, List.of(</span>
                 new PlayerSeed(&quot;Empyros&quot;, PlayerRole.TOP, &quot;Grecia&quot;, 55),
                 new PlayerSeed(&quot;Razork&quot;, PlayerRole.JUNGLE, &quot;Spagna&quot;, 75),
                 new PlayerSeed(&quot;Vladi&quot;, PlayerRole.MID, &quot;Grecia&quot;, 70),
@@ -98,7 +100,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Lospa&quot;, PlayerRole.SUPPORT, &quot;Corea del Sud&quot;, 60)
         ));
 
-<span class="fc" id="L101">        seedTeam(&quot;SK Gaming&quot;, &quot;SK&quot;, List.of(</span>
+<span class="fc" id="L103">        seedTeam(&quot;SK Gaming&quot;, &quot;SK&quot;, List.of(</span>
                 new PlayerSeed(&quot;Wunder&quot;, PlayerRole.TOP, &quot;Danimarca&quot;, 65),
                 new PlayerSeed(&quot;Skeanz&quot;, PlayerRole.JUNGLE, &quot;Francia&quot;, 55),
                 new PlayerSeed(&quot;LIDER&quot;, PlayerRole.MID, &quot;Norvegia&quot;, 55),
@@ -106,7 +108,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Mikyx&quot;, PlayerRole.SUPPORT, &quot;Slovenia&quot;, 75)
         ));
 
-<span class="fc" id="L109">        seedTeam(&quot;Shifters&quot;, &quot;SHFT&quot;, List.of(</span>
+<span class="fc" id="L111">        seedTeam(&quot;Shifters&quot;, &quot;SHFT&quot;, List.of(</span>
                 new PlayerSeed(&quot;Rooster&quot;, PlayerRole.TOP, &quot;Corea del Sud&quot;, 55),
                 new PlayerSeed(&quot;Boukada&quot;, PlayerRole.JUNGLE, &quot;Francia&quot;, 55),
                 new PlayerSeed(&quot;nuc&quot;, PlayerRole.MID, &quot;Marocco/Francia&quot;, 55),
@@ -114,7 +116,7 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Trymbi&quot;, PlayerRole.SUPPORT, &quot;Polonia&quot;, 60)
         ));
 
-<span class="fc" id="L117">        seedTeam(&quot;Team Heretics&quot;, &quot;TH&quot;, List.of(</span>
+<span class="fc" id="L119">        seedTeam(&quot;Team Heretics&quot;, &quot;TH&quot;, List.of(</span>
                 new PlayerSeed(&quot;Tracyn&quot;, PlayerRole.TOP, &quot;Polonia&quot;, 50),
                 new PlayerSeed(&quot;Sheo&quot;, PlayerRole.JUNGLE, &quot;Francia&quot;, 60),
                 new PlayerSeed(&quot;Serin&quot;, PlayerRole.MID, &quot;Turchia&quot;, 55),
@@ -122,91 +124,77 @@ public class DataSeeder implements CommandLineRunner {
                 new PlayerSeed(&quot;Stend&quot;, PlayerRole.SUPPORT, &quot;Francia&quot;, 55)
         ));
 
-<span class="fc" id="L125">        seedAdminUser();</span>
-<span class="fc" id="L126">    }</span>
+<span class="fc" id="L127">    }</span>
 
     private void backfillExistingAssetMetadata() {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">        for (LecTeam team : lecTeamRepository.findAll()) {</span>
-<span class="nc" id="L130">            team.setLogoUrl(teamLogoUrl(team.getNome()));</span>
-<span class="nc" id="L131">            lecTeamRepository.save(team);</span>
-<span class="nc" id="L132">        }</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">        for (LecPlayer player : lecPlayerRepository.findAll()) {</span>
-<span class="nc bnc" id="L134" title="All 2 branches missed.">            if (&quot;Hans SamD&quot;.equals(player.getNickname())) {</span>
-<span class="nc" id="L135">                player.setNickname(&quot;SamD&quot;);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        for (LecTeam team : lecTeamRepository.findAll()) {</span>
+<span class="nc" id="L131">            team.setLogoUrl(teamLogoUrl(team.getNome()));</span>
+<span class="nc" id="L132">            lecTeamRepository.save(team);</span>
+<span class="nc" id="L133">        }</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        for (LecPlayer player : lecPlayerRepository.findAll()) {</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (&quot;Hans SamD&quot;.equals(player.getNickname())) {</span>
+<span class="nc" id="L136">                player.setNickname(&quot;SamD&quot;);</span>
             }
-<span class="nc" id="L137">            player.setImageUrl(playerImageUrl(player.getNickname(), player.getRuolo()));</span>
-<span class="nc" id="L138">            lecPlayerRepository.save(player);</span>
-<span class="nc" id="L139">        }</span>
-<span class="nc" id="L140">    }</span>
+<span class="nc" id="L138">            player.setImageUrl(playerImageUrl(player.getNickname(), player.getRuolo()));</span>
+<span class="nc" id="L139">            lecPlayerRepository.save(player);</span>
+<span class="nc" id="L140">        }</span>
+<span class="nc" id="L141">    }</span>
 
     private void seedTeam(String nome, String sigla, List&lt;PlayerSeed&gt; giocatori) {
-<span class="fc" id="L143">        LecTeam team = lecTeamRepository.save(LecTeam.builder()</span>
-<span class="fc" id="L144">                .nome(nome)</span>
-<span class="fc" id="L145">                .sigla(sigla)</span>
-<span class="fc" id="L146">                .logoUrl(teamLogoUrl(nome))</span>
-<span class="fc" id="L147">                .build());</span>
+<span class="fc" id="L144">        LecTeam team = lecTeamRepository.save(LecTeam.builder()</span>
+<span class="fc" id="L145">                .nome(nome)</span>
+<span class="fc" id="L146">                .sigla(sigla)</span>
+<span class="fc" id="L147">                .logoUrl(teamLogoUrl(nome))</span>
+<span class="fc" id="L148">                .build());</span>
 
-<span class="fc bfc" id="L149" title="All 2 branches covered.">        for (PlayerSeed seed : giocatori) {</span>
-<span class="fc" id="L150">            lecPlayerRepository.save(LecPlayer.builder()</span>
-<span class="fc" id="L151">                    .nickname(seed.nickname())</span>
-<span class="fc" id="L152">                    .ruolo(seed.ruolo())</span>
-<span class="fc" id="L153">                    .nazionalita(seed.nazionalita())</span>
-<span class="fc" id="L154">                    .imageUrl(playerImageUrl(seed))</span>
-<span class="fc" id="L155">                    .quotazione(seed.quotazione())</span>
-<span class="fc" id="L156">                    .team(team)</span>
-<span class="fc" id="L157">                    .build());</span>
-<span class="fc" id="L158">        }</span>
-<span class="fc" id="L159">    }</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        for (PlayerSeed seed : giocatori) {</span>
+<span class="fc" id="L151">            lecPlayerRepository.save(LecPlayer.builder()</span>
+<span class="fc" id="L152">                    .nickname(seed.nickname())</span>
+<span class="fc" id="L153">                    .ruolo(seed.ruolo())</span>
+<span class="fc" id="L154">                    .nazionalita(seed.nazionalita())</span>
+<span class="fc" id="L155">                    .imageUrl(playerImageUrl(seed))</span>
+<span class="fc" id="L156">                    .quotazione(seed.quotazione())</span>
+<span class="fc" id="L157">                    .team(team)</span>
+<span class="fc" id="L158">                    .build());</span>
+<span class="fc" id="L159">        }</span>
+<span class="fc" id="L160">    }</span>
 
     private String playerImageUrl(PlayerSeed player) {
-<span class="fc" id="L162">        return playerImageUrl(player.nickname(), player.ruolo());</span>
+<span class="fc" id="L163">        return playerImageUrl(player.nickname(), player.ruolo());</span>
     }
 
     private String playerImageUrl(String nickname, PlayerRole playerRole) {
-<span class="fc bfc" id="L166" title="All 5 branches covered.">        String role = switch (playerRole) {</span>
-<span class="fc" id="L167">            case TOP -&gt; &quot;Top&quot;;</span>
-<span class="fc" id="L168">            case JUNGLE -&gt; &quot;Jungle&quot;;</span>
-<span class="fc" id="L169">            case MID -&gt; &quot;Mid&quot;;</span>
-<span class="fc" id="L170">            case ADC -&gt; &quot;Adc&quot;;</span>
-<span class="fc" id="L171">            case SUPPORT -&gt; &quot;Support&quot;;</span>
+<span class="fc bfc" id="L167" title="All 5 branches covered.">        String role = switch (playerRole) {</span>
+<span class="fc" id="L168">            case TOP -&gt; &quot;Top&quot;;</span>
+<span class="fc" id="L169">            case JUNGLE -&gt; &quot;Jungle&quot;;</span>
+<span class="fc" id="L170">            case MID -&gt; &quot;Mid&quot;;</span>
+<span class="fc" id="L171">            case ADC -&gt; &quot;Adc&quot;;</span>
+<span class="fc" id="L172">            case SUPPORT -&gt; &quot;Support&quot;;</span>
         };
-<span class="fc bfc" id="L173" title="All 4 branches covered.">        String filename = switch (nickname) {</span>
-<span class="fc" id="L174">            case &quot;Naak Nako&quot; -&gt; &quot;Naak_Nako&quot;;</span>
-<span class="fc" id="L175">            case &quot;Hans Sama&quot; -&gt; &quot;Hans_Sama&quot;;</span>
-<span class="fc" id="L176">            case &quot;Isma&quot; -&gt; &quot;ISMA&quot;;</span>
-<span class="fc" id="L177">            default -&gt; nickname;</span>
+<span class="fc bfc" id="L174" title="All 4 branches covered.">        String filename = switch (nickname) {</span>
+<span class="fc" id="L175">            case &quot;Naak Nako&quot; -&gt; &quot;Naak_Nako&quot;;</span>
+<span class="fc" id="L176">            case &quot;Hans Sama&quot; -&gt; &quot;Hans_Sama&quot;;</span>
+<span class="fc" id="L177">            case &quot;Isma&quot; -&gt; &quot;ISMA&quot;;</span>
+<span class="fc" id="L178">            default -&gt; nickname;</span>
         };
-<span class="fc" id="L179">        return &quot;/Player_immage/&quot; + role + &quot;/&quot; + filename + &quot;.jpg&quot;;</span>
+<span class="fc" id="L180">        return &quot;/Player_immage/&quot; + role + &quot;/&quot; + filename + &quot;.jpg&quot;;</span>
     }
 
     private String teamLogoUrl(String teamName) {
-<span class="pc bpc" id="L183" title="1 of 11 branches missed.">        return switch (teamName) {</span>
-<span class="fc" id="L184">            case &quot;Team Vitality&quot; -&gt; &quot;/assets/team-logos/team-vitality.ico&quot;;</span>
-<span class="fc" id="L185">            case &quot;Karmine Corp&quot; -&gt; &quot;/assets/team-logos/karmine-corp.png&quot;;</span>
-<span class="fc" id="L186">            case &quot;G2 Esports&quot; -&gt; &quot;/assets/team-logos/g2-esports.png&quot;;</span>
-<span class="fc" id="L187">            case &quot;Movistar KOI&quot; -&gt; &quot;/assets/team-logos/movistar-koi.png&quot;;</span>
-<span class="fc" id="L188">            case &quot;Natus Vincere&quot; -&gt; &quot;/assets/team-logos/natus-vincere.ico&quot;;</span>
-<span class="fc" id="L189">            case &quot;GIANTX&quot; -&gt; &quot;/assets/team-logos/giantx.svg&quot;;</span>
-<span class="fc" id="L190">            case &quot;Fnatic&quot; -&gt; &quot;/assets/team-logos/fnatic.png&quot;;</span>
-<span class="fc" id="L191">            case &quot;SK Gaming&quot; -&gt; &quot;/assets/team-logos/sk-gaming.ico&quot;;</span>
-<span class="fc" id="L192">            case &quot;Shifters&quot; -&gt; &quot;/assets/team-logos/shifters.ico&quot;;</span>
-<span class="fc" id="L193">            case &quot;Team Heretics&quot; -&gt; &quot;/assets/team-logos/team-heretics.png&quot;;</span>
-<span class="nc" id="L194">            default -&gt; null;</span>
+<span class="pc bpc" id="L184" title="1 of 11 branches missed.">        return switch (teamName) {</span>
+<span class="fc" id="L185">            case &quot;Team Vitality&quot; -&gt; &quot;/assets/team-logos/team-vitality.ico&quot;;</span>
+<span class="fc" id="L186">            case &quot;Karmine Corp&quot; -&gt; &quot;/assets/team-logos/karmine-corp.png&quot;;</span>
+<span class="fc" id="L187">            case &quot;G2 Esports&quot; -&gt; &quot;/assets/team-logos/g2-esports.png&quot;;</span>
+<span class="fc" id="L188">            case &quot;Movistar KOI&quot; -&gt; &quot;/assets/team-logos/movistar-koi.png&quot;;</span>
+<span class="fc" id="L189">            case &quot;Natus Vincere&quot; -&gt; &quot;/assets/team-logos/natus-vincere.ico&quot;;</span>
+<span class="fc" id="L190">            case &quot;GIANTX&quot; -&gt; &quot;/assets/team-logos/giantx.svg&quot;;</span>
+<span class="fc" id="L191">            case &quot;Fnatic&quot; -&gt; &quot;/assets/team-logos/fnatic.png&quot;;</span>
+<span class="fc" id="L192">            case &quot;SK Gaming&quot; -&gt; &quot;/assets/team-logos/sk-gaming.ico&quot;;</span>
+<span class="fc" id="L193">            case &quot;Shifters&quot; -&gt; &quot;/assets/team-logos/shifters.ico&quot;;</span>
+<span class="fc" id="L194">            case &quot;Team Heretics&quot; -&gt; &quot;/assets/team-logos/team-heretics.png&quot;;</span>
+<span class="nc" id="L195">            default -&gt; null;</span>
         };
     }
 
-    private void seedAdminUser() {
-<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (userRepository.existsByUsername(&quot;admin&quot;)) {</span>
-<span class="nc" id="L200">            return;</span>
-        }
-<span class="fc" id="L202">        User admin = User.builder()</span>
-<span class="fc" id="L203">                .username(&quot;admin&quot;)</span>
-<span class="fc" id="L204">                .email(&quot;admin@fantalol.local&quot;)</span>
-<span class="fc" id="L205">                .password(passwordEncoder.encode(&quot;Admin123!&quot;))</span>
-<span class="fc" id="L206">                .role(Role.ADMIN)</span>
-<span class="fc" id="L207">                .enabled(true)</span>
-<span class="fc" id="L208">                .build();</span>
-<span class="fc" id="L209">        userRepository.save(admin);</span>
-<span class="fc" id="L210">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -9,10 +9,12 @@ public class RosterPolicy {
     private final FantaTeamRepository fantaTeamRepository;
 
     public Limits forLeague(League league) {
-<span class="fc" id="L12">        long teamCount = fantaTeamRepository.countByLeagueId(league.getId());</span>
-<span class="fc bfc" id="L13" title="All 2 branches covered.">        return teamCount == 10 ? new Limits(5, 1) : new Limits(10, 2);</span>
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        int teamCount = league.getParticipantCount() != null</span>
+<span class="fc" id="L13">                ? league.getParticipantCount()</span>
+<span class="fc" id="L14">                : Math.toIntExact(fantaTeamRepository.countByLeagueId(league.getId()));</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        return teamCount &lt;= 5 ? new Limits(10, 2) : new Limits(5, 1);</span>
     }
 
-<span class="fc" id="L16">    public record Limits(int maxRosterSize, int maxPerRole) {}</span>
+<span class="fc" id="L18">    public record Limits(int maxRosterSize, int maxPerRole) {}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

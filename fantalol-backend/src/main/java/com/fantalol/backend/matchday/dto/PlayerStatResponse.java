@@ -7,19 +7,18 @@ public record PlayerStatResponse(
         Long matchdayId,
         Long lecPlayerId,
         String lecPlayerNickname,
-        Double votoBase,
         Integer kills,
         Integer morti,
         Integer assist,
-        boolean mvp,
+        Integer cs,
         boolean vittoria,
         Double fantavoto
 ) {
     public static PlayerStatResponse from(PlayerStat stat) {
         return new PlayerStatResponse(
                 stat.getId(), stat.getMatchday().getId(), stat.getLecPlayer().getId(), stat.getLecPlayer().getNickname(),
-                stat.getVotoBase(), stat.getKills(), stat.getMorti(), stat.getAssist(),
-                stat.isMvp(), stat.isVittoria(), stat.getFantavoto()
+                stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(),
+                stat.isVittoria(), stat.getFantavoto()
         );
     }
 }

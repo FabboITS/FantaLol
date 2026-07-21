@@ -9,8 +9,10 @@ public class RosterPolicy {
     private final FantaTeamRepository fantaTeamRepository;
 
     public Limits forLeague(League league) {
-        long teamCount = fantaTeamRepository.countByLeagueId(league.getId());
-        return teamCount == 10 ? new Limits(5, 1) : new Limits(10, 2);
+        int teamCount = league.getParticipantCount() != null
+                ? league.getParticipantCount()
+                : Math.toIntExact(fantaTeamRepository.countByLeagueId(league.getId()));
+        return teamCount <= 5 ? new Limits(10, 2) : new Limits(5, 1);
     }
 
     public record Limits(int maxRosterSize, int maxPerRole) {}

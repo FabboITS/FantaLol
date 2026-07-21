@@ -11,13 +11,15 @@ import java.util.List;
         Long leagueId,
         String leagueNome,
         String ownerUsername,
+        Double punti,
         List&lt;RosterEntryResponse&gt; rosa
 ) {
     public static FantaTeamResponse from(FantaTeam team) {
-<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        List&lt;RosterEntryResponse&gt; rosa = team.getRosa() == null ? List.of() :</span>
-<span class="fc" id="L18">                team.getRosa().stream().map(RosterEntryResponse::from).toList();</span>
-<span class="fc" id="L19">        return new FantaTeamResponse(team.getId(), team.getNome(), team.getCreditiResidui(),</span>
-<span class="fc" id="L20">                team.getLeague().getId(), team.getLeague().getNome(), team.getOwner().getUsername(), rosa);</span>
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        List&lt;RosterEntryResponse&gt; rosa = team.getRosa() == null ? List.of() :</span>
+<span class="fc" id="L19">                team.getRosa().stream().map(RosterEntryResponse::from).toList();</span>
+<span class="fc" id="L20">        return new FantaTeamResponse(team.getId(), team.getNome(), team.getCreditiResidui(),</span>
+<span class="fc" id="L21">                team.getLeague().getId(), team.getLeague().getNome(), team.getOwner().getUsername(),</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">                team.getPunti() != null ? team.getPunti() : 0.0, rosa);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

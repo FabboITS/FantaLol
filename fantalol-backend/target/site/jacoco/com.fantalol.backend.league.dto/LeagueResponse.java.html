@@ -9,13 +9,20 @@ import com.fantalol.backend.league.League;
         Integer creditiIniziali,
         String adminUsername,
         int numeroSquadre,
-        boolean auctionOpen
+        boolean auctionOpen,
+        Integer participantCount,
+        boolean competitionStarted,
+        int maxRosterSize,
+        int maxPerRole
 ) {
     public static LeagueResponse from(League league) {
-<span class="pc bpc" id="L15" title="1 of 2 branches missed.">        int numeroSquadre = league.getFantaTeams() == null ? 0 : league.getFantaTeams().size();</span>
-<span class="fc" id="L16">        return new LeagueResponse(league.getId(), league.getNome(), league.getCodiceInvito(),</span>
-<span class="fc" id="L17">                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre,</span>
-<span class="fc" id="L18">                league.isAuctionOpen());</span>
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">        int numeroSquadre = league.getFantaTeams() == null ? 0 : league.getFantaTeams().size();</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        int policyCount = league.getParticipantCount() != null ? league.getParticipantCount() : numeroSquadre;</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        boolean smallLeague = policyCount &lt;= 5;</span>
+<span class="fc" id="L22">        return new LeagueResponse(league.getId(), league.getNome(), league.getCodiceInvito(),</span>
+<span class="fc" id="L23">                league.getCreditiIniziali(), league.getAdmin().getUsername(), numeroSquadre,</span>
+<span class="fc" id="L24">                league.isAuctionOpen(), league.getParticipantCount(), league.isCompetitionStarted(),</span>
+<span class="pc bpc" id="L25" title="2 of 4 branches missed.">                smallLeague ? 10 : 5, smallLeague ? 2 : 1);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

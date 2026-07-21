@@ -40,11 +40,6 @@ public class PlayerStat {
     @JoinColumn(name = "lec_player_id", nullable = false)
     private LecPlayer lecPlayer;
 
-    /** Voto base assegnato dai giornalisti/analisti (tipicamente 4.0 - 10.0). */
-    @NotNull
-    @Column(nullable = false)
-    private Double votoBase;
-
     @Min(0)
     @Column(nullable = false)
     @Builder.Default
@@ -60,9 +55,10 @@ public class PlayerStat {
     @Builder.Default
     private Integer assist = 0;
 
+    @Min(0)
     @Column(nullable = false)
     @Builder.Default
-    private boolean mvp = false;
+    private Integer cs = 0;
 
     @Column(nullable = false)
     @Builder.Default

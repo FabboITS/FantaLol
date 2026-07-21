@@ -8,6 +8,8 @@
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/RosterPolicyTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FantaScoreCalculatorTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FormationServiceTest.java
+/workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/MatchdayLifecycleServiceTest.java
+/workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/MatchdayScoringServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/team/LecPlayerServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/team/LecTeamServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/user/AdminUserDirectoryIntegrationTest.java

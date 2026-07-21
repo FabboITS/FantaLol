@@ -70,6 +70,18 @@ class FantaTeamServiceTest {
     }
 
     @Test
+    void nonPermetteIscrizioniDopoLaPrimaGiornata() {
+        league.setParticipantCount(5);
+        when(userService.findByUsernameOrThrow("mago")).thenReturn(user);
+        when(leagueService.getByInviteCodeOrThrow("ABC12345")).thenReturn(league);
+
+        assertThatThrownBy(() -> fantaTeamService.joinLeague("mago",
+                new JoinLeagueRequest("ABC12345", "Team in ritardo")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("iniziata");
+    }
+
+    @Test
     void iscriveUnUtenteAdUnaLega() {
         when(userService.findByUsernameOrThrow("mago")).thenReturn(user);
         when(leagueService.getByInviteCodeOrThrow("ABC12345")).thenReturn(league);

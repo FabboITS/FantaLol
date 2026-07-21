@@ -75,6 +75,9 @@ public class LeagueService {
     public LeagueResponse openAuction(String username, Long leagueId) {
         League league = getForUpdateOrThrow(leagueId);
         assertLeagueCreatorOrGlobalAdmin(username, league);
+        if (!league.isCompetitionStarted()) {
+            throw new BusinessRuleException("Crea una giornata prima di aprire l'asta");
+        }
         league.setAuctionOpen(true);
         return LeagueResponse.from(leagueRepository.save(league));
     }
@@ -88,6 +91,13 @@ public class LeagueService {
         }
         league.setAuctionOpen(false);
         return LeagueResponse.from(leagueRepository.save(league));
+    }
+
+    @Transactional
+    public League startCompetitionAndOpenAuction(League league) {
+        league.freezeParticipantCount(Math.toIntExact(fantaTeamRepository.countByLeagueId(league.getId())));
+        league.setAuctionOpen(true);
+        return leagueRepository.save(league);
     }
 
     @Transactional

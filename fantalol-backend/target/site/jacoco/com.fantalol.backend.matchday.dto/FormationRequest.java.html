@@ -7,8 +7,7 @@ import java.util.List;
 
 <span class="fc" id="L8">public record FormationRequest(</span>
         @NotNull(message = &quot;La giornata è obbligatoria&quot;) Long matchdayId,
-        @NotEmpty(message = &quot;Devi schierare almeno un titolare&quot;) List&lt;Long&gt; titolariIds,
-        Long capitanoId
+        @NotEmpty(message = &quot;Devi schierare almeno un titolare&quot;) List&lt;Long&gt; titolariIds
 ) {
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

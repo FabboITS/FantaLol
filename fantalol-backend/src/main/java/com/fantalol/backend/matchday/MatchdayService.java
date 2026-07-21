@@ -4,6 +4,7 @@ import com.fantalol.backend.common.BusinessRuleException;
 import com.fantalol.backend.common.ResourceNotFoundException;
 import com.fantalol.backend.league.League;
 import com.fantalol.backend.league.LeagueService;
+import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.matchday.dto.MatchdayRequest;
 import com.fantalol.backend.matchday.dto.MatchdayResponse;
 import com.fantalol.backend.matchday.dto.PlayerStatRequest;
@@ -32,6 +33,8 @@ public class MatchdayService {
     private final LecPlayerRepository lecPlayerRepository;
     private final FantaScoreCalculator fantaScoreCalculator;
     private final FormationRepository formationRepository;
+    private final FormationService formationService;
+    private final FantaTeamRepository fantaTeamRepository;
     private final LeagueService leagueService;
     private final UserService userService;
 
@@ -49,9 +52,13 @@ public class MatchdayService {
     public MatchdayResponse create(String username, MatchdayRequest request) {
         League league = leagueService.getOrThrow(request.leagueId());
         assertLeagueAdmin(username, league);
+        if (matchdayRepository.existsByLeagueIdAndChiusaFalse(league.getId())) {
+            throw new BusinessRuleException("Esiste già una giornata aperta per questa lega");
+        }
         if (matchdayRepository.findByLeagueIdAndNumero(league.getId(), request.numero()).isPresent()) {
             throw new BusinessRuleException("Esiste già una giornata con numero: " + request.numero());
         }
+        league = leagueService.startCompetitionAndOpenAuction(league);
         Matchday matchday = Matchday.builder()
                 .league(league)
                 .numero(request.numero())
@@ -74,6 +81,7 @@ public class MatchdayService {
     public PlayerStatResponse inserisciStatistiche(String username, Long matchdayId, PlayerStatRequest request) {
         Matchday matchday = getOrThrow(matchdayId);
         assertGlobalAdmin(username);
+        assertAuctionClosed(matchday);
         if (matchday.isChiusa()) {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è già chiusa: impossibile modificare le statistiche");
         }
@@ -84,11 +92,10 @@ public class MatchdayService {
         PlayerStat stat = playerStatRepository.findByMatchdayIdAndLecPlayerId(matchdayId, player.getId())
                 .orElse(PlayerStat.builder().matchday(matchday).lecPlayer(player).build());
 
-        stat.setVotoBase(request.votoBase());
         stat.setKills(request.kills() != null ? request.kills() : 0);
         stat.setMorti(request.morti() != null ? request.morti() : 0);
         stat.setAssist(request.assist() != null ? request.assist() : 0);
-        stat.setMvp(request.mvp());
+        stat.setCs(request.cs() != null ? request.cs() : 0);
         stat.setVittoria(request.vittoria());
         stat.setFantavoto(fantaScoreCalculator.calcola(stat));
 
@@ -103,23 +110,29 @@ public class MatchdayService {
     public MatchdayResponse chiudiGiornata(String username, Long matchdayId) {
         Matchday matchday = getOrThrow(matchdayId);
         assertLeagueAdmin(username, matchday.getLeague());
+        assertAuctionClosed(matchday);
         if (matchday.isChiusa()) {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è già chiusa");
         }
 
-        List<Formation> formazioni = formationRepository.findByMatchdayId(matchdayId);
-        for (Formation formazione : formazioni) {
+        List<Formation> formazioni = new java.util.ArrayList<>();
+        var teams = fantaTeamRepository.findByLeagueId(matchday.getLeague().getId());
+        for (var team : teams) {
+            Formation formazione = formationService.resolveEffectiveFormation(team, matchday);
             double totale = 0.0;
             for (var titolare : formazione.getTitolari()) {
                 double fantavoto = playerStatRepository.findByMatchdayIdAndLecPlayerId(matchdayId, titolare.getId())
                         .map(PlayerStat::getFantavoto)
                         .orElse(0.0);
-                boolean isCapitano = formazione.getCapitano() != null && formazione.getCapitano().getId().equals(titolare.getId());
-                totale += isCapitano ? fantavoto * 2 : fantavoto;
+                totale += fantavoto;
             }
-            formazione.setPunteggioTotale(totale);
+            double media = formazione.getSource() == FormationSource.MISSING ? 0.0 : totale / 5.0;
+            formazione.setPunteggioTotale(media);
+            team.setPunti((team.getPunti() != null ? team.getPunti() : 0.0) + media);
+            formazioni.add(formazione);
         }
         formationRepository.saveAll(formazioni);
+        fantaTeamRepository.saveAll(teams);
 
         matchday.setChiusa(true);
         return MatchdayResponse.from(matchdayRepository.save(matchday));
@@ -140,6 +153,12 @@ public class MatchdayService {
     private void assertGlobalAdmin(String username) {
         if (userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {
             throw new BusinessRuleException("Solo l'amministratore globale può inserire le statistiche");
+        }
+    }
+
+    private void assertAuctionClosed(Matchday matchday) {
+        if (matchday.getLeague().isAuctionOpen()) {
+            throw new BusinessRuleException("Termina l'asta prima di usare o chiudere la giornata");
         }
     }
 }

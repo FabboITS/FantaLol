@@ -12,4 +12,7 @@ public interface FormationRepository extends JpaRepository<Formation, Long> {
     List<Formation> findByMatchdayId(Long matchdayId);
 
     List<Formation> findByFantaTeamId(Long fantaTeamId);
+
+    Optional<Formation> findFirstByFantaTeamIdAndMatchdayNumeroLessThanAndSourceOrderByMatchdayNumeroDesc(
+            Long fantaTeamId, Integer matchdayNumero, FormationSource source);
 }

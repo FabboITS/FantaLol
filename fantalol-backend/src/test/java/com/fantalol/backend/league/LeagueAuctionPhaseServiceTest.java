@@ -34,7 +34,7 @@ class LeagueAuctionPhaseServiceTest {
     void setUp() {
         creator = User.builder().username("creator").role(Role.USER).build();
         league = League.builder().id(1L).nome("LEC").codiceInvito("ABC")
-                .creditiIniziali(1000).admin(creator).auctionOpen(false).build();
+                .creditiIniziali(1000).admin(creator).participantCount(5).auctionOpen(false).build();
     }
 
     @Test
@@ -70,6 +70,17 @@ class LeagueAuctionPhaseServiceTest {
         assertThatThrownBy(() -> leagueService.openAuction("participant", 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessage("Solo il creatore della lega può gestire l'asta");
+    }
+
+    @Test
+    void auctionCannotOpenBeforeFirstMatchday() {
+        league.setParticipantCount(null);
+        when(leagueRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(league));
+        when(userService.findByUsernameOrThrow("creator")).thenReturn(creator);
+
+        assertThatThrownBy(() -> leagueService.openAuction("creator", 1L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("giornata");
     }
 
     @Test

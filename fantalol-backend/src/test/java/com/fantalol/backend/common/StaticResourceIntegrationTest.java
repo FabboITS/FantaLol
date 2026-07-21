@@ -136,6 +136,8 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("id=\"rules-dialog\"")))
                 .andExpect(content().string(containsString("Regole FantaLeague LEC")))
                 .andExpect(content().string(containsString("Cambi nei roster reali")))
+                .andExpect(content().string(containsString("media aritmetica")))
+                .andExpect(content().string(containsString("0 punti")))
                 .andExpect(content().string(containsString("Accettazione delle regole")));
 
         mockMvc.perform(get("/js/app.js"))
@@ -158,6 +160,8 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("data-section=\"performance\"")))
                 .andExpect(content().string(containsString("id=\"auction-phase-controls\"")))
                 .andExpect(content().string(containsString("id=\"formation-dialog\"")))
+                .andExpect(content().string(containsString("id=\"roster-history\"")))
+                .andExpect(content().string(not(containsString("name=\"capitanoId\""))))
                 .andExpect(content().string(containsString("id=\"matchday-dialog\"")));
 
         for (String asset : List.of("/css/league-detail.css", "/js/league-utils.js",
@@ -183,6 +187,10 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("/auction/${action}")))
                 .andExpect(content().string(containsString("/rosters/complete-randomly")))
                 .andExpect(content().string(containsString("/formazioni")))
+                .andExpect(content().string(containsString("Modifica formazione")))
+                .andExpect(content().string(containsString("Vedi la tua rosa")))
+                .andExpect(content().string(containsString("matchdayScore")))
+                .andExpect(content().string(not(containsString("capitanoId"))))
                 .andExpect(content().string(containsString("api('/matchdays'")))
                 .andExpect(content().string(containsString("Non hai abbastanza crediti per rilanciare")))
                 .andExpect(content().string(containsString("setInterval(refreshAuction,500)")))

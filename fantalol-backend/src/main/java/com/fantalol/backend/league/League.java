@@ -57,6 +57,9 @@ public class League {
     @Builder.Default
     private boolean auctionOpen = false;
 
+    /** Numero di fantasy team congelato alla creazione della prima giornata. */
+    private Integer participantCount;
+
     @OneToMany(mappedBy = "league", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<FantaTeam> fantaTeams = new ArrayList<>();
@@ -72,6 +75,16 @@ public class League {
         }
         if (codiceInvito == null) {
             codiceInvito = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
+
+    public boolean isCompetitionStarted() {
+        return participantCount != null;
+    }
+
+    public void freezeParticipantCount(int count) {
+        if (participantCount == null) {
+            participantCount = count;
         }
     }
 }

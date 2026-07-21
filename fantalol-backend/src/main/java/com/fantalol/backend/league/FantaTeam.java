@@ -49,6 +49,10 @@ public class FantaTeam {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Double punti = 0.0;
+
     /** Rosa della squadra: relazione ManyToMany implementata tramite classe associativa (crediti spesi, data acquisto). */
     @OneToMany(mappedBy = "fantaTeam", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

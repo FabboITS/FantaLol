@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -33,6 +34,7 @@ public class FormationService {
     private final RosterEntryRepository rosterEntryRepository;
     private final LecPlayerRepository lecPlayerRepository;
     private final MatchdayRepository matchdayRepository;
+    private final PlayerStatRepository playerStatRepository;
     private final UserService userService;
 
     @Transactional(readOnly = true)
@@ -40,6 +42,52 @@ public class FormationService {
         Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, matchdayId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nessuna formazione trovata per la squadra e la giornata indicate"));
         return FormationResponse.from(formation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FormationResponse> findHistory(Long fantaTeamId) {
+        return formationRepository.findByFantaTeamId(fantaTeamId).stream()
+                .sorted(java.util.Comparator.comparing(formation -> formation.getMatchday().getNumero()))
+                .map(formation -> {
+                    java.util.Map<Long, Double> scores = formation.getTitolari().stream().collect(
+                            java.util.stream.Collectors.toMap(LecPlayer::getId, player -> playerStatRepository
+                                    .findByMatchdayIdAndLecPlayerId(formation.getMatchday().getId(), player.getId())
+                                    .map(PlayerStat::getFantavoto).orElse(0.0)));
+                    return FormationResponse.from(formation, scores);
+                }).toList();
+    }
+
+    @Transactional
+    Formation resolveEffectiveFormation(FantaTeam fantaTeam, Matchday matchday) {
+        Optional<Formation> existing = formationRepository.findByFantaTeamIdAndMatchdayId(
+                fantaTeam.getId(), matchday.getId());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        Formation.FormationBuilder builder = Formation.builder().fantaTeam(fantaTeam).matchday(matchday);
+        Integer participants = fantaTeam.getLeague().getParticipantCount();
+        if (participants != null && participants >= 6) {
+            Set<LecPlayer> players = rosterEntryRepository.findByFantaTeamId(fantaTeam.getId()).stream()
+                    .map(entry -> entry.getLecPlayer())
+                    .collect(java.util.stream.Collectors.toSet());
+            if (players.size() != NUMERO_TITOLARI
+                    || players.stream().map(LecPlayer::getRuolo).distinct().count() != NUMERO_TITOLARI) {
+                throw new BusinessRuleException("La rosa deve contenere esattamente un player per ruolo");
+            }
+            return formationRepository.save(builder.titolari(players).source(FormationSource.AUTOMATIC).build());
+        }
+
+        Optional<Formation> previous = formationRepository
+                .findFirstByFantaTeamIdAndMatchdayNumeroLessThanAndSourceOrderByMatchdayNumeroDesc(
+                        fantaTeam.getId(), matchday.getNumero(), FormationSource.SUBMITTED);
+        if (previous.isPresent()) {
+            return formationRepository.save(builder
+                    .titolari(new HashSet<>(previous.get().getTitolari()))
+                    .source(FormationSource.CARRIED)
+                    .build());
+        }
+        return formationRepository.save(builder.source(FormationSource.MISSING).build());
     }
 
     /**
@@ -68,6 +116,13 @@ public class FormationService {
         if (matchday.isChiusa()) {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è chiusa: non puoi modificare la formazione");
         }
+        if (fantaTeam.getLeague().isAuctionOpen()) {
+            throw new BusinessRuleException("Termina l'asta prima di modificare la formazione");
+        }
+        if (fantaTeam.getLeague().getParticipantCount() != null
+                && fantaTeam.getLeague().getParticipantCount() >= 6) {
+            throw new BusinessRuleException("Nelle leghe con almeno 6 squadre la formazione coincide automaticamente con la rosa");
+        }
 
         List<Long> titolariIds = request.titolariIds();
         if (titolariIds.size() != NUMERO_TITOLARI || new HashSet<>(titolariIds).size() != NUMERO_TITOLARI) {
@@ -88,22 +143,11 @@ public class FormationService {
             throw new BusinessRuleException("La formazione deve contenere un player per ruolo: TOP, JUNGLE, MID, ADC e SUPPORT");
         }
 
-        LecPlayer capitano = null;
-        if (request.capitanoId() != null) {
-            if (!titolariIds.contains(request.capitanoId())) {
-                throw new BusinessRuleException("Il capitano deve essere uno dei titolari schierati");
-            }
-            capitano = titolari.stream()
-                    .filter(p -> p.getId().equals(request.capitanoId()))
-                    .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("Player LEC non trovato con id: " + request.capitanoId()));
-        }
-
         Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, request.matchdayId())
                 .orElse(Formation.builder().fantaTeam(fantaTeam).matchday(matchday).build());
 
         formation.setTitolari(titolari);
-        formation.setCapitano(capitano);
+        formation.setSource(FormationSource.SUBMITTED);
 
         return FormationResponse.from(formationRepository.save(formation));
     }

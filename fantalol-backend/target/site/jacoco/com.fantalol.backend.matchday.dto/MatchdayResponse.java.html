@@ -4,18 +4,20 @@ import com.fantalol.backend.matchday.Matchday;
 
 import java.time.LocalDate;
 
-<span class="nc" id="L7">public record MatchdayResponse(</span>
+<span class="fc" id="L7">public record MatchdayResponse(</span>
         Long id,
         Long leagueId,
         String leagueNome,
         Integer numero,
         String descrizione,
         LocalDate data,
-        boolean chiusa
+        boolean chiusa,
+        boolean auctionLocked
 ) {
     public static MatchdayResponse from(Matchday matchday) {
-<span class="nc" id="L17">        return new MatchdayResponse(matchday.getId(), matchday.getLeague().getId(), matchday.getLeague().getNome(), matchday.getNumero(), matchday.getDescrizione(),</span>
-<span class="nc" id="L18">                matchday.getData(), matchday.isChiusa());</span>
+<span class="fc" id="L18">        return new MatchdayResponse(matchday.getId(), matchday.getLeague().getId(), matchday.getLeague().getNome(), matchday.getNumero(), matchday.getDescrizione(),</span>
+<span class="fc" id="L19">                matchday.getData(), matchday.isChiusa(),</span>
+<span class="pc bpc" id="L20" title="1 of 4 branches missed.">                !matchday.isChiusa() &amp;&amp; matchday.getLeague().isAuctionOpen());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

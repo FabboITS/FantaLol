@@ -20,6 +20,11 @@ public class FormationController {
 
     private final FormationService formationService;
 
+    @GetMapping
+    public java.util.List<FormationResponse> history(@PathVariable Long fantaTeamId) {
+        return formationService.findHistory(fantaTeamId);
+    }
+
     @GetMapping("/{matchdayId}")
     public FormationResponse findByMatchday(@PathVariable Long fantaTeamId, @PathVariable Long matchdayId) {
         return formationService.findByTeamAndMatchday(fantaTeamId, matchdayId);

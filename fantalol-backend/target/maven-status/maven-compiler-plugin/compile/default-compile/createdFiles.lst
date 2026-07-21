@@ -12,6 +12,7 @@ com/fantalol/backend/league/FantaTeamService.class
 com/fantalol/backend/league/RosterPolicy$Limits.class
 com/fantalol/backend/matchday/dto/MatchdayRequest.class
 com/fantalol/backend/common/BusinessRuleException.class
+com/fantalol/backend/matchday/FormationSource.class
 com/fantalol/backend/team/LecPlayerController.class
 com/fantalol/backend/team/LecPlayerRepository.class
 com/fantalol/backend/league/RosterPolicy.class
@@ -55,6 +56,7 @@ com/fantalol/backend/league/dto/AuctionStartRequest.class
 com/fantalol/backend/matchday/FormationRepository.class
 com/fantalol/backend/league/AuctionService.class
 com/fantalol/backend/matchday/Formation.class
+com/fantalol/backend/matchday/dto/FormationPlayerResponse.class
 com/fantalol/backend/config/SecurityConfig.class
 com/fantalol/backend/league/RosterEntry$RosterEntryBuilder.class
 com/fantalol/backend/config/AdminAccountInitializer.class

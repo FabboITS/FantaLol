@@ -17,14 +17,21 @@ class RosterPolicyTest {
     private final League league = League.builder().id(1L).build();
 
     @Test
-    void tenTeamsUseOnePlayerPerRole() {
-        when(fantaTeamRepository.countByLeagueId(1L)).thenReturn(10L);
+    void sixTeamsUseOnePlayerPerRole() {
+        when(fantaTeamRepository.countByLeagueId(1L)).thenReturn(6L);
         assertThat(rosterPolicy.forLeague(league)).isEqualTo(new RosterPolicy.Limits(5, 1));
     }
 
     @Test
-    void nineTeamsUseTwoPlayersPerRole() {
-        when(fantaTeamRepository.countByLeagueId(1L)).thenReturn(9L);
+    void fiveTeamsUseTwoPlayersPerRole() {
+        when(fantaTeamRepository.countByLeagueId(1L)).thenReturn(5L);
         assertThat(rosterPolicy.forLeague(league)).isEqualTo(new RosterPolicy.Limits(10, 2));
+    }
+
+    @Test
+    void frozenParticipantCountDoesNotChangeWhenMoreTeamsAreCounted() {
+        League frozen = League.builder().id(1L).participantCount(5).build();
+
+        assertThat(rosterPolicy.forLeague(frozen)).isEqualTo(new RosterPolicy.Limits(10, 2));
     }
 }

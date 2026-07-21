@@ -2,45 +2,19 @@
 
 import org.springframework.stereotype.Component;
 
-/**
- * Calcola il &quot;fantavoto&quot; di un player LEC in una giornata, a partire dal voto base
- * e dai bonus/malus statistici, secondo regole ispirate al Fantacalcio classico ma
- * adattate al competitivo di League of Legends.
- * &lt;p&gt;
- * Formula:
- * &lt;pre&gt;
- * fantavoto = votoBase
- *           + (kills   * BONUS_KILL)
- *           + (assist  * BONUS_ASSIST)
- *           - (morti   * MALUS_MORTE)
- *           + (mvp     ? BONUS_MVP     : 0)
- *           + (vittoria ? BONUS_VITTORIA : 0)
- * &lt;/pre&gt;
- */
+/** Calcola il punteggio ufficiale descritto in Rules.md. */
 @Component
-<span class="fc" id="L21">public class FantaScoreCalculator {</span>
-
-    public static final double BONUS_KILL = 0.5;
-    public static final double BONUS_ASSIST = 0.3;
-    public static final double MALUS_MORTE = 0.4;
-    public static final double BONUS_MVP = 2.0;
-    public static final double BONUS_VITTORIA = 1.0;
-
-    public double calcola(double votoBase, int kills, int morti, int assist, boolean mvp, boolean vittoria) {
-<span class="fc" id="L30">        double fantavoto = votoBase</span>
-                + (kills * BONUS_KILL)
-                + (assist * BONUS_ASSIST)
-                - (morti * MALUS_MORTE)
-<span class="fc bfc" id="L34" title="All 2 branches covered.">                + (mvp ? BONUS_MVP : 0)</span>
-<span class="fc bfc" id="L35" title="All 2 branches covered.">                + (vittoria ? BONUS_VITTORIA : 0);</span>
-
-        // Il fantavoto non può scendere sotto lo zero.
-<span class="fc" id="L38">        return Math.max(fantavoto, 0.0);</span>
+<span class="fc" id="L7">public class FantaScoreCalculator {</span>
+    public double calcola(int kills, int morti, int assist, int cs, boolean vittoria) {
+<span class="fc" id="L9">        return kills * 3.0</span>
+                + assist * 2.0
+                - morti * 2.0
+<span class="fc" id="L12">                + Math.floorDiv(cs, 100)</span>
+<span class="fc bfc" id="L13" title="All 2 branches covered.">                + (vittoria ? 3.0 : 0.0);</span>
     }
 
     public double calcola(PlayerStat stat) {
-<span class="nc" id="L42">        return calcola(stat.getVotoBase(), stat.getKills(), stat.getMorti(), stat.getAssist(),</span>
-<span class="nc" id="L43">                stat.isMvp(), stat.isVittoria());</span>
+<span class="nc" id="L17">        return calcola(stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(), stat.isVittoria());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

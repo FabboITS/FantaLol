@@ -52,10 +52,10 @@ public class Formation {
     @Builder.Default
     private Set<LecPlayer> titolari = new HashSet<>();
 
-    /** Capitano della formazione: il suo fantavoto viene raddoppiato. Deve appartenere ai titolari. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "capitano_id")
-    private LecPlayer capitano;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private FormationSource source = FormationSource.SUBMITTED;
 
     /** Punteggio totale della formazione per la giornata, calcolato a chiusura giornata. */
     private Double punteggioTotale;

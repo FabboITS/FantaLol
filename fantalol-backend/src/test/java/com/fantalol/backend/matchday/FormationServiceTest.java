@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,11 +79,11 @@ class FormationServiceTest {
         when(formationRepository.findByFantaTeamIdAndMatchdayId(1L, 1L)).thenReturn(Optional.empty());
         when(formationRepository.save(any(Formation.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        FormationRequest request = new FormationRequest(1L, titolari.stream().map(LecPlayer::getId).toList(), 10L);
+        FormationRequest request = new FormationRequest(1L, titolari.stream().map(LecPlayer::getId).toList());
         FormationResponse response = formationService.impostaFormazione("mago", 1L, request);
 
         assertThat(response.titolari()).containsExactlyInAnyOrder("Top", "Jungle", "Caps", "Adc", "Support");
-        assertThat(response.capitano()).isEqualTo("Caps");
+        assertThat(response.source()).isEqualTo(FormationSource.SUBMITTED);
     }
 
     @Test
@@ -91,7 +92,7 @@ class FormationServiceTest {
         when(matchdayRepository.findById(1L)).thenReturn(Optional.of(matchday));
         when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, 10L)).thenReturn(false);
 
-        FormationRequest request = new FormationRequest(1L, List.of(10L, 11L, 12L, 13L, 14L), null);
+        FormationRequest request = new FormationRequest(1L, List.of(10L, 11L, 12L, 13L, 14L));
 
         assertThatThrownBy(() -> formationService.impostaFormazione("mago", 1L, request))
                 .isInstanceOf(BusinessRuleException.class)
@@ -99,7 +100,7 @@ class FormationServiceTest {
     }
 
     @Test
-    void rifiutaSeIlCapitanoNonEUnoDeiTitolari() {
+    void rifiutaLaModificaMentreLAstaEAperta() {
         List<LecPlayer> titolari = List.of(
                 LecPlayer.builder().id(11L).nickname("Top").ruolo(PlayerRole.TOP).build(),
                 LecPlayer.builder().id(12L).nickname("Jungle").ruolo(PlayerRole.JUNGLE).build(),
@@ -109,16 +110,12 @@ class FormationServiceTest {
         );
         when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
         when(matchdayRepository.findById(1L)).thenReturn(Optional.of(matchday));
-        for (LecPlayer player : titolari) {
-            when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, player.getId())).thenReturn(true);
-            when(lecPlayerRepository.findById(player.getId())).thenReturn(Optional.of(player));
-        }
-
-        FormationRequest request = new FormationRequest(1L, titolari.stream().map(LecPlayer::getId).toList(), 999L);
+        fantaTeam.getLeague().setAuctionOpen(true);
+        FormationRequest request = new FormationRequest(1L, titolari.stream().map(LecPlayer::getId).toList());
 
         assertThatThrownBy(() -> formationService.impostaFormazione("mago", 1L, request))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("capitano");
+                .hasMessageContaining("asta");
     }
 
     @Test
@@ -127,7 +124,7 @@ class FormationServiceTest {
         when(userService.findByUsernameOrThrow("altro-utente"))
                 .thenReturn(User.builder().username("altro-utente").role(com.fantalol.backend.user.Role.USER).build());
 
-        FormationRequest request = new FormationRequest(1L, List.of(10L), null);
+        FormationRequest request = new FormationRequest(1L, List.of(10L));
 
         assertThatThrownBy(() -> formationService.impostaFormazione("altro-utente", 1L, request))
                 .isInstanceOf(BusinessRuleException.class)
@@ -140,10 +137,52 @@ class FormationServiceTest {
         when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
         when(matchdayRepository.findById(2L)).thenReturn(Optional.of(chiusa));
 
-        FormationRequest request = new FormationRequest(2L, List.of(10L), null);
+        FormationRequest request = new FormationRequest(2L, List.of(10L));
 
         assertThatThrownBy(() -> formationService.impostaFormazione("mago", 1L, request))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("chiusa");
+    }
+
+    @Test
+    void riusaLultimaFormazioneInUnaLegaPiccola() {
+        fantaTeam.getLeague().setParticipantCount(5);
+        Matchday previousDay = Matchday.builder().id(1L).numero(1).build();
+        Matchday nextDay = Matchday.builder().id(2L).numero(2).build();
+        Formation previous = Formation.builder().fantaTeam(fantaTeam).matchday(previousDay)
+                .source(FormationSource.SUBMITTED).titolari(Set.of(caps)).build();
+        when(formationRepository.findByFantaTeamIdAndMatchdayId(1L, 2L)).thenReturn(Optional.empty());
+        when(formationRepository.findFirstByFantaTeamIdAndMatchdayNumeroLessThanAndSourceOrderByMatchdayNumeroDesc(
+                1L, 2, FormationSource.SUBMITTED)).thenReturn(Optional.of(previous));
+        when(formationRepository.save(any(Formation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Formation resolved = formationService.resolveEffectiveFormation(fantaTeam, nextDay);
+
+        assertThat(resolved.getSource()).isEqualTo(FormationSource.CARRIED);
+        assertThat(resolved.getTitolari()).containsExactly(caps);
+    }
+
+    @Test
+    void usaAutomaticamenteLaRosaInUnaLegaGrande() {
+        fantaTeam.getLeague().setParticipantCount(6);
+        List<LecPlayer> players = List.of(
+                LecPlayer.builder().id(11L).ruolo(PlayerRole.TOP).build(),
+                LecPlayer.builder().id(12L).ruolo(PlayerRole.JUNGLE).build(),
+                caps,
+                LecPlayer.builder().id(13L).ruolo(PlayerRole.ADC).build(),
+                LecPlayer.builder().id(14L).ruolo(PlayerRole.SUPPORT).build());
+        List<com.fantalol.backend.league.RosterEntry> roster = players.stream()
+                .map(player -> com.fantalol.backend.league.RosterEntry.builder()
+                        .fantaTeam(fantaTeam).lecPlayer(player).creditiSpesi(1).build())
+                .toList();
+        Matchday day = Matchday.builder().id(2L).numero(2).build();
+        when(formationRepository.findByFantaTeamIdAndMatchdayId(1L, 2L)).thenReturn(Optional.empty());
+        when(rosterEntryRepository.findByFantaTeamId(1L)).thenReturn(roster);
+        when(formationRepository.save(any(Formation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Formation resolved = formationService.resolveEffectiveFormation(fantaTeam, day);
+
+        assertThat(resolved.getSource()).isEqualTo(FormationSource.AUTOMATIC);
+        assertThat(resolved.getTitolari()).containsExactlyInAnyOrderElementsOf(players);
     }
 }

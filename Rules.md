@@ -49,11 +49,11 @@ L’asta termina quando tutti i partecipanti hanno completato correttamente la p
 
 ## Formazione
 
-Prima dell’inizio di ogni giornata, il partecipante deve schierare una formazione valida composta da un giocatore per ogni ruolo.
+La creazione della prima giornata blocca il numero di partecipanti della lega e apre automaticamente l’asta. Finché l’asta è aperta, la giornata non può essere usata o chiusa.
 
-Nelle leghe con riserve, è possibile sostituire un titolare con la sua riserva dello stesso ruolo entro la scadenza prevista.
+Nelle leghe da 2 a 5 partecipanti, dopo la chiusura dell’asta ogni proprietario può scegliere una formazione valida composta da un giocatore per ruolo. Se non la aggiorna, resta valida l’ultima formazione schierata. Se non ha mai schierato una prima formazione, il fantasy team riceve 0 punti.
 
-Una volta iniziata la giornata, la formazione viene bloccata e non può più essere modificata fino alla conclusione delle partite previste.
+Nelle leghe con almeno 6 partecipanti, i cinque player della rosa, uno per ruolo, costituiscono automaticamente la formazione e sono consultabili con “Vedi la tua rosa”.
 
 Un giocatore che non disputa una partita ufficiale non riceve punti.
 
@@ -63,17 +63,13 @@ I punteggi vengono calcolati utilizzando le statistiche ufficiali ottenute dai g
 
 La valutazione può tenere conto di:
 
-- kill;
-- assist;
-- morti;
-- CS ottenuti;
-- vittorie;
-- partecipazione alle kill;
-- danni inflitti;
-- controllo della visione;
-- prestazione complessiva rispetto al proprio ruolo.
+- kill (+3 pt);
+- assist (+2 pt);
+- morti (-2 pt);
+- CS ottenuti (+1 pt per ogni 100 CS);
+- vittorie (+3 pt);
 
-I punti vengono calcolati per ogni singola partita e successivamente sommati per determinare il punteggio della giornata e la classifica generale.
+Il punteggio della giornata del fantasy team è la media aritmetica dei punteggi dei cinque player attivi. Un player senza statistiche vale 0 punti e il totale viene comunque diviso per cinque. I punteggi medi delle giornate chiuse vengono sommati per determinare la classifica generale.
 
 Le prestazioni vengono valutate considerando il ruolo del giocatore. Ad esempio, le statistiche di visione e gli assist possono avere maggiore importanza per un Support, mentre CS e danni possono incidere maggiormente sulla valutazione di un ADC.
 

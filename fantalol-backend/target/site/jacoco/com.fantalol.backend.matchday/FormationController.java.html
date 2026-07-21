@@ -20,16 +20,21 @@ public class FormationController {
 
     private final FormationService formationService;
 
+    @GetMapping
+    public java.util.List&lt;FormationResponse&gt; history(@PathVariable Long fantaTeamId) {
+<span class="nc" id="L25">        return formationService.findHistory(fantaTeamId);</span>
+    }
+
     @GetMapping(&quot;/{matchdayId}&quot;)
     public FormationResponse findByMatchday(@PathVariable Long fantaTeamId, @PathVariable Long matchdayId) {
-<span class="nc" id="L25">        return formationService.findByTeamAndMatchday(fantaTeamId, matchdayId);</span>
+<span class="nc" id="L30">        return formationService.findByTeamAndMatchday(fantaTeamId, matchdayId);</span>
     }
 
     @PutMapping
     public FormationResponse imposta(Authentication authentication,
                                       @PathVariable Long fantaTeamId,
                                       @Valid @RequestBody FormationRequest request) {
-<span class="nc" id="L32">        return formationService.impostaFormazione(authentication.getName(), fantaTeamId, request);</span>
+<span class="nc" id="L37">        return formationService.impostaFormazione(authentication.getName(), fantaTeamId, request);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

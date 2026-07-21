@@ -40,6 +40,10 @@ public class FantaTeamService {
         User user = userService.findByUsernameOrThrow(username);
         League league = leagueService.getByInviteCodeOrThrow(request.codiceInvito());
 
+        if (league.isCompetitionStarted()) {
+            throw new BusinessRuleException("La lega è già iniziata: non è più possibile iscriversi");
+        }
+
         if (fantaTeamRepository.countByLeagueId(league.getId()) >= 10) {
             throw new BusinessRuleException("La lega ha già raggiunto il limite di 10 squadre");
         }

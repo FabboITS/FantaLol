@@ -11,10 +11,12 @@ public record MatchdayResponse(
         Integer numero,
         String descrizione,
         LocalDate data,
-        boolean chiusa
+        boolean chiusa,
+        boolean auctionLocked
 ) {
     public static MatchdayResponse from(Matchday matchday) {
         return new MatchdayResponse(matchday.getId(), matchday.getLeague().getId(), matchday.getLeague().getNome(), matchday.getNumero(), matchday.getDescrizione(),
-                matchday.getData(), matchday.isChiusa());
+                matchday.getData(), matchday.isChiusa(),
+                !matchday.isChiusa() && matchday.getLeague().isAuctionOpen());
     }
 }

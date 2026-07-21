@@ -20,4 +20,8 @@ public interface LecPlayerRepository extends JpaRepository<LecPlayer, Long> {
     List<LecPlayer> findByTeamId(Long teamId);
 
     List<LecPlayer> findByRuolo(PlayerRole ruolo);
+
+    Optional<LecPlayer> findByOraclePlayerId(String oraclePlayerId);
+
+    Optional<LecPlayer> findFirstByNicknameIgnoreCase(String nickname);
 }

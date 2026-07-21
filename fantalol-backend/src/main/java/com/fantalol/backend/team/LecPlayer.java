@@ -41,6 +41,9 @@ public class LecPlayer {
     @Column(length = 255)
     private String imageUrl;
 
+    @Column(name = "oracle_player_id", unique = true, length = 120)
+    private String oraclePlayerId;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

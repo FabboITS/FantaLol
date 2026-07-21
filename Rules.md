@@ -106,6 +106,8 @@ Al termine delle partite, il sistema importa le statistiche disponibili, calcola
 
 Gli aggiornamenti potrebbero non essere immediati. I risultati rimangono provvisori fino alla conferma definitiva dei dati.
 
+Se una partita viene rinviata, la settimana resta in attesa ed è esclusa completamente dalla classifica generale. Le settimane successive continuano normalmente. Dopo il recupero, i nuovi dati vengono aggiunti alla settimana sospesa e il risultato diventa definitivo soltanto alla sua chiusura.
+
 In caso di statistiche mancanti, errori della fonte dati o partite annullate, l’amministratore può correggere manualmente i risultati.
 
 ## Comportamento dei partecipanti

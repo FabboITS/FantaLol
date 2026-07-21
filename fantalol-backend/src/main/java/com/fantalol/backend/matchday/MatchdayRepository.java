@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface MatchdayRepository extends JpaRepository<Matchday, Long> {
     Optional<Matchday> findByLeagueIdAndNumero(Long leagueId, Integer numero);
     boolean existsByLeagueIdAndChiusaFalse(Long leagueId);
+    boolean existsByLeagueIdAndStatus(Long leagueId, MatchdayStatus status);
 }

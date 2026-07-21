@@ -56,4 +56,9 @@ public class MatchdayController {
     public MatchdayResponse chiudiGiornata(Authentication authentication, @PathVariable Long id) {
         return matchdayService.chiudiGiornata(authentication.getName(), id);
     }
+
+    @PostMapping("/{id}/waiting-for-postponed")
+    public MatchdayResponse markWaitingForPostponedMatches(Authentication authentication, @PathVariable Long id) {
+        return matchdayService.markWaitingForPostponedMatches(authentication.getName(), id);
+    }
 }

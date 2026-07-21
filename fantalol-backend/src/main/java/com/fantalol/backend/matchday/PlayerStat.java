@@ -64,7 +64,19 @@ public class PlayerStat {
     @Builder.Default
     private boolean vittoria = false;
 
-    /** Fantavoto calcolato dal sistema in base al voto base e ai bonus/malus statistici. */
+    @Min(0)
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer wins = 0;
+
+    @PostLoad
+    void initializeWinsForLegacyRows() {
+        if (wins == null) {
+            wins = vittoria ? 1 : 0;
+        }
+    }
+
+    /** Fantasy score calculated from the weekly aggregate statistics. */
     @Column(nullable = false)
     private Double fantavoto;
 }

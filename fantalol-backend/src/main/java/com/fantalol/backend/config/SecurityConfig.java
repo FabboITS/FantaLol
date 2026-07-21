@@ -84,7 +84,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/teams/**", "/api/players/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/teams/**", "/api/players/**").hasRole("ADMIN")
 
-                        // Creazione giornate, inserimento statistiche e chiusura giornata: solo ADMIN
+                        // External data imports and provider checks: global ADMIN only
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Matchday creation and lifecycle: authenticated; service checks league ownership/admin role
                         .requestMatchers(HttpMethod.POST, "/api/matchdays/**").authenticated()
 
                         // Directory degli username registrati: solo ADMIN

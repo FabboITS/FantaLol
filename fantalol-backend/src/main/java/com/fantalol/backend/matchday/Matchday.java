@@ -49,6 +49,18 @@ public class Matchday {
     @Builder.Default
     private boolean chiusa = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    @Builder.Default
+    private MatchdayStatus status = MatchdayStatus.OPEN;
+
+    @PostLoad
+    void initializeStatusForLegacyRows() {
+        if (status == null) {
+            status = chiusa ? MatchdayStatus.CLOSED : MatchdayStatus.OPEN;
+        }
+    }
+
     @OneToMany(mappedBy = "matchday", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<PlayerStat> statistiche = new ArrayList<>();

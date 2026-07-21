@@ -31,6 +31,10 @@ fantalol:
   asta:
     crediti-iniziali: 1000
 
+  pandascore:
+    base-url: ${PANDASCORE_BASE_URL:https://api.pandascore.co}
+    token: ${PANDASCORE_API_TOKEN:}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

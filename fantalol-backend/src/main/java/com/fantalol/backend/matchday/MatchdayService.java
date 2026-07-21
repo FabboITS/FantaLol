@@ -52,7 +52,7 @@ public class MatchdayService {
     public MatchdayResponse create(String username, MatchdayRequest request) {
         League league = leagueService.getOrThrow(request.leagueId());
         assertLeagueAdmin(username, league);
-        if (matchdayRepository.existsByLeagueIdAndChiusaFalse(league.getId())) {
+        if (matchdayRepository.existsByLeagueIdAndStatus(league.getId(), MatchdayStatus.OPEN)) {
             throw new BusinessRuleException("Esiste già una giornata aperta per questa lega");
         }
         if (matchdayRepository.findByLeagueIdAndNumero(league.getId(), request.numero()).isPresent()) {
@@ -97,6 +97,7 @@ public class MatchdayService {
         stat.setAssist(request.assist() != null ? request.assist() : 0);
         stat.setCs(request.cs() != null ? request.cs() : 0);
         stat.setVittoria(request.vittoria());
+        stat.setWins(request.vittoria() ? 1 : 0);
         stat.setFantavoto(fantaScoreCalculator.calcola(stat));
 
         return PlayerStatResponse.from(playerStatRepository.save(stat));
@@ -135,6 +136,19 @@ public class MatchdayService {
         fantaTeamRepository.saveAll(teams);
 
         matchday.setChiusa(true);
+        matchday.setStatus(MatchdayStatus.CLOSED);
+        return MatchdayResponse.from(matchdayRepository.save(matchday));
+    }
+
+    @Transactional
+    public MatchdayResponse markWaitingForPostponedMatches(String username, Long matchdayId) {
+        Matchday matchday = getOrThrow(matchdayId);
+        assertLeagueAdmin(username, matchday.getLeague());
+        assertAuctionClosed(matchday);
+        if (matchday.isChiusa()) {
+            throw new BusinessRuleException("A closed matchday cannot be moved back to waiting");
+        }
+        matchday.setStatus(MatchdayStatus.WAITING_FOR_POSTPONED_MATCHES);
         return MatchdayResponse.from(matchdayRepository.save(matchday));
     }
 

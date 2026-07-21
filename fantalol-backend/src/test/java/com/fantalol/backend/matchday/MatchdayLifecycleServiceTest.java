@@ -45,7 +45,7 @@ class MatchdayLifecycleServiceTest {
     void creatingMatchdayStartsCompetitionAndOpensAuction() {
         when(leagueService.getOrThrow(1L)).thenReturn(league);
         when(userService.findByUsernameOrThrow("creator")).thenReturn(league.getAdmin());
-        when(matchdayRepository.existsByLeagueIdAndChiusaFalse(1L)).thenReturn(false);
+        when(matchdayRepository.existsByLeagueIdAndStatus(1L, MatchdayStatus.OPEN)).thenReturn(false);
         when(matchdayRepository.findByLeagueIdAndNumero(1L, 1)).thenReturn(Optional.empty());
         when(matchdayRepository.save(any(Matchday.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(leagueService.startCompetitionAndOpenAuction(league)).thenAnswer(invocation -> {
@@ -63,7 +63,7 @@ class MatchdayLifecycleServiceTest {
     void rejectsSecondOpenMatchday() {
         when(leagueService.getOrThrow(1L)).thenReturn(league);
         when(userService.findByUsernameOrThrow("creator")).thenReturn(league.getAdmin());
-        when(matchdayRepository.existsByLeagueIdAndChiusaFalse(1L)).thenReturn(true);
+        when(matchdayRepository.existsByLeagueIdAndStatus(1L, MatchdayStatus.OPEN)).thenReturn(true);
 
         assertThatThrownBy(() -> service.create("creator", new MatchdayRequest(1L, 2, null, null)))
                 .isInstanceOf(BusinessRuleException.class)

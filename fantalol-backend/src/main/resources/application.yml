@@ -1,14 +1,14 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
     name: fantalol-backend
 
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fantalol}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USER:fantalol}
-    password: ${DB_PASSWORD:fantalol}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -18,7 +18,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
 
   jackson:
@@ -26,14 +25,16 @@ spring:
 
 fantalol:
   jwt:
-    secret: ${JWT_SECRET:cGVyLWZhdm9yZS1jYW1iaWEtcXVlc3RhLWNoaWF2ZS1zZWdyZXRhLWluLXByb2R1emlvbmUtMTIzNDU2Nzg=}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 ore
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
   asta:
     crediti-iniziali: 1000
 
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
   api-docs:
     path: /v3/api-docs
 

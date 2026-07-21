@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Dashboard della tua lega FantaLeague.">
+    <title>Lega — FantaLeague</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/auction.css"><link rel="stylesheet" href="/css/live-auction.css"><link rel="stylesheet" href="/css/league-detail.css">
+</head>
+<body class="league-page">
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+<header class="site-header league-header"><a class="brand" href="/index.html#leagues" aria-label="FantaLeague home"><span class="brand-mark">F</span><span>FANTA<span>LEAGUE</span></span></a><a class="back-link" href="/index.html#leagues">← Le mie leghe</a><div class="header-actions"><span id="user-chip" class="user-chip"></span><button id="logout-button" class="icon-button" title="Esci" aria-label="Esci">↗</button></div></header>
+
+<main class="league-main">
+    <div id="league-loading" class="league-status"><span class="status-glyph">⌁</span><h1>Caricamento lega…</h1><p>Stiamo preparando la tua arena.</p></div>
+    <div id="league-error" class="league-status hidden" role="alert"><span class="status-glyph">!</span><h1>Lega non disponibile</h1><p id="league-error-message"></p><a class="button button-primary" href="/index.html#leagues">Torna alle leghe</a></div>
+    <div id="league-dashboard" class="league-shell hidden">
+        <aside class="league-sidebar">
+            <div class="sidebar-identity"><p class="eyebrow">La tua arena</p><h1 id="league-name"></h1><p id="league-admin" class="panel-meta"></p></div>
+            <nav id="league-navigation" class="league-navigation" aria-label="Sezioni della lega">
+                <button class="active" data-section="overview" aria-current="page"><span>01</span> Overview</button>
+                <button data-section="teams"><span>02</span> Squadre</button>
+                <button data-section="auction"><span>03</span> Asta</button>
+                <button data-section="matchdays"><span>04</span> Giornate</button>
+                <button data-section="lec"><span>05</span> Classifica LEC</button>
+                <button data-section="performance"><span>06</span> Performance</button>
+            </nav>
+            <div class="sidebar-code"><small>Codice invito</small><strong id="league-code"></strong></div>
+        </aside>
+
+        <div class="league-content">
+            <section class="league-view" data-view="overview"><div class="view-heading"><div><p class="eyebrow">Overview</p><h2 id="overview-title">PANORAMICA</h2></div><span id="auction-state" class="status-pill"></span></div><div id="league-metrics" class="league-metrics"></div><div class="content-card"><div class="card-heading"><div><p class="eyebrow">Classifica</p><h3>FANTASY TEAM</h3></div><span>Aggiornamento automatico</span></div><div id="fantasy-ranking"></div></div></section>
+            <section class="league-view hidden" data-view="teams"><div class="view-heading"><div><p class="eyebrow">Tutti i partecipanti</p><h2>SQUADRE &amp; ROSE</h2></div></div><div id="league-teams" class="league-team-grid"></div></section>
+            <section class="league-view hidden" data-view="auction"><div class="view-heading"><div><p class="eyebrow">Mercato della lega</p><h2>ASTA LIVE</h2></div><div id="auction-phase-controls" class="auction-phase-controls"></div></div><div class="content-card"><div id="auction-summary" class="auction-summary"></div><button class="button button-ghost free-player hidden" id="auto-complete-button">Completa casualmente i ruoli mancanti</button><div id="auction-list" class="auction-list"></div></div></section>
+            <section class="league-view hidden" data-view="matchdays"><div class="view-heading"><div><p class="eyebrow">Competizione</p><h2>GIORNATE</h2></div><div class="section-actions"><button id="create-matchday-button" class="button button-primary hidden">+ Giornata</button><button id="open-formation-button" class="button button-ghost hidden">Formazione</button></div></div><div id="matchdays-list" class="matchdays-list"></div></section>
+            <section class="league-view hidden" data-view="lec"><div class="view-heading"><div><p class="eyebrow">Campionato ufficiale</p><h2>CLASSIFICA LEC</h2></div></div><div id="lec-standings" class="integration-state"></div></section>
+            <section class="league-view hidden" data-view="performance"><div class="view-heading"><div><p class="eyebrow">Statistiche ufficiali</p><h2>PLAYER PERFORMANCE</h2></div></div><div id="player-performance" class="integration-state"></div></section>
+        </div>
+    </div>
+</main>
+
+<dialog id="formation-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Starting five</p><h2>FORMAZIONE</h2><form id="formation-form"><label>Giornata<select name="matchdayId" required></select></label><div id="formation-roles" class="formation-roles"></div><label>Capitano<select name="capitanoId" required><option value="">Seleziona prima i titolari</option></select></label><button class="button button-primary" type="submit">Schiera titolari →</button><p class="form-error" role="alert"></p></form></dialog>
+<dialog id="matchday-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Admin della lega</p><h2>APRI GIORNATA</h2><form id="matchday-form"><input type="hidden" name="leagueId"><label>Numero giornata<input type="number" name="numero" min="1" required></label><label>Descrizione<input name="descrizione" maxlength="100" placeholder="Es. Week 1"></label><label>Data<input type="date" name="data"></label><button class="button button-primary" type="submit">Apri giornata →</button><p class="form-error" role="alert"></p></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/js/league-utils.js"></script><script src="/js/lec-data-source.js"></script><script src="/js/league-detail.js" defer></script>
+</body>
+</html>

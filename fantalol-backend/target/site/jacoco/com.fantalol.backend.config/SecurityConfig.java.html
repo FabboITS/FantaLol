@@ -68,7 +68,7 @@ public class SecurityConfig {
 <span class="fc" id="L68">                .sessionManagement(sm -&gt; sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
 <span class="fc" id="L69">                .authorizeHttpRequests(auth -&gt; auth</span>
                         // Frontend statico servito direttamente da Spring Boot
-<span class="fc" id="L71">                        .requestMatchers(&quot;/&quot;, &quot;/index.html&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/assets/**&quot;,</span>
+<span class="fc" id="L71">                        .requestMatchers(&quot;/&quot;, &quot;/index.html&quot;, &quot;/lega.html&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/assets/**&quot;,</span>
 <span class="fc" id="L72">                                &quot;/Player_immage/**&quot;, &quot;/favicon.ico&quot;, &quot;/favicon.svg&quot;).permitAll()</span>
 
                         // Endpoint pubblici: autenticazione e documentazione

@@ -16,7 +16,7 @@ fantalol-backend,com.fantalol.backend.team,LecTeamService,28,64,0,2,6,14,2,6,2,5
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.config,AdminAccountInitializer,0,60,0,4,0,22,0,4,0,2
 fantalol-backend,com.fantalol.backend.config,DataSeeder,63,536,8,22,13,55,6,23,1,6
-fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,268,0,0,0,37,0,11,0,11
+fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,272,0,0,0,37,0,11,0,11
 fantalol-backend,com.fantalol.backend.league,RosterPolicy,0,22,0,2,0,2,0,2,0,1
 fantalol-backend,com.fantalol.backend.league,RosterPolicy.Limits,0,9,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league,FantaTeamService,549,213,41,15,77,46,45,10,23,4
@@ -39,8 +39,8 @@ fantalol-backend,com.fantalol.backend.league.dto,LeagueResponse,2,49,1,1,0,5,1,2
 fantalol-backend,com.fantalol.backend.league.dto,RosterEntryResponse,0,41,0,0,0,8,0,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,AuctionBidRequest,0,9,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league.dto,AcquistoPlayerRequest,0,9,0,0,0,1,0,1,0,1
-fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,0,12,0,0,0,1,0,1,0,1
+fantalol-backend,com.fantalol.backend.league.dto,LeagueRequest,9,0,0,0,1,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.league.dto,AuctionResponse,4,71,2,2,0,6,2,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,FantaTeamResponse,2,54,1,1,0,5,1,2,0,2
 fantalol-backend,com.fantalol.backend.security,JwtAuthFilter,0,67,4,6,0,18,4,2,0,1

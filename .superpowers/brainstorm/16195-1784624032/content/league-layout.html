@@ -1,0 +1,43 @@
+<h2>Come deve essere organizzata la pagina Lega?</h2>
+<p class="subtitle">Tutte le opzioni mantengono lo stile scuro blu/viola di FantaLeague e aprono una vera pagina separata.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#080b16;color:#eef2ff;min-height:320px">
+      <div style="font-size:10px;color:#7da6ff;margin-bottom:8px">← LE MIE LEGHE</div>
+      <div style="padding:14px;background:linear-gradient(135deg,#16213c,#241848);border:1px solid #4f70bc">
+        <b>RIFT LEGENDS</b><div style="font-size:9px;color:#a8b0c8;margin-top:5px">8 squadre · Codice K7F3P</div>
+      </div>
+      <div style="display:flex;gap:6px;margin:10px 0"><span class="mock-button">Asta</span><span class="mock-button">Giornata</span><span class="mock-button">Formazione</span></div>
+      <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:8px">
+        <div class="placeholder" style="height:120px">Classifica fantasy + roster espandibili</div>
+        <div class="placeholder" style="height:120px">Classifica LEC<br>API in arrivo</div>
+      </div>
+      <div class="placeholder" style="height:70px;margin-top:8px">Prestazioni player LEC · API in arrivo</div>
+    </div>
+    <div class="card-body"><h3>A — Dashboard completa</h3><p>Azioni subito visibili, ranking e rose al centro, dati LEC a lato. È la mia raccomandazione.</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#080b16;color:#eef2ff;min-height:320px">
+      <div style="font-size:10px;color:#7da6ff;margin-bottom:8px">← LE MIE LEGHE</div>
+      <div style="padding:14px;background:linear-gradient(135deg,#16213c,#241848);border:1px solid #4f70bc"><b>RIFT LEGENDS</b></div>
+      <div style="display:flex;gap:5px;margin:10px 0;border-bottom:1px solid #30384f;padding-bottom:8px"><span class="mock-button">Overview</span><span class="mock-button">Rose</span><span class="mock-button">LEC</span><span class="mock-button">Performance</span></div>
+      <div class="placeholder" style="height:190px">Un contenuto alla volta<br>in base alla tab selezionata</div>
+      <div style="display:flex;gap:6px;margin-top:8px"><span class="mock-button">Asta</span><span class="mock-button">Giornata</span><span class="mock-button">Formazione</span></div>
+    </div>
+    <div class="card-body"><h3>B — Navigazione a tab</h3><p>Più ordinata su mobile, ma nasconde parte delle informazioni e richiede più click.</p></div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#080b16;color:#eef2ff;min-height:320px">
+      <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;height:285px">
+        <div style="background:#11172a;padding:10px;font-size:9px"><b>RIFT<br>LEGENDS</b><hr style="border-color:#30384f"><p>Overview</p><p>Squadre</p><p>Asta</p><p>Giornate</p><p>LEC</p></div>
+        <div><div class="placeholder" style="height:90px">Classifica fantasy</div><div class="placeholder" style="height:90px;margin-top:7px">Rose</div><div class="placeholder" style="height:75px;margin-top:7px">Dati LEC</div></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C — Sidebar gestionale</h3><p>Scalabile per molte funzioni future, ma più pesante e meno coerente con il sito attuale.</p></div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:18px">Clicca l'opzione che preferisci, poi confermala nella chat.</p>

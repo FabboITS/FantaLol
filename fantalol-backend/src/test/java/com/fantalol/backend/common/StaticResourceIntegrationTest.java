@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -69,6 +71,16 @@ class StaticResourceIntegrationTest {
     }
 
     @Test
+    void rulesTriggerIsAFullSizeSecondaryButton() throws Exception {
+        mockMvc.perform(get("/css/style.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(".rules-trigger")))
+                .andExpect(content().string(containsString("width:100%")))
+                .andExpect(content().string(containsString("min-height:45px")))
+                .andExpect(content().string(containsString("border:1px solid var(--lime)")));
+    }
+
+    @Test
     void portraitStylesheetShowsTheCompletePlayerImage() throws Exception {
         mockMvc.perform(get("/css/player-images.css"))
                 .andExpect(status().isOk())
@@ -117,17 +129,63 @@ class StaticResourceIntegrationTest {
     }
 
     @Test
-    void frontendContainsLeagueAuctionControlsAndAutomaticRefresh() throws Exception {
+    void homeContainsCompleteRulesDialogAndLeagueDetailNavigation() throws Exception {
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("id=\"auction-phase-controls\"")));
+                .andExpect(content().string(containsString("id=\"rules-button\"")))
+                .andExpect(content().string(containsString("id=\"rules-dialog\"")))
+                .andExpect(content().string(containsString("Regole FantaLeague LEC")))
+                .andExpect(content().string(containsString("Cambi nei roster reali")))
+                .andExpect(content().string(containsString("Accettazione delle regole")));
 
         mockMvc.perform(get("/js/app.js"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("/auction/${button.dataset.auctionPhase}")))
+                .andExpect(content().string(containsString("/lega.html?id=${league.id}")))
+                .andExpect(content().string(not(containsString("data-auction=\"${team.id}\""))))
+                .andExpect(content().string(not(containsString("data-matchday=\"${league.id}\""))));
+    }
+
+    @Test
+    void servesLeagueDashboardAndItsIntegrationReadyAssets() throws Exception {
+        mockMvc.perform(get("/lega.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"league-error\"")))
+                .andExpect(content().string(containsString("data-section=\"overview\"")))
+                .andExpect(content().string(containsString("data-section=\"teams\"")))
+                .andExpect(content().string(containsString("data-section=\"auction\"")))
+                .andExpect(content().string(containsString("data-section=\"matchdays\"")))
+                .andExpect(content().string(containsString("data-section=\"lec\"")))
+                .andExpect(content().string(containsString("data-section=\"performance\"")))
+                .andExpect(content().string(containsString("id=\"auction-phase-controls\"")))
+                .andExpect(content().string(containsString("id=\"formation-dialog\"")))
+                .andExpect(content().string(containsString("id=\"matchday-dialog\"")));
+
+        for (String asset : List.of("/css/league-detail.css", "/js/league-utils.js",
+                "/js/lec-data-source.js", "/js/league-detail.js")) {
+            mockMvc.perform(get(asset)).andExpect(status().isOk());
+        }
+
+        mockMvc.perform(get("/js/lec-data-source.js"))
+                .andExpect(content().string(containsString("status:'not-connected'")))
+                .andExpect(content().string(not(containsString("position:"))));
+    }
+
+    @Test
+    void frontendContainsLeagueAuctionControlsAndAutomaticRefresh() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("id=\"auction-dialog\""))))
+                .andExpect(content().string(not(containsString("id=\"formation-dialog\""))))
+                .andExpect(content().string(not(containsString("id=\"matchday-dialog\""))));
+
+        mockMvc.perform(get("/js/league-detail.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/auction/${action}")))
                 .andExpect(content().string(containsString("/rosters/complete-randomly")))
+                .andExpect(content().string(containsString("/formazioni")))
+                .andExpect(content().string(containsString("api('/matchdays'")))
                 .andExpect(content().string(containsString("Non hai abbastanza crediti per rilanciare")))
-                .andExpect(content().string(containsString("refreshAfterAuctionEnded")))
-                .andExpect(content().string(containsString("await loadPrivateData()")));
+                .andExpect(content().string(containsString("setInterval(refreshAuction,500)")))
+                .andExpect(content().string(containsString("beforeunload")));
     }
 }

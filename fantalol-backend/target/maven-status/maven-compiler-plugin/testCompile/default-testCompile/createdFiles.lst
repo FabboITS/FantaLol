@@ -1,7 +1,7 @@
 com/fantalol/backend/config/AdminAccountInitializerIntegrationTest.class
 com/fantalol/backend/league/LeagueAuctionPhaseServiceTest.class
-com/fantalol/backend/league/AuctionServiceTest.class
 com/fantalol/backend/league/FantaTeamServiceTest.class
+com/fantalol/backend/league/AuctionServiceTest.class
 com/fantalol/backend/team/LecPlayerServiceTest.class
 com/fantalol/backend/league/RosterPolicyTest.class
 com/fantalol/backend/matchday/FormationServiceTest.class

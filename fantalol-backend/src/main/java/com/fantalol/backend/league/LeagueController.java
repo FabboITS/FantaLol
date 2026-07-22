@@ -24,13 +24,13 @@ public class LeagueController {
     private final LeagueService leagueService;
 
     @GetMapping
-    public List<LeagueResponse> findAll() {
-        return leagueService.findAll();
+    public List<LeagueResponse> findAll(Authentication authentication) {
+        return leagueService.findAll(authentication.getName());
     }
 
     @GetMapping("/{id}")
-    public LeagueResponse findById(@PathVariable Long id) {
-        return leagueService.findById(id);
+    public LeagueResponse findById(Authentication authentication, @PathVariable Long id) {
+        return leagueService.findById(authentication.getName(), id);
     }
 
     @PostMapping

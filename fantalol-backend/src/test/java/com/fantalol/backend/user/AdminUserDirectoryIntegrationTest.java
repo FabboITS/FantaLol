@@ -38,34 +38,36 @@ class AdminUserDirectoryIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin-test", roles = "ADMIN")
-    void adminRiceveSoloUsernameUserOrdinati() throws Exception {
+    void adminReceivesSortedRegularUsersWithUsernameAndEmailOnly() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].username").value("alpha"))
+                .andExpect(jsonPath("$[0].email").value("alpha@test.local"))
                 .andExpect(jsonPath("$[1].username").value("zeta"))
+                .andExpect(jsonPath("$[1].email").value("zeta@test.local"))
                 .andExpect(jsonPath("$[0].id").doesNotExist())
-                .andExpect(jsonPath("$[0].email").doesNotExist())
                 .andExpect(jsonPath("$[0].password").doesNotExist())
-                .andExpect(jsonPath("$[0].role").doesNotExist());
+                .andExpect(jsonPath("$[0].role").doesNotExist())
+                .andExpect(jsonPath("$[0].profile").doesNotExist());
     }
 
     @Test
     @WithMockUser(username = "alpha", roles = "USER")
-    void utenteRegolareNonPuoLeggereLaDirectory() throws Exception {
+    void regularUserCannotReadDirectory() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void visitatoreNonAutenticatoNonPuoLeggereLaDirectory() throws Exception {
+    void anonymousUserCannotReadDirectory() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(username = "admin-test", roles = "ADMIN")
-    void adminNonCompareNellaDirectory() throws Exception {
+    void adminAccountsAreExcludedFromDirectory() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].username", not(hasItem("admin-test"))));

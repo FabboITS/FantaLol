@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -126,6 +127,34 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("event.ctrlKey")))
                 .andExpect(content().string(containsString("state.user?.role!=='ADMIN'")))
                 .andExpect(content().string(containsString("api('/users')")));
+    }
+
+    @Test
+    void homeOrdersLeaguesBeforePlayersInNavigationAndContent() throws Exception {
+        String html = mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(html.indexOf("href=\"#leagues\""))
+                .isLessThan(html.indexOf("href=\"#players\""));
+        assertThat(html.indexOf("id=\"leagues\""))
+                .isLessThan(html.indexOf("id=\"players\""));
+    }
+
+    @Test
+    void frontendSupportsAdminLeagueDeletionAndUserEmailDirectory() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Scorciatoia: Ctrl+Y")));
+
+        mockMvc.perform(get("/js/app.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("event.code==='KeyY'")))
+                .andExpect(content().string(containsString("user.email")))
+                .andExpect(content().string(containsString("canDeleteLeague")))
+                .andExpect(content().string(containsString("data-delete-league")))
+                .andExpect(content().string(containsString("method:'DELETE'")))
+                .andExpect(content().string(containsString("confirm(")));
     }
 
     @Test

@@ -98,6 +98,10 @@ button{cursor:pointer}
 .league-launcher:hover,.league-launcher:focus-visible{border-color:var(--lime);transform:translateY(-3px);outline:0;box-shadow:0 18px 45px rgba(0,0,0,.24)}
 .league-open{display:inline-block;margin-top:22px;color:var(--lime);font:700 11px var(--font-display);letter-spacing:.08em;text-transform:uppercase}
 .team-panel h3,.league-panel h3{font:600 22px var(--font-display);margin:5px 0}
+.league-panel{position:relative}
+.league-launcher{color:inherit;display:block;text-decoration:none}
+.league-delete{background:transparent;border:1px solid #ff6a4d;color:#ff8b73;cursor:pointer;font:600 10px var(--font-display);letter-spacing:.08em;margin-top:18px;padding:8px 12px;text-transform:uppercase}
+.league-delete:hover,.league-delete:focus-visible{background:#ff6a4d;color:#fff;outline:none}
 .panel-meta{font-size:11px;color:var(--muted)}
 .credits{color:var(--lime);font:600 25px var(--font-display);margin:22px 0 10px}
 .roster-mini{display:flex;flex-wrap:wrap;gap:5px}

@@ -20,7 +20,7 @@
 <header class="site-header">
     <a class="brand" href="#home" aria-label="FantaLeague home"><span class="brand-mark">F</span><span>FANTA<span>LEAGUE</span></span></a>
     <nav aria-label="Navigazione principale">
-        <a class="active" href="#home">Home</a><a href="#players">Players</a><a href="#leagues">Le mie leghe</a>
+        <a class="active" href="#home">Home</a><a href="#leagues">Le mie leghe</a><a href="#players">Players</a>
     </nav>
     <div class="header-actions">
         <span id="user-chip" class="user-chip hidden"></span>
@@ -56,16 +56,16 @@
         </div>
     </section>
 
-    <section id="players" class="section content-section">
-        <div class="section-heading"><div><p class="eyebrow">Il mercato</p><h2>SCOUT THE <em>BEST.</em></h2></div><p>Studia i roster ufficiali, filtra per ruolo e trova il prossimo campione della tua rosa.</p></div>
-        <div class="toolbar"><div id="role-filters" class="filters"><button class="active" data-role="">Tutti</button><button data-role="TOP">Top</button><button data-role="JUNGLE">Jungle</button><button data-role="MID">Mid</button><button data-role="ADC">ADC</button><button data-role="SUPPORT">Support</button></div><label class="search"><span>⌕</span><input id="player-search" type="search" placeholder="Cerca player o team..." aria-label="Cerca player o team"></label></div>
-        <div id="players-grid" class="players-grid"><p class="loading">Caricamento roster…</p></div>
-    </section>
-
     <section id="leagues" class="section content-section league-section">
         <div class="section-heading"><div><p class="eyebrow">La tua arena</p><h2>LEAGUES &amp; <em>ROSTERS.</em></h2></div><div class="section-actions"><button id="create-league-button" class="button button-primary">+ Crea lega</button><button id="join-league-button" class="button button-ghost">Entra con codice</button></div></div>
         <div id="league-guest" class="empty-state"><span>⌁</span><h3>Accedi per entrare in campo</h3><p>Crea leghe private, partecipa all'asta e schiera la formazione.</p><button class="button button-primary" data-auth-action>Accedi o registrati</button></div>
         <div id="league-dashboard" class="hidden"><div id="leagues-list" class="league-list"></div></div>
+    </section>
+
+    <section id="players" class="section content-section">
+        <div class="section-heading"><div><p class="eyebrow">Il mercato</p><h2>SCOUT THE <em>BEST.</em></h2></div><p>Studia i roster ufficiali, filtra per ruolo e trova il prossimo campione della tua rosa.</p></div>
+        <div class="toolbar"><div id="role-filters" class="filters"><button class="active" data-role="">Tutti</button><button data-role="TOP">Top</button><button data-role="JUNGLE">Jungle</button><button data-role="MID">Mid</button><button data-role="ADC">ADC</button><button data-role="SUPPORT">Support</button></div><label class="search"><span>⌕</span><input id="player-search" type="search" placeholder="Cerca player o team..." aria-label="Cerca player o team"></label></div>
+        <div id="players-grid" class="players-grid"><p class="loading">Caricamento roster…</p></div>
     </section>
 </main>
 
@@ -89,7 +89,7 @@
     <h3>Accettazione delle regole</h3><p>Entrando in una FantaLeague LEC, ogni partecipante dichiara di aver letto e accettato il regolamento.</p><p>Il creatore della lega può configurare alcune impostazioni, come crediti, finestre di mercato e scadenze delle formazioni, ma non può modificare le regole fondamentali sulla composizione delle rose e sull’esclusività dei giocatori.</p>
 </div></dialog>
 
-<dialog id="user-directory-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Area amministratore</p><h2>UTENTI REGISTRATI</h2><p id="user-directory-count" class="directory-count"></p><div id="user-directory-list" class="user-directory" aria-live="polite"></div></dialog>
+<dialog id="user-directory-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Area amministratore</p><h2>UTENTI REGISTRATI</h2><p class="directory-hint">Scorciatoia: Ctrl+Y</p><p id="user-directory-count" class="directory-count"></p><div id="user-directory-list" class="user-directory" aria-live="polite"></div></dialog>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="/js/app.js" defer></script>

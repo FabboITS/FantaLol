@@ -12,13 +12,14 @@ import com.fantalol.backend.matchday.PlayerStat;
         Integer assist,
         Integer cs,
         boolean vittoria,
+        Integer wins,
         Double fantavoto
 ) {
     public static PlayerStatResponse from(PlayerStat stat) {
-<span class="nc" id="L18">        return new PlayerStatResponse(</span>
-<span class="nc" id="L19">                stat.getId(), stat.getMatchday().getId(), stat.getLecPlayer().getId(), stat.getLecPlayer().getNickname(),</span>
-<span class="nc" id="L20">                stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(),</span>
-<span class="nc" id="L21">                stat.isVittoria(), stat.getFantavoto()</span>
+<span class="nc" id="L19">        return new PlayerStatResponse(</span>
+<span class="nc" id="L20">                stat.getId(), stat.getMatchday().getId(), stat.getLecPlayer().getId(), stat.getLecPlayer().getNickname(),</span>
+<span class="nc" id="L21">                stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(),</span>
+<span class="nc" id="L22">                stat.isVittoria(), stat.getWins(), stat.getFantavoto()</span>
         );
     }
 }

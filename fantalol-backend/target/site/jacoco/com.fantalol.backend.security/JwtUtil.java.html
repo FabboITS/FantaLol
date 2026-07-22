@@ -2,7 +2,7 @@
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,45 +22,83 @@ public class JwtUtil {
     private final SecretKey secretKey;
     private final long expirationMs;
 
-    public JwtUtil(@Value(&quot;${fantalol.jwt.secret}&quot;) String secret,
-<span class="fc" id="L26">                    @Value(&quot;${fantalol.jwt.expiration-ms}&quot;) long expirationMs) {</span>
-<span class="fc" id="L27">        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());</span>
-<span class="fc" id="L28">        this.expirationMs = expirationMs;</span>
-<span class="fc" id="L29">    }</span>
+    public JwtUtil(
+            @Value(&quot;${fantalol.jwt.secret}&quot;) String secret,
+            @Value(&quot;${fantalol.jwt.expiration-ms}&quot;) long expirationMs
+<span class="fc" id="L28">    ) {</span>
+<span class="pc bpc" id="L29" title="2 of 4 branches missed.">        if (secret == null || secret.isBlank()) {</span>
+<span class="nc" id="L30">            throw new IllegalArgumentException(</span>
+                    &quot;La variabile JWT_SECRET non è configurata&quot;
+            );
+        }
+
+        byte[] keyBytes;
+
+        try {
+<span class="fc" id="L38">            keyBytes = Decoders.BASE64.decode(secret.trim());</span>
+<span class="nc" id="L39">        } catch (IllegalArgumentException exception) {</span>
+<span class="nc" id="L40">            throw new IllegalArgumentException(</span>
+                    &quot;JWT_SECRET deve essere una stringa Base64 valida&quot;,
+                    exception
+            );
+<span class="fc" id="L44">        }</span>
+
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        if (keyBytes.length &lt; 32) {</span>
+<span class="nc" id="L47">            throw new IllegalArgumentException(</span>
+                    &quot;JWT_SECRET deve contenere almeno 32 byte dopo la decodifica Base64&quot;
+            );
+        }
+
+<span class="fc" id="L52">        this.secretKey = Keys.hmacShaKeyFor(keyBytes);</span>
+<span class="fc" id="L53">        this.expirationMs = expirationMs;</span>
+<span class="fc" id="L54">    }</span>
 
     public String generateToken(UserDetails userDetails) {
-<span class="fc" id="L32">        Date now = new Date();</span>
-<span class="fc" id="L33">        Date expiry = new Date(now.getTime() + expirationMs);</span>
+<span class="fc" id="L57">        Date now = new Date();</span>
+<span class="fc" id="L58">        Date expiry = new Date(now.getTime() + expirationMs);</span>
 
-<span class="fc" id="L35">        return Jwts.builder()</span>
-<span class="fc" id="L36">                .subject(userDetails.getUsername())</span>
-<span class="fc" id="L37">                .claim(&quot;authorities&quot;, userDetails.getAuthorities().stream().map(Object::toString).toList())</span>
-<span class="fc" id="L38">                .issuedAt(now)</span>
-<span class="fc" id="L39">                .expiration(expiry)</span>
-<span class="fc" id="L40">                .signWith(secretKey, SignatureAlgorithm.HS256)</span>
-<span class="fc" id="L41">                .compact();</span>
+<span class="fc" id="L60">        return Jwts.builder()</span>
+<span class="fc" id="L61">                .subject(userDetails.getUsername())</span>
+<span class="fc" id="L62">                .claim(</span>
+                        &quot;authorities&quot;,
+<span class="fc" id="L64">                        userDetails.getAuthorities()</span>
+<span class="fc" id="L65">                                .stream()</span>
+<span class="fc" id="L66">                                .map(Object::toString)</span>
+<span class="fc" id="L67">                                .toList()</span>
+                )
+<span class="fc" id="L69">                .issuedAt(now)</span>
+<span class="fc" id="L70">                .expiration(expiry)</span>
+<span class="fc" id="L71">                .signWith(secretKey)</span>
+<span class="fc" id="L72">                .compact();</span>
     }
 
     public String extractUsername(String token) {
-<span class="fc" id="L45">        return extractClaim(token, Claims::getSubject);</span>
+<span class="fc" id="L76">        return extractClaim(token, Claims::getSubject);</span>
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-<span class="fc" id="L49">        final String username = extractUsername(token);</span>
-<span class="pc bpc" id="L50" title="2 of 4 branches missed.">        return username.equals(userDetails.getUsername()) &amp;&amp; !isTokenExpired(token);</span>
+<span class="fc" id="L80">        String username = extractUsername(token);</span>
+
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        return username.equals(userDetails.getUsername())</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">                &amp;&amp; !isTokenExpired(token);</span>
     }
 
     private boolean isTokenExpired(String token) {
-<span class="fc" id="L54">        return extractClaim(token, Claims::getExpiration).before(new Date());</span>
+<span class="fc" id="L87">        return extractClaim(token, Claims::getExpiration)</span>
+<span class="fc" id="L88">                .before(new Date());</span>
     }
 
-    private &lt;T&gt; T extractClaim(String token, Function&lt;Claims, T&gt; claimsResolver) {
-<span class="fc" id="L58">        Claims claims = Jwts.parser()</span>
-<span class="fc" id="L59">                .verifyWith(secretKey)</span>
-<span class="fc" id="L60">                .build()</span>
-<span class="fc" id="L61">                .parseSignedClaims(token)</span>
-<span class="fc" id="L62">                .getPayload();</span>
-<span class="fc" id="L63">        return claimsResolver.apply(claims);</span>
+    private &lt;T&gt; T extractClaim(
+            String token,
+            Function&lt;Claims, T&gt; claimsResolver
+    ) {
+<span class="fc" id="L95">        Claims claims = Jwts.parser()</span>
+<span class="fc" id="L96">                .verifyWith(secretKey)</span>
+<span class="fc" id="L97">                .build()</span>
+<span class="fc" id="L98">                .parseSignedClaims(token)</span>
+<span class="fc" id="L99">                .getPayload();</span>
+
+<span class="fc" id="L101">        return claimsResolver.apply(claims);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

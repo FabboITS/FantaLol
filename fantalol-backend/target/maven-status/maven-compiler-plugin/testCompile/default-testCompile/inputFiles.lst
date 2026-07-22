@@ -1,10 +1,12 @@
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/common/SeedAssetReferenceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/common/StaticResourceIntegrationTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/config/AdminAccountInitializerIntegrationTest.java
+/workspace/fantalol-backend/src/test/java/com/fantalol/backend/integration/oracle/OracleElixirCsvImporterTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/AuctionServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/FantaTeamServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/LeagueAuctionPhaseServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/LeagueRosterCompletionTest.java
+/workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/LeagueVisibilityServiceTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/league/RosterPolicyTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FantaScoreCalculatorTest.java
 /workspace/fantalol-backend/src/test/java/com/fantalol/backend/matchday/FormationServiceTest.java

@@ -11,6 +11,8 @@ import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.PlayerRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,13 +41,24 @@ public class LeagueService {
     private final RosterPolicy rosterPolicy;
 
     @Transactional(readOnly = true)
-    public List<LeagueResponse> findAll() {
-        return leagueRepository.findAll().stream().map(LeagueResponse::from).toList();
+    public List<LeagueResponse> findAll(String username) {
+        User user = userService.findByUsernameOrThrow(username);
+        List<League> leagues = user.getRole() == Role.ADMIN
+                ? leagueRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
+                : leagueRepository.findAccessibleByUsername(username);
+        return leagues.stream().map(LeagueResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public LeagueResponse findById(Long id) {
-        return LeagueResponse.from(getOrThrow(id));
+    public LeagueResponse findById(String username, Long id) {
+        User user = userService.findByUsernameOrThrow(username);
+        League league = getOrThrow(id);
+        boolean isCreator = league.getAdmin().getUsername().equals(username);
+        boolean isMember = fantaTeamRepository.findByLeagueIdAndOwnerUsername(id, username).isPresent();
+        if (user.getRole() != Role.ADMIN && !isCreator && !isMember) {
+            throw new AccessDeniedException("You cannot access this league");
+        }
+        return LeagueResponse.from(league);
     }
 
     @Transactional
@@ -66,7 +79,7 @@ public class LeagueService {
         League league = getOrThrow(leagueId);
         User user = userService.findByUsernameOrThrow(username);
         if (user.getRole() != Role.ADMIN && !league.getAdmin().getUsername().equals(username)) {
-            throw new BusinessRuleException("Solo l'admin della lega può cancellarla");
+            throw new AccessDeniedException("You cannot delete this league");
         }
         leagueRepository.delete(league);
     }

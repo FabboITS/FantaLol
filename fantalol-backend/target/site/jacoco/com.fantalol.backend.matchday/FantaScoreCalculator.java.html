@@ -2,19 +2,28 @@
 
 import org.springframework.stereotype.Component;
 
-/** Calcola il punteggio ufficiale descritto in Rules.md. */
+/** Calculates the official fantasy score described in Rules.md. */
 @Component
 <span class="fc" id="L7">public class FantaScoreCalculator {</span>
-    public double calcola(int kills, int morti, int assist, int cs, boolean vittoria) {
+    public double calculate(int kills, int deaths, int assists, int cs, int wins) {
 <span class="fc" id="L9">        return kills * 3.0</span>
-                + assist * 2.0
-                - morti * 2.0
+                + assists * 2.0
+                - deaths * 2.0
 <span class="fc" id="L12">                + Math.floorDiv(cs, 100)</span>
-<span class="fc bfc" id="L13" title="All 2 branches covered.">                + (vittoria ? 3.0 : 0.0);</span>
+                + wins * 3.0;
+    }
+
+    public double calculate(PlayerStat stat) {
+<span class="nc" id="L17">        return calculate(stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(), stat.getWins());</span>
+    }
+
+    /** Kept for source compatibility with the existing Italian service methods. */
+    public double calcola(int kills, int morti, int assist, int cs, boolean vittoria) {
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        return calculate(kills, morti, assist, cs, vittoria ? 1 : 0);</span>
     }
 
     public double calcola(PlayerStat stat) {
-<span class="nc" id="L17">        return calcola(stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(), stat.isVittoria());</span>
+<span class="nc" id="L26">        return calculate(stat);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

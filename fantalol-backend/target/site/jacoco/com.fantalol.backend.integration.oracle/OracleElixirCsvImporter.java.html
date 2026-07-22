@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OracleElixirCsvImporter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fantalol-backend</a> &gt; <a href="index.source.html" class="el_package">com.fantalol.backend.integration.oracle</a> &gt; <span class="el_source">OracleElixirCsvImporter.java</span></div><h1>OracleElixirCsvImporter.java</h1><pre class="source lang-java linenums">package com.fantalol.backend.integration.oracle;
+
+import com.fantalol.backend.common.BusinessRuleException;
+import com.fantalol.backend.matchday.*;
+import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.LecPlayerRepository;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
+@Service
+@RequiredArgsConstructor
+public class OracleElixirCsvImporter {
+    private static final String PROVIDER = &quot;ORACLES_ELIXIR&quot;;
+
+    private final MatchdayRepository matchdayRepository;
+    private final PlayerStatRepository playerStatRepository;
+    private final ImportedGameRepository importedGameRepository;
+    private final LecPlayerRepository lecPlayerRepository;
+    private final FantaScoreCalculator scoreCalculator;
+
+    @Transactional
+    public OracleImportResult importCsv(Long matchdayId, MultipartFile file, String league, String split) {
+<span class="fc" id="L32">        Matchday matchday = matchdayRepository.findById(matchdayId)</span>
+<span class="pc" id="L33">                .orElseThrow(() -&gt; new BusinessRuleException(&quot;Matchday not found: &quot; + matchdayId));</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (matchday.isChiusa()) {</span>
+<span class="nc" id="L35">            throw new BusinessRuleException(&quot;Closed matchdays cannot receive imported statistics&quot;);</span>
+        }
+<span class="pc bpc" id="L37" title="2 of 4 branches missed.">        if (file == null || file.isEmpty()) {</span>
+<span class="nc" id="L38">            throw new BusinessRuleException(&quot;A non-empty Oracle's Elixir CSV file is required&quot;);</span>
+        }
+
+<span class="fc" id="L41">        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {</span>
+<span class="fc" id="L42">            Iterable&lt;CSVRecord&gt; records = CSVFormat.DEFAULT.builder()</span>
+<span class="fc" id="L43">                    .setHeader()</span>
+<span class="fc" id="L44">                    .setSkipHeaderRecord(true)</span>
+<span class="fc" id="L45">                    .setTrim(true)</span>
+<span class="fc" id="L46">                    .build()</span>
+<span class="fc" id="L47">                    .parse(reader);</span>
+
+<span class="fc" id="L49">            Map&lt;String, List&lt;CSVRecord&gt;&gt; byGame = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            for (CSVRecord record : records) {</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                if (!equalsIgnoreCase(record, &quot;league&quot;, league)</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">                        || !equalsIgnoreCase(record, &quot;split&quot;, split)</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">                        || !&quot;complete&quot;.equalsIgnoreCase(value(record, &quot;datacompleteness&quot;))) {</span>
+<span class="nc" id="L54">                    continue;</span>
+                }
+<span class="fc" id="L56">                String position = value(record, &quot;position&quot;);</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">                if (!Set.of(&quot;top&quot;, &quot;jng&quot;, &quot;mid&quot;, &quot;bot&quot;, &quot;sup&quot;).contains(position.toLowerCase(Locale.ROOT))) {</span>
+<span class="nc" id="L58">                    continue;</span>
+                }
+<span class="fc" id="L60">                String gameId = value(record, &quot;gameid&quot;);</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                if (!gameId.isBlank()) {</span>
+<span class="fc" id="L62">                    byGame.computeIfAbsent(gameId, ignored -&gt; new ArrayList&lt;&gt;()).add(record);</span>
+                }
+<span class="fc" id="L64">            }</span>
+
+<span class="fc" id="L66">            int importedGames = 0;</span>
+<span class="fc" id="L67">            int skippedGames = 0;</span>
+<span class="fc" id="L68">            int importedRows = 0;</span>
+<span class="fc" id="L69">            Set&lt;String&gt; unmatched = new TreeSet&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            for (Map.Entry&lt;String, List&lt;CSVRecord&gt;&gt; entry : byGame.entrySet()) {</span>
+<span class="fc" id="L72">                String gameId = entry.getKey();</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                if (importedGameRepository.existsByProviderAndExternalGameId(PROVIDER, gameId)) {</span>
+<span class="nc" id="L74">                    skippedGames++;</span>
+<span class="nc" id="L75">                    continue;</span>
+                }
+
+<span class="fc" id="L78">                List&lt;ResolvedRow&gt; resolvedRows = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                for (CSVRecord record : entry.getValue()) {</span>
+<span class="fc" id="L80">                    Optional&lt;LecPlayer&gt; player = resolvePlayer(record);</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">                    if (player.isEmpty()) {</span>
+<span class="nc" id="L82">                        unmatched.add(value(record, &quot;playername&quot;));</span>
+<span class="nc" id="L83">                        continue;</span>
+                    }
+<span class="fc" id="L85">                    resolvedRows.add(new ResolvedRow(player.get(), record));</span>
+<span class="fc" id="L86">                }</span>
+
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">                if (resolvedRows.size() != entry.getValue().size()) {</span>
+<span class="nc" id="L89">                    continue;</span>
+                }
+
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                for (ResolvedRow row : resolvedRows) {</span>
+<span class="fc" id="L93">                    PlayerStat stat = playerStatRepository</span>
+<span class="fc" id="L94">                            .findByMatchdayIdAndLecPlayerId(matchdayId, row.player().getId())</span>
+<span class="fc" id="L95">                            .orElse(PlayerStat.builder().matchday(matchday).lecPlayer(row.player()).build());</span>
+<span class="fc" id="L96">                    stat.setKills(stat.getKills() + integer(row.record(), &quot;kills&quot;));</span>
+<span class="fc" id="L97">                    stat.setMorti(stat.getMorti() + integer(row.record(), &quot;deaths&quot;));</span>
+<span class="fc" id="L98">                    stat.setAssist(stat.getAssist() + integer(row.record(), &quot;assists&quot;));</span>
+<span class="fc" id="L99">                    stat.setCs(stat.getCs() + integer(row.record(), &quot;total cs&quot;));</span>
+<span class="pc bpc" id="L100" title="3 of 4 branches missed.">                    int currentWins = stat.getWins() != null ? stat.getWins() : (stat.isVittoria() ? 1 : 0);</span>
+<span class="fc" id="L101">                    stat.setWins(currentWins + integer(row.record(), &quot;result&quot;));</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                    stat.setVittoria(stat.getWins() &gt; 0);</span>
+<span class="fc" id="L103">                    stat.setFantavoto(scoreCalculator.calculate(stat));</span>
+<span class="fc" id="L104">                    playerStatRepository.save(stat);</span>
+<span class="fc" id="L105">                    importedRows++;</span>
+<span class="fc" id="L106">                }</span>
+
+<span class="fc" id="L108">                importedGameRepository.save(ImportedGame.builder()</span>
+<span class="fc" id="L109">                        .provider(PROVIDER)</span>
+<span class="fc" id="L110">                        .externalGameId(gameId)</span>
+<span class="fc" id="L111">                        .matchday(matchday)</span>
+<span class="fc" id="L112">                        .build());</span>
+<span class="fc" id="L113">                importedGames++;</span>
+<span class="fc" id="L114">            }</span>
+
+<span class="fc" id="L116">            return new OracleImportResult(importedGames, skippedGames, importedRows, List.copyOf(unmatched));</span>
+<span class="nc" id="L117">        } catch (BusinessRuleException exception) {</span>
+<span class="nc" id="L118">            throw exception;</span>
+<span class="nc" id="L119">        } catch (Exception exception) {</span>
+<span class="nc" id="L120">            throw new BusinessRuleException(&quot;Unable to import Oracle's Elixir CSV: &quot; + exception.getMessage());</span>
+        }
+    }
+
+    private Optional&lt;LecPlayer&gt; resolvePlayer(CSVRecord record) {
+<span class="fc" id="L125">        String externalId = value(record, &quot;playerid&quot;);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!externalId.isBlank()) {</span>
+<span class="fc" id="L127">            Optional&lt;LecPlayer&gt; byExternalId = lecPlayerRepository.findByOraclePlayerId(externalId);</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            if (byExternalId.isPresent()) {</span>
+<span class="fc" id="L129">                return byExternalId;</span>
+            }
+        }
+<span class="nc" id="L132">        Optional&lt;LecPlayer&gt; byNickname = lecPlayerRepository.findFirstByNicknameIgnoreCase(value(record, &quot;playername&quot;));</span>
+<span class="nc" id="L133">        byNickname.ifPresent(player -&gt; {</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">            if (!externalId.isBlank() &amp;&amp; player.getOraclePlayerId() == null) {</span>
+<span class="nc" id="L135">                player.setOraclePlayerId(externalId);</span>
+<span class="nc" id="L136">                lecPlayerRepository.save(player);</span>
+            }
+<span class="nc" id="L138">        });</span>
+<span class="nc" id="L139">        return byNickname;</span>
+    }
+
+    private static boolean equalsIgnoreCase(CSVRecord record, String column, String expected) {
+<span class="pc bpc" id="L143" title="3 of 6 branches missed.">        return expected == null || expected.isBlank() || expected.equalsIgnoreCase(value(record, column));</span>
+    }
+
+    private static String value(CSVRecord record, String column) {
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        return record.isMapped(column) ? Optional.ofNullable(record.get(column)).orElse(&quot;&quot;).trim() : &quot;&quot;;</span>
+    }
+
+    private static int integer(CSVRecord record, String column) {
+<span class="fc" id="L151">        String value = value(record, column);</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        return value.isBlank() ? 0 : (int) Double.parseDouble(value);</span>
+    }
+
+<span class="fc" id="L155">    private record ResolvedRow(LecPlayer player, CSVRecord record) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

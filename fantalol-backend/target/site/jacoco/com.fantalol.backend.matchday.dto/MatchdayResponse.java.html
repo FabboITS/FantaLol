@@ -12,12 +12,13 @@ import java.time.LocalDate;
         String descrizione,
         LocalDate data,
         boolean chiusa,
+        String status,
         boolean auctionLocked
 ) {
     public static MatchdayResponse from(Matchday matchday) {
-<span class="fc" id="L18">        return new MatchdayResponse(matchday.getId(), matchday.getLeague().getId(), matchday.getLeague().getNome(), matchday.getNumero(), matchday.getDescrizione(),</span>
-<span class="fc" id="L19">                matchday.getData(), matchday.isChiusa(),</span>
-<span class="pc bpc" id="L20" title="1 of 4 branches missed.">                !matchday.isChiusa() &amp;&amp; matchday.getLeague().isAuctionOpen());</span>
+<span class="fc" id="L19">        return new MatchdayResponse(matchday.getId(), matchday.getLeague().getId(), matchday.getLeague().getNome(), matchday.getNumero(), matchday.getDescrizione(),</span>
+<span class="pc bpc" id="L20" title="3 of 4 branches missed.">                matchday.getData(), matchday.isChiusa(), (matchday.getStatus() != null ? matchday.getStatus() : (matchday.isChiusa() ? com.fantalol.backend.matchday.MatchdayStatus.CLOSED : com.fantalol.backend.matchday.MatchdayStatus.OPEN)).name(),</span>
+<span class="pc bpc" id="L21" title="1 of 4 branches missed.">                !matchday.isChiusa() &amp;&amp; matchday.getLeague().isAuctionOpen());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

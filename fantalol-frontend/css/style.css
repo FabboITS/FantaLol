@@ -50,8 +50,8 @@ button{cursor:pointer}
 .card-main .hero-player-image{object-position:center top}
 .card-back .hero-player-image{object-position:center top}
 .card-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,8,22,.08) 25%,rgba(7,10,25,.92) 82%,#070a19 100%);z-index:1}
-.card-main{width:280px;height:410px;transform:rotate(4deg);z-index:2;clip-path:polygon(0 0,100% 0,100% 90%,88% 100%,0 100%)}
-.card-back{width:210px;height:300px;left:3%;top:15%;transform:rotate(-12deg);border-color:rgba(139,92,246,.55);box-shadow:0 30px 70px #000,0 0 38px rgba(139,92,246,.2)}
+.card-main{width:310px;height:450px;transform:rotate(4deg);z-index:2;clip-path:polygon(0 0,100% 0,100% 90%,88% 100%,0 100%)}
+.card-back{width:235px;height:330px;left:1%;top:12%;transform:rotate(-12deg);border-color:rgba(139,92,246,.55);box-shadow:0 30px 70px #000,0 0 38px rgba(139,92,246,.2)}
 .card-back .card-shade{background:linear-gradient(180deg,rgba(17,10,40,.08) 20%,rgba(12,8,31,.94) 90%)}
 .card-back-copy,.card-main-copy{position:absolute;left:24px;right:24px;bottom:24px;z-index:2}
 .card-back-copy span{color:#b59cff;font:700 10px var(--font-display);letter-spacing:.15em}

@@ -5,7 +5,8 @@ const {
   rankFantasyTeams,
   auctionViewState,
   remainingAuctionSeconds,
-  mergeBidDraft
+  mergeBidDraft,
+  participantCreditBalances
 } = require('../js/league-utils.js');
 
 test('parseLeagueId accepts a positive integer id', () => {
@@ -69,4 +70,39 @@ test('mergeBidDraft preserves valid custom input and raises an obsolete draft to
 
   assert.equal(mergeBidDraft(275, { currentBid: 120, highestBidderId: 8 }, team), 275);
   assert.equal(mergeBidDraft(121, { currentBid: 150, highestBidderId: 8 }, team), 151);
+});
+
+test('participantCreditBalances projects only the current leader balance', () => {
+  const teams = [
+    { id: 7, nome: 'Alpha', creditiResidui: 500 },
+    { id: 8, nome: 'Beta', creditiResidui: 420 }
+  ];
+
+  assert.deepEqual(
+    participantCreditBalances(teams, { highestBidderId: '8', currentBid: 120 })
+      .map(team => [team.nome, team.displayCredits, team.isProjected]),
+    [['Alpha', 500, false], ['Beta', 300, true]]
+  );
+});
+
+test('participantCreditBalances uses safe persisted balances without an auction', () => {
+  const teams = [
+    { id: 7, nome: 'Alpha', creditiResidui: '500' },
+    { id: 8, nome: 'Beta', creditiResidui: null }
+  ];
+
+  assert.deepEqual(
+    participantCreditBalances(teams, null).map(team => team.displayCredits),
+    [500, 0]
+  );
+});
+
+test('participantCreditBalances clamps a projected balance to zero', () => {
+  const [leader] = participantCreditBalances(
+    [{ id: 7, nome: 'Alpha', creditiResidui: 50 }],
+    { highestBidderId: 7, currentBid: 80 }
+  );
+
+  assert.equal(leader.displayCredits, 0);
+  assert.equal(leader.isProjected, true);
 });

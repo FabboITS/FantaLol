@@ -50,11 +50,31 @@
         return nextMinimum;
     }
 
+    function participantCreditBalances(teams, auction) {
+        return (teams || []).map(team => {
+            const remainingCredits = Number.isFinite(Number(team.creditiResidui))
+                ? Number(team.creditiResidui)
+                : 0;
+            const isProjected = Boolean(
+                auction && Number(team.id) === Number(auction.highestBidderId)
+            );
+            const currentBid = Number.isFinite(Number(auction?.currentBid))
+                ? Number(auction.currentBid)
+                : 0;
+            return {
+                ...team,
+                displayCredits: Math.max(0, remainingCredits - (isProjected ? currentBid : 0)),
+                isProjected
+            };
+        });
+    }
+
     return {
         parseLeagueId,
         rankFantasyTeams,
         auctionViewState,
         remainingAuctionSeconds,
-        mergeBidDraft
+        mergeBidDraft,
+        participantCreditBalances
     };
 });

@@ -22,6 +22,14 @@ test('live auction protects custom bids and hides reraises from the current lead
   assert.match(script, /addEventListener\('input'.*bidDraft/s);
 });
 
+test('live auction renders synchronized participant credit balances', () => {
+  assert.match(script, /function renderParticipantCredits\(/);
+  assert.match(script, /LeagueUtils\.participantCreditBalances\(state\.leagueTeams,state\.activeAuction\)/);
+  assert.match(script, /participant-credits/);
+  assert.match(script, /Saldo previsto/);
+  assert.match(script, /renderParticipantCredits\(\)/);
+});
+
 test('formation save remains visible in the dialog and can return to editing', () => {
   assert.match(page, /id="edit-formation-button"/);
   assert.match(script, /function renderFormationSummary\(/);

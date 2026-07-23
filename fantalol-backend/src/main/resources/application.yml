@@ -39,6 +39,14 @@ fantalol:
   pandascore:
     base-url: ${PANDASCORE_BASE_URL:https://api.pandascore.co}
     token: ${PANDASCORE_API_TOKEN:}
+    summer-tournament-ids: ${PANDASCORE_SUMMER_TOURNAMENT_IDS:21344}
+    schedule-sync-cron: ${PANDASCORE_SCHEDULE_SYNC_CRON:0 45 3 * * *}
+
+  oracle:
+    csv-url: ${ORACLE_ELIXIR_CSV_URL:}
+    league: ${ORACLE_ELIXIR_LEAGUE:LEC}
+    split: ${ORACLE_ELIXIR_SPLIT:Summer}
+    sync-cron: ${ORACLE_ELIXIR_SYNC_CRON:0 15 4 * * *}
 
 springdoc:
   swagger-ui:

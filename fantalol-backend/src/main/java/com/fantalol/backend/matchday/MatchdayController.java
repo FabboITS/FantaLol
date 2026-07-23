@@ -61,4 +61,14 @@ public class MatchdayController {
     public MatchdayResponse markWaitingForPostponedMatches(Authentication authentication, @PathVariable Long id) {
         return matchdayService.markWaitingForPostponedMatches(authentication.getName(), id);
     }
+
+    @PostMapping("/{id}/formation-lock")
+    public MatchdayResponse lockFormations(Authentication authentication, @PathVariable Long id) {
+        return matchdayService.setFormationLocked(authentication.getName(), id, true);
+    }
+
+    @DeleteMapping("/{id}/formation-lock")
+    public MatchdayResponse unlockFormations(Authentication authentication, @PathVariable Long id) {
+        return matchdayService.setFormationLocked(authentication.getName(), id, false);
+    }
 }

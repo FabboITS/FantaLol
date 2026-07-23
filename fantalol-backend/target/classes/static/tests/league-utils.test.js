@@ -1,6 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseLeagueId, rankFantasyTeams } = require('../js/league-utils.js');
+const {
+  parseLeagueId,
+  rankFantasyTeams,
+  auctionViewState,
+  remainingAuctionSeconds,
+  mergeBidDraft
+} = require('../js/league-utils.js');
 
 test('parseLeagueId accepts a positive integer id', () => {
   assert.equal(parseLeagueId('?id=12'), 12);
@@ -31,4 +37,36 @@ test('rankFantasyTeams sorts real scores descending and names alphabetically on 
     rankFantasyTeams(input).map(team => team.nome),
     ['Alpha', 'Beta', 'Zeta']
   );
+});
+
+test('auctionViewState prevents the current leader from bidding', () => {
+  const auction = { currentBid: 120, highestBidderId: 7 };
+  const team = { id: 7, creditiResidui: 500 };
+
+  assert.deepEqual(auctionViewState(auction, team, 150), {
+    nextMinimum: 121,
+    canAfford: true,
+    isCurrentLeader: true,
+    canBid: false,
+    draftAmount: 150
+  });
+});
+
+test('auctionViewState allows a challenger to submit a custom valid bid', () => {
+  const auction = { currentBid: 120, highestBidderId: 8 };
+  const team = { id: 7, creditiResidui: 500 };
+
+  assert.equal(auctionViewState(auction, team, 275).canBid, true);
+});
+
+test('remainingAuctionSeconds derives a non-negative value from the server deadline', () => {
+  assert.equal(remainingAuctionSeconds('2026-07-23T12:00:15Z', Date.parse('2026-07-23T12:00:04Z')), 11);
+  assert.equal(remainingAuctionSeconds('2026-07-23T12:00:00Z', Date.parse('2026-07-23T12:00:04Z')), 0);
+});
+
+test('mergeBidDraft preserves valid custom input and raises an obsolete draft to the new minimum', () => {
+  const team = { id: 7, creditiResidui: 500 };
+
+  assert.equal(mergeBidDraft(275, { currentBid: 120, highestBidderId: 8 }, team), 275);
+  assert.equal(mergeBidDraft(121, { currentBid: 150, highestBidderId: 8 }, team), 151);
 });

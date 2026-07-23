@@ -49,7 +49,7 @@ fantalol-backend,com.fantalol.backend.integration.oracle,OracleElixirCsvImporter
 fantalol-backend,com.fantalol.backend.league,RosterPolicy,0,29,0,4,0,4,0,3,0,1
 fantalol-backend,com.fantalol.backend.league,FantaTeamController,48,0,0,0,9,0,6,0,6,0
 fantalol-backend,com.fantalol.backend.league,LeagueController,55,0,0,0,9,0,7,0,7,0
-fantalol-backend,com.fantalol.backend.league,AuctionService,313,157,30,12,48,31,30,8,11,6
+fantalol-backend,com.fantalol.backend.league,AuctionService,208,277,26,20,27,55,30,10,10,7
 fantalol-backend,com.fantalol.backend.league,RosterEntry,7,0,2,0,3,0,2,0,1,0
 fantalol-backend,com.fantalol.backend.league,RosterPolicy.Limits,0,9,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league,FantaTeamService,549,221,41,17,77,48,45,11,23,4

@@ -222,7 +222,10 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(not(containsString("capitanoId"))))
                 .andExpect(content().string(containsString("api('/matchdays'")))
                 .andExpect(content().string(containsString("Non hai abbastanza crediti per rilanciare")))
-                .andExpect(content().string(containsString("setInterval(refreshAuction,500)")))
+                .andExpect(content().string(containsString("setInterval(synchronizeLeaguePage,2000)")))
+                .andExpect(content().string(containsString("setInterval(renderCountdown,100)")))
+                .andExpect(content().string(containsString("Sei il miglior offerente")))
+                .andExpect(content().string(containsString("timer a 15 secondi")))
                 .andExpect(content().string(containsString("beforeunload")));
     }
 }

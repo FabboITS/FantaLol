@@ -16,5 +16,45 @@
             .sort((left, right) => right.punti - left.punti || left.nome.localeCompare(right.nome, 'it'));
     }
 
-    return {parseLeagueId, rankFantasyTeams};
+    function auctionViewState(auction, activeTeam, draftAmount) {
+        const nextMinimum = Number(auction?.currentBid ?? 0) + 1;
+        const credits = Number(activeTeam?.creditiResidui ?? 0);
+        const normalizedDraft = Number(draftAmount);
+        const isCurrentLeader = Boolean(
+            auction && activeTeam && Number(auction.highestBidderId) === Number(activeTeam.id)
+        );
+        const canAfford = credits >= nextMinimum;
+        const validDraft = Number.isInteger(normalizedDraft)
+            && normalizedDraft >= nextMinimum
+            && normalizedDraft <= credits;
+        return {
+            nextMinimum,
+            canAfford,
+            isCurrentLeader,
+            canBid: Boolean(auction && activeTeam && !isCurrentLeader && canAfford && validDraft),
+            draftAmount: normalizedDraft
+        };
+    }
+
+    function remainingAuctionSeconds(endsAt, now = Date.now()) {
+        const deadline = Date.parse(endsAt);
+        if (!Number.isFinite(deadline)) return 0;
+        return Math.max(0, (deadline - now) / 1000);
+    }
+
+    function mergeBidDraft(previousDraft, auction, activeTeam) {
+        if (!auction || !activeTeam) return null;
+        const nextMinimum = Number(auction.currentBid) + 1;
+        const draft = Number(previousDraft);
+        if (Number.isInteger(draft) && draft >= nextMinimum) return draft;
+        return nextMinimum;
+    }
+
+    return {
+        parseLeagueId,
+        rankFantasyTeams,
+        auctionViewState,
+        remainingAuctionSeconds,
+        mergeBidDraft
+    };
 });

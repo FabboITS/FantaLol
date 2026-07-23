@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuctionService {
-    private static final int SECONDS_PER_BID = 10;
+    private static final int SECONDS_PER_BID = 15;
 
     private final AuctionSessionRepository auctionRepository;
     private final LeagueRepository leagueRepository;
@@ -70,6 +70,10 @@ public class AuctionService {
             throw new BusinessRuleException("La squadra non partecipa a questa lega");
         }
         assertOwnerOrAdmin(username, team);
+        if (auction.getHighestBidder() != null
+                && auction.getHighestBidder().getId().equals(team.getId())) {
+            throw new BusinessRuleException("Sei già il miglior offerente");
+        }
         int minimum = auction.getHighestBidder() == null ? auction.getCurrentBid() : auction.getCurrentBid() + 1;
         if (request.credits() < minimum) throw new BusinessRuleException("L'offerta minima è " + minimum + " crediti");
         if (request.credits() > team.getCreditiResidui()) throw new BusinessRuleException("Crediti insufficienti");

@@ -1,0 +1,963 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1;
+}
+
+.demo-banner.MuiAlert-root {
+  min-height: 38px;
+  border-radius: 0;
+  padding-block: 0;
+  justify-content: center;
+}
+
+.demo-banner .MuiAlert-message {
+  padding-block: 7px;
+}
+
+.site-header {
+  border-bottom: 1px solid;
+  border-color: color-mix(in srgb, currentColor 12%, transparent);
+  background: color-mix(in srgb, var(--mui-palette-background-default) 84%, transparent) !important;
+  backdrop-filter: blur(18px);
+}
+
+.header-inner {
+  min-height: 74px;
+  display: flex !important;
+  align-items: center;
+  gap: 30px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  white-space: nowrap;
+}
+
+.brand > span span {
+  color: #a78bfa;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: white;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  box-shadow: 0 8px 28px #8b5cf64d;
+  transform: skew(-4deg);
+}
+
+.desktop-nav {
+  display: flex;
+  gap: 5px;
+}
+
+.nav-link.MuiButton-root {
+  color: inherit;
+  opacity: .66;
+}
+
+.nav-link.active {
+  opacity: 1;
+  background: color-mix(in srgb, #8b5cf6 13%, transparent);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+}
+
+.user-avatar.MuiAvatar-root {
+  width: 34px;
+  height: 34px;
+  font-size: .85rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+.user-copy {
+  line-height: 1;
+}
+
+.user-copy .MuiTypography-caption {
+  opacity: .55;
+}
+
+.hero {
+  position: relative;
+  min-height: 720px;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(circle at 72% 35%, #7c3aed29, transparent 32%),
+    radial-gradient(circle at 18% 80%, #ec48991f, transparent 28%);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: .22;
+  background-image: linear-gradient(#8b5cf61a 1px, transparent 1px), linear-gradient(90deg, #8b5cf61a 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+.hero-inner {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr);
+  gap: 70px;
+  align-items: center;
+}
+
+.hero-copy {
+  padding-block: 80px;
+}
+
+.hero-chip.MuiChip-root {
+  margin-bottom: 28px;
+  border: 1px solid #8b5cf64d;
+  background: #8b5cf616;
+}
+
+.hero h1 {
+  max-width: 800px;
+  font-size: clamp(4rem, 7.1vw, 7.7rem);
+  line-height: .87;
+}
+
+.hero h1 span {
+  color: transparent;
+  background: linear-gradient(92deg, #a78bfa, #ec4899);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.hero-lead {
+  max-width: 650px;
+  margin: 30px 0 !important;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem) !important;
+  line-height: 1.65 !important;
+  color: var(--mui-palette-text-secondary);
+}
+
+.hero-stats {
+  display: flex;
+  gap: 42px;
+  margin-top: 44px;
+}
+
+.hero-stats div {
+  display: grid;
+}
+
+.hero-stats strong {
+  font-size: 1.45rem;
+}
+
+.hero-stats span {
+  color: var(--mui-palette-text-secondary);
+  font-size: .8rem;
+}
+
+.hero-visual {
+  position: relative;
+  min-height: 560px;
+}
+
+.orbit {
+  position: absolute;
+  border: 1px solid #a78bfa42;
+  border-radius: 50%;
+  animation: orbit 24s linear infinite;
+}
+
+.orbit::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ec4899;
+  top: 18%;
+  left: 4%;
+  box-shadow: 0 0 20px #ec4899;
+}
+
+.orbit-one { inset: 40px; }
+.orbit-two { inset: 105px; animation-direction: reverse; animation-duration: 18s; }
+
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+
+.floating-card.MuiCard-root {
+  position: absolute;
+  border: 1px solid #ffffff18;
+  box-shadow: 0 28px 80px #0000004a;
+  backdrop-filter: blur(16px);
+}
+
+.main-player-card {
+  width: 300px;
+  height: 390px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(3deg);
+  background: linear-gradient(145deg, #242230, #151720) !important;
+}
+
+.main-player-card .MuiCardContent-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 28px;
+  color: white;
+}
+
+.hero-player {
+  position: absolute;
+  inset: 60px 28px 125px;
+  display: grid;
+  place-items: center;
+  font-size: 6rem;
+  font-weight: 900;
+  color: #ffffffde;
+  border-radius: 48% 48% 18px 18px;
+  background:
+    linear-gradient(150deg, transparent 0 50%, #ffffff10 50%),
+    linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+.hero-player span {
+  position: absolute;
+  z-index: 0;
+}
+
+.hero-player img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 18px 24px #15172080);
+}
+
+.score-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  left: 8px;
+  bottom: 80px;
+  transform: rotate(-4deg);
+}
+
+.bid-card {
+  padding: 16px 24px;
+  right: 0;
+  top: 100px;
+  transform: rotate(5deg);
+}
+
+.eyebrow.MuiTypography-root {
+  color: #a78bfa;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.section-block,
+.page-container {
+  padding-top: 92px;
+  padding-bottom: 92px;
+}
+
+.section-heading,
+.page-heading,
+.card-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.section-heading,
+.page-heading {
+  margin-bottom: 40px;
+}
+
+.page-heading h1 {
+  margin: 6px 0 8px;
+}
+
+.page-description {
+  max-width: 690px;
+  font-size: 1.05rem !important;
+}
+
+.step-card.MuiCard-root {
+  height: 100%;
+  min-height: 260px;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  transition: transform .25s ease, border-color .25s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-7px);
+  border-color: #8b5cf66e;
+}
+
+.step-card .MuiCardContent-root {
+  padding: 30px;
+  display: grid;
+  gap: 18px;
+}
+
+.step-number {
+  font-size: 3.5rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: transparent;
+  -webkit-text-stroke: 1px #a78bfa;
+}
+
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 24px;
+}
+
+.feature-strip > div {
+  display: grid;
+  gap: 10px;
+  padding: 34px;
+}
+
+.feature-strip > div + div {
+  border-left: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.feature-strip svg {
+  color: #a78bfa;
+}
+
+.player-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 34px;
+}
+
+.role-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.player-toolbar .MuiTextField-root {
+  min-width: 290px;
+}
+
+.player-card.MuiCard-root {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+
+.player-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px #00000024;
+}
+
+.player-card-glow {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  top: -75px;
+  right: -55px;
+  opacity: .22;
+  filter: blur(18px);
+  border-radius: 50%;
+}
+
+.player-card .MuiCardContent-root {
+  padding: 24px;
+}
+
+.player-card-top,
+.player-meta,
+.league-card-top,
+.league-card-stats,
+.league-hero-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.player-avatar {
+  position: relative;
+  overflow: hidden;
+  width: 90px;
+  height: 90px;
+  margin: 34px 0 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: white;
+  box-shadow: inset 0 0 0 6px #ffffff1c;
+}
+
+.player-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.player-meta {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.loading-state {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.auth-page {
+  min-height: calc(100vh - 112px);
+  display: grid !important;
+  place-items: center;
+  padding-block: 70px;
+}
+
+.auth-card.MuiCard-root {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  box-shadow: 0 35px 100px #00000035;
+}
+
+.auth-card > .MuiCardContent-root {
+  display: grid;
+  gap: 22px;
+  padding: 42px;
+}
+
+.auth-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: white;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+.auth-form,
+.dialog-form {
+  display: grid;
+  gap: 18px;
+}
+
+.heading-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.league-card.MuiCard-root {
+  height: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  transition: transform .22s ease, border-color .22s ease;
+}
+
+.league-card:hover {
+  transform: translateY(-6px);
+  border-color: #8b5cf67d;
+}
+
+.league-card .MuiCardContent-root {
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+}
+
+.league-card h4 {
+  margin-top: 28px;
+}
+
+.league-code {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding: 17px;
+  border: 1px dashed #a78bfa75;
+  border-radius: 12px;
+  background: #8b5cf60d;
+}
+
+.league-code span {
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--mui-palette-text-secondary);
+}
+
+.league-code strong {
+  font-size: 1.2rem;
+  letter-spacing: .16em;
+}
+
+.league-card-stats {
+  margin-top: 18px;
+  font-size: .78rem;
+  color: var(--mui-palette-text-secondary);
+}
+
+.status-live {
+  color: #22c55e;
+}
+
+.status-live::before {
+  content: "●";
+  margin-right: 5px;
+}
+
+.empty-card {
+  text-align: center;
+}
+
+.empty-card .MuiCardContent-root {
+  min-height: 300px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+}
+
+.dialog-form {
+  padding-top: 26px !important;
+}
+
+.back-button {
+  margin-bottom: 24px !important;
+}
+
+.league-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 42px;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 80% 20%, #8b5cf62e, transparent 30%),
+    var(--mui-palette-background-paper);
+}
+
+.league-hero h1 {
+  margin: 8px 0 18px;
+}
+
+.league-hero-meta {
+  justify-content: flex-start;
+}
+
+.league-tabs {
+  margin: 26px 0 34px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.league-tabs .MuiTab-root {
+  text-transform: capitalize;
+}
+
+.metric-grid {
+  margin-bottom: 26px;
+}
+
+.metric-card.MuiCard-root {
+  height: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.metric-card .MuiCardContent-root {
+  padding: 25px;
+}
+
+.metric-card h3 {
+  margin: 7px 0;
+}
+
+.dashboard-card.MuiCard-root,
+.team-card.MuiCard-root,
+.auction-status-card.MuiCard-root {
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.dashboard-card > .MuiCardContent-root {
+  padding: 30px;
+}
+
+.ranking-list {
+  margin-top: 26px;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 46px 42px 1fr auto;
+  align-items: center;
+  gap: 15px;
+  padding: 17px 8px;
+  border-top: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.rank-number {
+  font-weight: 850 !important;
+  color: var(--mui-palette-text-secondary);
+}
+
+.ranking-score {
+  font-size: 1.25rem !important;
+  font-weight: 850 !important;
+}
+
+.ranking-score span {
+  color: var(--mui-palette-text-secondary);
+  font-size: .75rem;
+}
+
+.team-card {
+  height: 100%;
+}
+
+.team-card .MuiCardContent-root {
+  padding: 28px;
+}
+
+.team-card .MuiLinearProgress-root {
+  margin: 20px 0;
+}
+
+.compact-roster {
+  display: grid;
+  gap: 7px;
+}
+
+.compact-roster > div {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.compact-roster span,
+.compact-roster small {
+  color: var(--mui-palette-text-secondary);
+  font-size: .72rem;
+}
+
+.auction-status-card {
+  margin-bottom: 34px;
+}
+
+.auction-status-card .MuiCardContent-root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px;
+}
+
+.auction-pulse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .75rem;
+  font-weight: 850;
+}
+
+.auction-pulse span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 16px #22c55e;
+  animation: pulse 1.25s infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: .35; }
+}
+
+.subsection-title {
+  margin-bottom: 24px !important;
+}
+
+.feature-note {
+  margin-top: 28px;
+}
+
+.matchday-list {
+  display: grid;
+  margin-top: 12px;
+}
+
+.matchday-list > div {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 4px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.matchday-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #a78bfa;
+  background: #8b5cf618;
+}
+
+.not-found {
+  min-height: 70vh;
+  display: grid !important;
+  place-content: center;
+  justify-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.not-found-code {
+  font-size: clamp(7rem, 22vw, 13rem);
+  font-weight: 900;
+  line-height: .8;
+  color: transparent;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.site-footer {
+  margin-top: 30px;
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.footer-inner {
+  min-height: 120px;
+  display: flex !important;
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-inner > :last-child {
+  margin-left: auto;
+}
+
+@media (max-width: 1000px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy {
+    padding-bottom: 0;
+  }
+
+  .hero-visual {
+    min-height: 500px;
+  }
+
+  .desktop-nav,
+  .user-copy {
+    display: none;
+  }
+
+  .feature-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-strip > div + div {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+@media (max-width: 700px) {
+  .header-inner {
+    min-height: 64px;
+    gap: 8px;
+  }
+
+  .header-actions .MuiIconButton-root:nth-of-type(2),
+  .header-actions .user-avatar {
+    display: none;
+  }
+
+  .header-actions .MuiButton-root {
+    min-width: 0;
+    padding-inline: 10px;
+  }
+
+  .brand > span {
+    display: none;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .hero-inner {
+    display: block !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.6rem, 19vw, 5rem);
+  }
+
+  .hero-stats {
+    gap: 22px;
+  }
+
+  .hero-visual {
+    min-height: 430px;
+  }
+
+  .main-player-card {
+    width: 250px;
+    height: 340px;
+  }
+
+  .score-card { left: -12px; bottom: 36px; }
+  .bid-card { right: -12px; top: 30px; }
+
+  .section-block,
+  .page-container {
+    padding-top: 58px;
+    padding-bottom: 58px;
+  }
+
+  .section-heading,
+  .page-heading,
+  .card-title-row,
+  .league-hero,
+  .auction-status-card .MuiCardContent-root {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-heading h1,
+  .league-hero h1 {
+    font-size: 2.6rem;
+  }
+
+  .heading-actions {
+    width: 100%;
+  }
+
+  .heading-actions .MuiButton-root {
+    flex: 1;
+  }
+
+  .player-toolbar {
+    flex-direction: column;
+  }
+
+  .player-toolbar .MuiTextField-root {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .league-hero {
+    padding: 28px;
+  }
+
+  .ranking-row {
+    grid-template-columns: 34px 1fr auto;
+  }
+
+  .ranking-row .MuiAvatar-root {
+    display: none;
+  }
+
+  .footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: 28px;
+  }
+
+  .footer-inner > :last-child {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

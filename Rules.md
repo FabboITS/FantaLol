@@ -55,21 +55,29 @@ Nelle leghe da 2 a 5 partecipanti, dopo la chiusura dell’asta ogni proprietari
 
 Nelle leghe con almeno 6 partecipanti, i cinque player della rosa, uno per ruolo, costituiscono automaticamente la formazione e sono consultabili con “Vedi la tua rosa”.
 
-Un giocatore che non disputa una partita ufficiale non riceve punti.
+Un giocatore che non disputa una partita ufficiale non riceve punti. La formazione
+dell'intera giornata può essere bloccata o sbloccata da un partecipante della lega,
+dal creatore o da un amministratore; durante il blocco non può essere modificata.
 
 ## Punteggi
 
 I punteggi vengono calcolati utilizzando le statistiche ufficiali ottenute dai giocatori nelle partite della competizione.
 
-La valutazione può tenere conto di:
+Per ogni partita la valutazione tiene conto di kill, assist, morti, CS e vittoria.
+I coefficienti kill/assist/morti/CS ogni 100 sono specifici per ruolo:
 
-- kill (+3 pt);
-- assist (+2 pt);
-- morti (-2 pt);
-- CS ottenuti (+1 pt per ogni 100 CS);
-- vittorie (+3 pt);
+- Top: 3 / 2 / 2 / 1,10;
+- Jungle: 3 / 2,25 / 2 / 0,70;
+- Mid: 3 / 2 / 2 / 1;
+- ADC: 3,25 / 1,75 / 2 / 1,20;
+- Support: 2,50 / 2,50 / 2 / 0,20.
 
-Il punteggio della giornata del fantasy team è la media aritmetica dei punteggi dei cinque player attivi. Un player senza statistiche vale 0 punti e il totale viene comunque diviso per cinque. I punteggi medi delle giornate chiuse vengono sommati per determinare la classifica generale.
+Ogni vittoria assegna inoltre 3 punti. I CS sono calcolati in modo continuo: ad
+esempio 50 CS valgono metà del coefficiente indicato. Nelle serie al meglio di più
+partite si usa la media delle sole partite effettivamente disputate dal player; i
+punteggi delle diverse serie comprese nella giornata vengono sommati.
+
+Il punteggio della giornata del fantasy team è la media aritmetica dei punteggi dei cinque player attivi. Un player senza statistiche vale 0 punti e il totale viene comunque diviso per cinque. I risultati precedenti alla Summer 2026 conservano la formula storica.
 
 Le prestazioni vengono valutate considerando il ruolo del giocatore. Ad esempio, le statistiche di visione e gli assist possono avere maggiore importanza per un Support, mentre CS e danni possono incidere maggiormente sulla valutazione di un ADC.
 
@@ -108,7 +116,11 @@ Gli aggiornamenti potrebbero non essere immediati. I risultati rimangono provvis
 
 Se una partita viene rinviata, la settimana resta in attesa ed è esclusa completamente dalla classifica generale. Le settimane successive continuano normalmente. Dopo il recupero, i nuovi dati vengono aggiunti alla settimana sospesa e il risultato diventa definitivo soltanto alla sua chiusura.
 
-In caso di statistiche mancanti, errori della fonte dati o partite annullate, l’amministratore può correggere manualmente i risultati.
+In caso di statistiche mancanti, errori della fonte dati o partite annullate,
+l’amministratore può inserire o correggere manualmente i risultati. Il dato manuale e
+quello Oracle vengono conservati entrambi: se differiscono, il risultato resta
+segnalato come conflitto finché un amministratore sceglie esplicitamente quale usare.
+Ogni modifica ricalcola la classifica provvisoria ed è registrata nello storico.
 
 ## Comportamento dei partecipanti
 

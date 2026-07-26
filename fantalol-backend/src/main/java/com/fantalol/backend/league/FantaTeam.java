@@ -56,6 +56,16 @@ public class FantaTeam {
     /** Snapshot of points produced by the legacy aggregate scoring model. */
     private Double legacyPoints;
 
+    /** Closed matchdays plus the immutable legacy score. */
+    @Column(nullable = false)
+    @Builder.Default
+    private Double confirmedPoints = 0.0;
+
+    /** Live score produced by Summer matchdays that are not closed yet. */
+    @Column(nullable = false)
+    @Builder.Default
+    private Double provisionalPoints = 0.0;
+
     /** Rosa della squadra: relazione ManyToMany implementata tramite classe associativa (crediti spesi, data acquisto). */
     @OneToMany(mappedBy = "fantaTeam", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

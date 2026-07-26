@@ -28,12 +28,14 @@ public class OracleGameCsvIngestionService {
     private final LecPlayerRepository playerRepository;
     private final GameStatService gameStatService;
     private final MatchdayScoringEngine scoringEngine;
+    private final com.fantalol.backend.matchday.FormationService formationService;
 
     @Transactional
     public void importCsv(Long matchdayId, MultipartFile file, String league, String split) {
         var targetMatchday = matchdayRepository.findById(matchdayId)
                 .orElseThrow(() -> new com.fantalol.backend.common.ResourceNotFoundException(
                         "Giornata non trovata con id: " + matchdayId));
+        formationService.ensureEffectiveFormations(targetMatchday);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.builder()
                     .setHeader()

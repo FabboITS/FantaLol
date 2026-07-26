@@ -97,6 +97,14 @@ public class FormationService {
         return formationRepository.save(builder.source(FormationSource.MISSING).build());
     }
 
+    /** Materializes automatic, carried or missing formations before live scoring starts. */
+    @Transactional
+    public void ensureEffectiveFormations(Matchday matchday) {
+        if (matchday.getLeague().isAuctionOpen()) return;
+        fantaTeamRepository.findByLeagueId(matchday.getLeague().getId())
+                .forEach(team -> resolveEffectiveFormation(team, matchday));
+    }
+
     /**
      * Imposta (o sovrascrive) la formazione di una FantaTeam per una giornata.
      * Regole di business:
@@ -120,8 +128,7 @@ public class FormationService {
         var matchday = matchdayRepository.findById(request.matchdayId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + request.matchdayId()));
 
-        if (matchday.isChiusa()
-                && (scoringEngine == null || !scoringEngine.usesGameScoring(matchday.getId()))) {
+        if (matchday.isChiusa()) {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è chiusa: non puoi modificare la formazione");
         }
         if (matchday.isFormationLocked()) {

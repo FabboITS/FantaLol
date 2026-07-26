@@ -1,0 +1,14 @@
+.ranking-score {
+    display: grid;
+    justify-items: end;
+    gap: 3px;
+}
+
+.ranking-score small {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.ranking-score .provisional-points {
+    color: #f4c95d;
+}

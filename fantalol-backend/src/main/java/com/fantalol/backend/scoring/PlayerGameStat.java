@@ -27,6 +27,10 @@ public class PlayerGameStat {
     @JoinColumn(name = "lec_player_id", nullable = false)
     private LecPlayer player;
 
+    /** Team name captured when this game was imported, so later roster changes do not rewrite history. */
+    @Column(name = "team_name_snapshot", length = 100)
+    private String teamNameSnapshot;
+
     private Integer oracleKills;
     private Integer oracleDeaths;
     private Integer oracleAssists;

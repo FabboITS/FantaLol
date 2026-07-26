@@ -66,7 +66,8 @@ public class OracleGameCsvIngestionService {
                                 .playedAt(playedAt(gameRows.getValue().get(0)))
                                 .build()));
                 for (ResolvedRow row : rows) {
-                    gameStatService.submitOracle(game, row.player(), integer(row.record(), "kills"),
+                    gameStatService.submitOracle(game, row.player(), value(row.record(), "teamname"),
+                            integer(row.record(), "kills"),
                             integer(row.record(), "deaths"), integer(row.record(), "assists"),
                             integer(row.record(), "total cs"), integer(row.record(), "result") > 0);
                 }

@@ -49,16 +49,17 @@ public class GameStatService {
         linkMatchdays(series, request.matchdayIds());
         LecPlayer player = playerRepository.findById(request.playerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Player LEC non trovato con id: " + request.playerId()));
-        PlayerGameStat stat = submit(game, player, StatSource.MANUAL, request.kills(), request.deaths(),
-                request.assists(), request.cs(), request.win(), actor);
+        PlayerGameStat stat = submit(game, player, currentTeamName(player), StatSource.MANUAL,
+                request.kills(), request.deaths(), request.assists(), request.cs(), request.win(), actor);
         scoringEngine.recomputeForSeries(series.getId());
         return GameStatResponse.from(stat, calculator);
     }
 
     @Transactional
-    public PlayerGameStat submitOracle(OfficialGame game, LecPlayer player, int kills, int deaths,
-                                       int assists, int cs, boolean win) {
-        return submit(game, player, StatSource.ORACLE, kills, deaths, assists, cs, win, "ORACLE_SYNC");
+    public PlayerGameStat submitOracle(OfficialGame game, LecPlayer player, String teamName, int kills,
+                                       int deaths, int assists, int cs, boolean win) {
+        return submit(game, player, teamName, StatSource.ORACLE, kills, deaths, assists, cs, win,
+                "ORACLE_SYNC");
     }
 
     @Transactional(readOnly = true)
@@ -86,14 +87,20 @@ public class GameStatService {
         return GameStatResponse.from(stat, calculator);
     }
 
-    private PlayerGameStat submit(OfficialGame game, LecPlayer player, StatSource source,
+    private PlayerGameStat submit(OfficialGame game, LecPlayer player, String teamName, StatSource source,
                                   int kills, int deaths, int assists, int cs, boolean win, String actor) {
         PlayerGameStat stat = statRepository.findByGameIdAndPlayerId(game.getId(), player.getId())
                 .orElse(PlayerGameStat.builder().game(game).player(player).build());
+        if (teamName != null && !teamName.isBlank()) stat.setTeamNameSnapshot(teamName.trim());
+        else if (stat.getTeamNameSnapshot() == null) stat.setTeamNameSnapshot(currentTeamName(player));
         stat.submit(source, kills, deaths, assists, cs, win, actor);
         statRepository.save(stat);
         auditRepository.save(audit(stat, "SUBMIT", source, actor));
         return stat;
+    }
+
+    private static String currentTeamName(LecPlayer player) {
+        return player.getTeam() != null ? player.getTeam().getNome() : null;
     }
 
     private void linkMatchdays(OfficialSeries series, List<Long> matchdayIds) {

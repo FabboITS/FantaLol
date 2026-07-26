@@ -42,3 +42,13 @@ test('fantasy ranking distinguishes provisional points', () => {
   assert.match(script, /provisionalPoints/);
   assert.match(script, /provvisori/);
 });
+
+test('LEC insights render real custom-score standings and player filters', () => {
+  assert.match(script, /LecDataSource\.loadInsights\(api\)/);
+  assert.match(script, /function renderLecStandings/);
+  assert.match(script, /function renderPlayerPerformances/);
+  assert.match(page, /Summer 2026/);
+  assert.doesNotMatch(script, /Fonte ufficiale non collegata/);
+  assert.match(page, /performance-role-filter/);
+  assert.match(page, /performance-team-filter/);
+});

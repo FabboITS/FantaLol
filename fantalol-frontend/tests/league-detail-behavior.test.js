@@ -37,3 +37,8 @@ test('formation save remains visible in the dialog and can return to editing', (
   assert.doesNotMatch(script, /state\.currentFormation=await api[\s\S]{0,300}formation-dialog'\)\.close/);
   assert.match(script, /synchronizeLeaguePage\(\)/);
 });
+
+test('fantasy ranking distinguishes provisional points', () => {
+  assert.match(script, /provisionalPoints/);
+  assert.match(script, /provvisori/);
+});

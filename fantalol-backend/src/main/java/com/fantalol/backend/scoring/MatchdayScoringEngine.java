@@ -84,17 +84,28 @@ public class MatchdayScoringEngine {
         return complete ? ScoringDataStatus.COMPLETE : ScoringDataStatus.PROVISIONAL;
     }
 
-    private void recomputeTeamTotal(FantaTeam team) {
+    void recomputeTeamTotal(FantaTeam team) {
         if (team.getLegacyPoints() == null) {
             team.setLegacyPoints(team.getPunti() != null ? team.getPunti() : 0.0);
         }
-        double summer = formationRepository.findByFantaTeamId(team.getId()).stream()
+        var summerFormations = formationRepository.findByFantaTeamId(team.getId()).stream()
                 .filter(formation -> RoleScoreWeights.FORMULA_VERSION.equals(formation.getFormulaVersion()))
+                .filter(formation -> formation.getPunteggioTotale() != null)
+                .toList();
+        double confirmedSummer = summerFormations.stream()
+                .filter(formation -> formation.getMatchday().isChiusa())
                 .map(Formation::getPunteggioTotale)
-                .filter(java.util.Objects::nonNull)
                 .mapToDouble(Double::doubleValue)
                 .sum();
-        team.setPunti(team.getLegacyPoints() + summer);
+        double provisional = summerFormations.stream()
+                .filter(formation -> !formation.getMatchday().isChiusa())
+                .map(Formation::getPunteggioTotale)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        double confirmed = team.getLegacyPoints() + confirmedSummer;
+        team.setConfirmedPoints(confirmed);
+        team.setProvisionalPoints(provisional);
+        team.setPunti(confirmed + provisional);
         fantaTeamRepository.save(team);
     }
 }

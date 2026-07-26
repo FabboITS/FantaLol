@@ -123,13 +123,20 @@ public class MatchdayService {
 
         var teams = fantaTeamRepository.findByLeagueId(matchday.getLeague().getId());
         if (scoringEngine != null && scoringEngine.usesGameScoring(matchdayId)) {
+            var scoringStatus = scoringEngine.status(matchdayId);
+            if (scoringStatus != com.fantalol.backend.scoring.ScoringDataStatus.COMPLETE) {
+                throw new BusinessRuleException("La giornata non può essere chiusa: dati punteggio "
+                        + scoringStatus.name().toLowerCase(java.util.Locale.ROOT));
+            }
             for (var team : teams) {
                 formationService.resolveEffectiveFormation(team, matchday);
             }
             scoringEngine.recomputeMatchday(matchdayId);
             matchday.setChiusa(true);
             matchday.setStatus(MatchdayStatus.CLOSED);
-            return response(matchdayRepository.save(matchday));
+            Matchday saved = matchdayRepository.save(matchday);
+            scoringEngine.recomputeMatchday(matchdayId);
+            return response(saved);
         }
 
         List<Formation> formazioni = new java.util.ArrayList<>();

@@ -1,1 +1,24 @@
+# Local datasets and secrets
 data/*.csv
+.env
+.env.*
+!.env.example
+
+# Java / Maven build output
+**/target/
+*.jar
+*.class
+
+# JavaScript build output and dependencies
+**/node_modules/
+**/dist/
+**/.vite/
+
+# IDE and operating-system files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Local agent/tool state
+.superpowers/

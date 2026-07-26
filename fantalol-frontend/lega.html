@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/auction.css"><link rel="stylesheet" href="/css/live-auction.css"><link rel="stylesheet" href="/css/league-detail.css">
+    <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/auction.css"><link rel="stylesheet" href="/css/live-auction.css"><link rel="stylesheet" href="/css/league-detail.css"><link rel="stylesheet" href="/css/lec-insights.css">
 </head>
 <body class="league-page">
 <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -35,8 +35,8 @@
             <section class="league-view hidden" data-view="teams"><div class="view-heading"><div><p class="eyebrow">Tutti i partecipanti</p><h2>SQUADRE &amp; ROSE</h2></div></div><div id="league-teams" class="league-team-grid"></div></section>
             <section class="league-view hidden" data-view="auction"><div class="view-heading"><div><p class="eyebrow">Mercato della lega</p><h2>ASTA LIVE</h2></div><div id="auction-phase-controls" class="auction-phase-controls"></div></div><div class="content-card"><div id="auction-summary" class="auction-summary"></div><button class="button button-ghost free-player hidden" id="auto-complete-button">Completa casualmente i ruoli mancanti</button><div id="auction-list" class="auction-list"></div></div></section>
             <section class="league-view hidden" data-view="matchdays"><div class="view-heading"><div><p class="eyebrow">Competizione</p><h2>GIORNATE</h2></div><div class="section-actions"><button id="create-matchday-button" class="button button-primary hidden">+ Giornata</button><button id="open-formation-button" class="button button-ghost hidden">Formazione</button></div></div><div id="matchdays-list" class="matchdays-list"></div></section>
-            <section class="league-view hidden" data-view="lec"><div class="view-heading"><div><p class="eyebrow">Campionato ufficiale</p><h2>CLASSIFICA LEC</h2></div></div><div id="lec-standings" class="integration-state"></div></section>
-            <section class="league-view hidden" data-view="performance"><div class="view-heading"><div><p class="eyebrow">Statistiche ufficiali</p><h2>PLAYER PERFORMANCE</h2></div></div><div id="player-performance" class="integration-state"></div></section>
+            <section class="league-view hidden" data-view="lec"><div class="view-heading"><div><p class="eyebrow">Fantapunteggio ufficiale</p><h2>CLASSIFICA LEC</h2></div><span id="lec-data-status" class="status-pill"></span></div><div id="lec-standings" class="insights-panel" aria-live="polite"></div></section>
+            <section class="league-view hidden" data-view="performance"><div class="view-heading"><div><p class="eyebrow">Summer 2026</p><h2>PLAYER PERFORMANCE</h2></div><span id="performance-updated" class="panel-meta"></span></div><div class="performance-toolbar"><label>Ruolo<select id="performance-role-filter"><option value="ALL">Tutti i ruoli</option><option>TOP</option><option>JUNGLE</option><option>MID</option><option>ADC</option><option>SUPPORT</option></select></label><label>Team<select id="performance-team-filter"><option value="ALL">Tutti i team</option></select></label></div><div id="player-performance" class="insights-panel" aria-live="polite"></div></section>
         </div>
     </div>
 </main>

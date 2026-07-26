@@ -1,4 +1,5 @@
 window.LecDataSource={
-    async loadStandings(){return {status:'not-connected',items:[]}},
-    async loadPlayerPerformances(){return {status:'not-connected',items:[]}}
+    async loadInsights(request){
+        return request('/lec/summer-2026/insights');
+    }
 };

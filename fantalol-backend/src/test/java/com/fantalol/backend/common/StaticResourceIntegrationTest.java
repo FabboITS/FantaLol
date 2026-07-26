@@ -193,14 +193,14 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(not(containsString("name=\"capitanoId\""))))
                 .andExpect(content().string(containsString("id=\"matchday-dialog\"")));
 
-        for (String asset : List.of("/css/league-detail.css", "/js/league-utils.js",
+        for (String asset : List.of("/css/league-detail.css", "/css/lec-insights.css", "/js/league-utils.js",
                 "/js/lec-data-source.js", "/js/league-detail.js")) {
             mockMvc.perform(get(asset)).andExpect(status().isOk());
         }
 
         mockMvc.perform(get("/js/lec-data-source.js"))
-                .andExpect(content().string(containsString("status:'not-connected'")))
-                .andExpect(content().string(not(containsString("position:"))));
+                .andExpect(content().string(containsString("/lec/summer-2026/insights")))
+                .andExpect(content().string(not(containsString("not-connected"))));
     }
 
     @Test

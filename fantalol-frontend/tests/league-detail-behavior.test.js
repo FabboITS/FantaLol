@@ -37,3 +37,13 @@ test('formation save remains visible in the dialog and can return to editing', (
   assert.doesNotMatch(script, /state\.currentFormation=await api[\s\S]{0,300}formation-dialog'\)\.close/);
   assert.match(script, /synchronizeLeaguePage\(\)/);
 });
+
+test('LEC insights render real custom-score standings and player filters', () => {
+  assert.match(script, /LecDataSource\.loadInsights\(api\)/);
+  assert.match(script, /function renderLecStandings/);
+  assert.match(script, /function renderPlayerPerformances/);
+  assert.match(page, /Summer 2026/);
+  assert.doesNotMatch(script, /Fonte ufficiale non collegata/);
+  assert.match(page, /performance-role-filter/);
+  assert.match(page, /performance-team-filter/);
+});

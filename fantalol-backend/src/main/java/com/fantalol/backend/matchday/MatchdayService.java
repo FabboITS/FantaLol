@@ -17,7 +17,9 @@ import com.fantalol.backend.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -38,14 +40,20 @@ public class MatchdayService {
     private final LeagueService leagueService;
     private final UserService userService;
 
+    @Autowired(required = false)
+    private com.fantalol.backend.scoring.MatchdayLockAuditRepository lockAuditRepository;
+
+    @Autowired(required = false)
+    private com.fantalol.backend.scoring.MatchdayScoringEngine scoringEngine;
+
     @Transactional(readOnly = true)
     public List<MatchdayResponse> findAll() {
-        return matchdayRepository.findAll().stream().map(MatchdayResponse::from).toList();
+        return matchdayRepository.findAll().stream().map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
     public MatchdayResponse findById(Long id) {
-        return MatchdayResponse.from(getOrThrow(id));
+        return response(getOrThrow(id));
     }
 
     @Transactional
@@ -103,10 +111,7 @@ public class MatchdayService {
         return PlayerStatResponse.from(playerStatRepository.save(stat));
     }
 
-    /**
-     * Chiude la giornata: da questo momento le statistiche non sono più modificabili
-     * e viene calcolato il punteggio totale di ogni formazione schierata.
-     */
+    /** Chiude la giornata e calcola i risultati con la formula associata alla giornata. */
     @Transactional
     public MatchdayResponse chiudiGiornata(String username, Long matchdayId) {
         Matchday matchday = getOrThrow(matchdayId);
@@ -116,8 +121,18 @@ public class MatchdayService {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è già chiusa");
         }
 
-        List<Formation> formazioni = new java.util.ArrayList<>();
         var teams = fantaTeamRepository.findByLeagueId(matchday.getLeague().getId());
+        if (scoringEngine != null && scoringEngine.usesGameScoring(matchdayId)) {
+            for (var team : teams) {
+                formationService.resolveEffectiveFormation(team, matchday);
+            }
+            scoringEngine.recomputeMatchday(matchdayId);
+            matchday.setChiusa(true);
+            matchday.setStatus(MatchdayStatus.CLOSED);
+            return response(matchdayRepository.save(matchday));
+        }
+
+        List<Formation> formazioni = new java.util.ArrayList<>();
         for (var team : teams) {
             Formation formazione = formationService.resolveEffectiveFormation(team, matchday);
             double totale = 0.0;
@@ -152,6 +167,21 @@ public class MatchdayService {
         return MatchdayResponse.from(matchdayRepository.save(matchday));
     }
 
+    @Transactional
+    public MatchdayResponse setFormationLocked(String username, Long matchdayId, boolean locked) {
+        Matchday matchday = getOrThrow(matchdayId);
+        assertLeagueParticipant(username, matchday.getLeague());
+        matchday.setFormationLocked(locked);
+        matchday.setFormationLockedAt(Instant.now());
+        matchday.setFormationLockedBy(username);
+        Matchday saved = matchdayRepository.save(matchday);
+        if (lockAuditRepository != null) {
+            lockAuditRepository.save(com.fantalol.backend.scoring.MatchdayLockAudit.builder()
+                    .matchday(saved).locked(locked).actor(username).build());
+        }
+        return response(saved);
+    }
+
     Matchday getOrThrow(Long id) {
         return matchdayRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + id));
@@ -174,5 +204,19 @@ public class MatchdayService {
         if (matchday.getLeague().isAuctionOpen()) {
             throw new BusinessRuleException("Termina l'asta prima di usare o chiudere la giornata");
         }
+    }
+
+    private void assertLeagueParticipant(String username, League league) {
+        User user = userService.findByUsernameOrThrow(username);
+        boolean participant = fantaTeamRepository.findByLeagueIdAndOwnerUsername(league.getId(), username).isPresent();
+        if (user.getRole() != Role.ADMIN && !league.getAdmin().getUsername().equals(username) && !participant) {
+            throw new BusinessRuleException("Solo i partecipanti della lega possono bloccare o sbloccare la giornata");
+        }
+    }
+
+    private MatchdayResponse response(Matchday matchday) {
+        MatchdayResponse response = MatchdayResponse.from(matchday);
+        return scoringEngine == null || !scoringEngine.usesGameScoring(matchday.getId()) ? response
+                : response.withScoringStatus(scoringEngine.status(matchday.getId()).name());
     }
 }

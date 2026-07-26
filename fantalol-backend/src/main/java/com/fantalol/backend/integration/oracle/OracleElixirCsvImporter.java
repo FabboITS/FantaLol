@@ -10,6 +10,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,13 +28,13 @@ public class OracleElixirCsvImporter {
     private final LecPlayerRepository lecPlayerRepository;
     private final FantaScoreCalculator scoreCalculator;
 
+    @Autowired(required = false)
+    private OracleGameCsvIngestionService gameCsvIngestionService;
+
     @Transactional
     public OracleImportResult importCsv(Long matchdayId, MultipartFile file, String league, String split) {
         Matchday matchday = matchdayRepository.findById(matchdayId)
                 .orElseThrow(() -> new BusinessRuleException("Matchday not found: " + matchdayId));
-        if (matchday.isChiusa()) {
-            throw new BusinessRuleException("Closed matchdays cannot receive imported statistics");
-        }
         if (file == null || file.isEmpty()) {
             throw new BusinessRuleException("A non-empty Oracle's Elixir CSV file is required");
         }
@@ -113,6 +114,9 @@ public class OracleElixirCsvImporter {
                 importedGames++;
             }
 
+            if (gameCsvIngestionService != null) {
+                gameCsvIngestionService.importCsv(matchdayId, file, league, split);
+            }
             return new OracleImportResult(importedGames, skippedGames, importedRows, List.copyOf(unmatched));
         } catch (BusinessRuleException exception) {
             throw exception;

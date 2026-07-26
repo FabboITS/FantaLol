@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PandaScoreAdminController {
     private final PandaScoreClient client;
+    private final SummerScheduleService summerScheduleService;
 
     @GetMapping("/tournaments/{tournamentId}/matches")
     public JsonNode tournamentMatches(@PathVariable long tournamentId) {
@@ -18,5 +19,10 @@ public class PandaScoreAdminController {
     @GetMapping("/matches/{matchId}")
     public JsonNode match(@PathVariable long matchId) {
         return client.getMatch(matchId);
+    }
+
+    @PostMapping("/summer/sync")
+    public SummerScheduleSyncResult syncSummer() {
+        return summerScheduleService.sync();
     }
 }

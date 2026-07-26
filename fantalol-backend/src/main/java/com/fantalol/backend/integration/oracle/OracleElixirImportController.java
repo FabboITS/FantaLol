@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class OracleElixirImportController {
     private final OracleElixirCsvImporter importer;
+    private final OracleScheduledSyncService scheduledSyncService;
 
     @PostMapping(value = "/matchdays/{matchdayId}/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public OracleImportResult importMatchday(
@@ -24,5 +25,15 @@ public class OracleElixirImportController {
             throw new IllegalStateException("Authentication is required");
         }
         return importer.importCsv(matchdayId, file, league, split);
+    }
+
+    @PostMapping("/sync")
+    public OracleSyncHealth sync() {
+        return scheduledSyncService.sync();
+    }
+
+    @GetMapping("/health")
+    public OracleSyncHealth health() {
+        return scheduledSyncService.health();
     }
 }

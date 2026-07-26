@@ -53,10 +53,10 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("<title>FantaLeague")))
                 .andExpect(content().string(containsString("aria-label=\"FantaLeague home\"")))
                 .andExpect(content().string(containsString("FANTA<span>LEAGUE</span>")))
-                .andExpect(content().string(containsString("src=\"/Player_immage/Mid/Caps.jpg\"")))
+                .andExpect(content().string(containsString("src=\"/Player_immage/other/Caps_1.webp\"")))
                 .andExpect(content().string(containsString("alt=\"Caps, mid laner for G2 Esports\"")))
-                .andExpect(content().string(containsString("src=\"/Player_immage/Jungle/SkewMond.jpg\"")))
-                .andExpect(content().string(containsString("alt=\"SkewMond, jungler\"")));
+                .andExpect(content().string(containsString("src=\"/Player_immage/other/BB_1.webp\"")))
+                .andExpect(content().string(containsString("alt=\"BrokenBlade, top laner\"")));
     }
 
     @Test
@@ -165,7 +165,7 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("id=\"rules-dialog\"")))
                 .andExpect(content().string(containsString("Regole FantaLeague LEC")))
                 .andExpect(content().string(containsString("Cambi nei roster reali")))
-                .andExpect(content().string(containsString("media aritmetica")))
+                .andExpect(content().string(containsString("media delle sole partite disputate")))
                 .andExpect(content().string(containsString("0 punti")))
                 .andExpect(content().string(containsString("Accettazione delle regole")));
 
@@ -193,14 +193,14 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(not(containsString("name=\"capitanoId\""))))
                 .andExpect(content().string(containsString("id=\"matchday-dialog\"")));
 
-        for (String asset : List.of("/css/league-detail.css", "/js/league-utils.js",
+        for (String asset : List.of("/css/league-detail.css", "/css/lec-insights.css", "/js/league-utils.js",
                 "/js/lec-data-source.js", "/js/league-detail.js")) {
             mockMvc.perform(get(asset)).andExpect(status().isOk());
         }
 
         mockMvc.perform(get("/js/lec-data-source.js"))
-                .andExpect(content().string(containsString("status:'not-connected'")))
-                .andExpect(content().string(not(containsString("position:"))));
+                .andExpect(content().string(containsString("/lec/summer-2026/insights")))
+                .andExpect(content().string(not(containsString("not-connected"))));
     }
 
     @Test

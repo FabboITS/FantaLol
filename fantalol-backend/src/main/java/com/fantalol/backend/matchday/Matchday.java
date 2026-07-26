@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +54,16 @@ public class Matchday {
     @Column(nullable = false, length = 40)
     @Builder.Default
     private MatchdayStatus status = MatchdayStatus.OPEN;
+
+    /** Formation locking is intentionally independent from statistics finalization. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean formationLocked = false;
+
+    private Instant formationLockedAt;
+
+    @Column(length = 80)
+    private String formationLockedBy;
 
     @PostLoad
     void initializeStatusForLegacyRows() {

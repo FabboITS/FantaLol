@@ -59,4 +59,8 @@ public class Formation {
 
     /** Punteggio totale della formazione per la giornata, calcolato a chiusura giornata. */
     private Double punteggioTotale;
+
+    /** Null identifies a legacy aggregate result. */
+    @Column(length = 40)
+    private String formulaVersion;
 }

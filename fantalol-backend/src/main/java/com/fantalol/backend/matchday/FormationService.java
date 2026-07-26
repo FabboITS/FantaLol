@@ -14,6 +14,7 @@ import com.fantalol.backend.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,9 @@ public class FormationService {
     private final PlayerStatRepository playerStatRepository;
     private final UserService userService;
 
+    @Autowired(required = false)
+    private com.fantalol.backend.scoring.MatchdayScoringEngine scoringEngine;
+
     @Transactional(readOnly = true)
     public FormationResponse findByTeamAndMatchday(Long fantaTeamId, Long matchdayId) {
         Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, matchdayId)
@@ -50,9 +54,12 @@ public class FormationService {
                 .sorted(java.util.Comparator.comparing(formation -> formation.getMatchday().getNumero()))
                 .map(formation -> {
                     java.util.Map<Long, Double> scores = formation.getTitolari().stream().collect(
-                            java.util.stream.Collectors.toMap(LecPlayer::getId, player -> playerStatRepository
-                                    .findByMatchdayIdAndLecPlayerId(formation.getMatchday().getId(), player.getId())
-                                    .map(PlayerStat::getFantavoto).orElse(0.0)));
+                            java.util.stream.Collectors.toMap(LecPlayer::getId, player ->
+                                    formation.getFormulaVersion() != null && scoringEngine != null
+                                            ? scoringEngine.playerMatchdayScore(formation.getMatchday().getId(), player.getId())
+                                            : playerStatRepository
+                                            .findByMatchdayIdAndLecPlayerId(formation.getMatchday().getId(), player.getId())
+                                            .map(PlayerStat::getFantavoto).orElse(0.0)));
                     return FormationResponse.from(formation, scores);
                 }).toList();
     }
@@ -113,8 +120,12 @@ public class FormationService {
         var matchday = matchdayRepository.findById(request.matchdayId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + request.matchdayId()));
 
-        if (matchday.isChiusa()) {
+        if (matchday.isChiusa()
+                && (scoringEngine == null || !scoringEngine.usesGameScoring(matchday.getId()))) {
             throw new BusinessRuleException("La giornata " + matchday.getNumero() + " è chiusa: non puoi modificare la formazione");
+        }
+        if (matchday.isFormationLocked()) {
+            throw new BusinessRuleException("Le formazioni della giornata sono bloccate");
         }
         if (fantaTeam.getLeague().isAuctionOpen()) {
             throw new BusinessRuleException("Termina l'asta prima di modificare la formazione");
@@ -149,6 +160,10 @@ public class FormationService {
         formation.setTitolari(titolari);
         formation.setSource(FormationSource.SUBMITTED);
 
-        return FormationResponse.from(formationRepository.save(formation));
+        Formation saved = formationRepository.save(formation);
+        if (scoringEngine != null && scoringEngine.usesGameScoring(matchday.getId())) {
+            scoringEngine.recomputeMatchday(matchday.getId());
+        }
+        return FormationResponse.from(saved);
     }
 }

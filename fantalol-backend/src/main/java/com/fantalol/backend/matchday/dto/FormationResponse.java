@@ -14,7 +14,8 @@ public record FormationResponse(
         List<String> titolari,
         List<FormationPlayerResponse> players,
         FormationSource source,
-        Double punteggioTotale
+        Double punteggioTotale,
+        String formulaVersion
 ) {
     public static FormationResponse from(Formation formation) {
         return from(formation, Map.of());
@@ -27,6 +28,6 @@ public record FormationResponse(
                         scores.getOrDefault(player.getId(), 0.0)))
                 .toList();
         return new FormationResponse(formation.getId(), formation.getFantaTeam().getId(), formation.getMatchday().getId(),
-                titolari, players, formation.getSource(), formation.getPunteggioTotale());
+                titolari, players, formation.getSource(), formation.getPunteggioTotale(), formation.getFormulaVersion());
     }
 }

@@ -86,20 +86,28 @@ della rosa formano automaticamente la squadra attiva.
 ## Giornate e punteggi
 
 Le statistiche importate includono uccisioni, morti, assist, minion eliminati e
-risultato della partita. Il punteggio individuale viene calcolato così:
+risultato della partita. Dalla Summer 2026 il punteggio viene calcolato per singola
+partita con coefficienti specifici per ruolo:
 
 ```text
-fantapunti = uccisioni × 3
-            + assist × 2
-            - morti × 2
-            + parte intera dei minion / 100
-            + vittorie × 3
+fantapunti partita = uccisioni × K(ruolo)
+                   + assist × A(ruolo)
+                   - morti × D(ruolo)
+                   + (CS / 100) × C(ruolo)
+                   + 3 in caso di vittoria
 ```
 
+I coefficienti K/A/D/C sono rispettivamente: Top 3/2/2/1,10; Jungle
+3/2,25/2/0,70; Mid 3/2/2/1; ADC 3,25/1,75/2/1,20; Support
+2,50/2,50/2/0,20. I CS sono continui e non arrotondati a centinaia intere.
+All'interno di una serie si calcola la media delle sole partite disputate dal player;
+le serie della giornata vengono poi sommate.
+
 Il punteggio del FantaTeam è la media aritmetica dei cinque giocatori attivi. Un
-giocatore senza statistiche vale zero e il divisore resta cinque. Le giornate chiuse
-contribuiscono alla classifica generale; una giornata in attesa di partite rinviate ne
-rimane esclusa finché non viene completata e chiusa.
+giocatore senza statistiche vale zero e il divisore resta cinque. I dati possono
+essere aggiornati anche dopo l'importazione: la classifica resta provvisoria finché le
+statistiche non sono complete e gli eventuali conflitti Oracle/manuali non sono
+risolti. I risultati precedenti alla Summer mantengono la formula storica.
 
 ## Architettura e tecnologie
 
@@ -205,6 +213,8 @@ Il backend legge queste variabili:
 | `JWT_EXPIRATION_MS` | Durata del token in millisecondi | `86400000` |
 | `PANDASCORE_BASE_URL` | URL base PandaScore | `https://api.pandascore.co` |
 | `PANDASCORE_API_TOKEN` | Token privato PandaScore | vuoto |
+| `PANDASCORE_SUMMER_TOURNAMENT_IDS` | ID torneo Summer e playoff, separati da virgola | `21344` |
+| `ORACLE_ELIXIR_CSV_URL` | CSV annuale fidato per il sync giornaliero | vuoto |
 
 In produzione bisogna usare password robuste, un segreto JWT casuale e sufficientemente
 lungo e un token PandaScore mantenuto esclusivamente sul server. Nessun segreto deve
@@ -247,11 +257,14 @@ node --check fantalol-frontend/js/league-detail.js
 
 ## Integrazioni e dati
 
-PandaScore fornisce calendario, stato delle partite e risultato delle serie. I CSV di
-Oracle's Elixir forniscono le statistiche per partita usate nel calcolo fantasy.
-L'importazione filtra competizione, split, completezza e ruoli, evita di importare due
-volte la stessa partita e prova ad associare i giocatori tramite identificativo esterno
-o nickname.
+PandaScore fornisce calendario, stato delle partite e risultato delle serie; il sync
+Summer genera le giornate per settimana di calendario includendo regular season e
+playoff. I CSV di Oracle's Elixir forniscono le statistiche per partita usate nel
+calcolo fantasy, con upload amministrativo come fallback del sync giornaliero.
+L'importazione filtra competizione, split, completezza e ruoli, evita duplicati e
+prova ad associare i giocatori tramite identificativo esterno o nickname. Le
+correzioni manuali e i dati Oracle restano entrambi tracciati e le differenze devono
+essere risolte esplicitamente.
 
 Gli endpoint di importazione e verifica del fornitore sono riservati all'amministratore
 globale. I dettagli operativi sono disponibili in

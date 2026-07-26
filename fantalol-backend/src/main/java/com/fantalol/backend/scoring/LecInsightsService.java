@@ -98,9 +98,10 @@ public class LecInsightsService {
     }
 
     private static LecInsightsResponse.PlayerPerformance playerRow(LecPlayer player, PlayerAccumulator values) {
+        String teamName = values.latestTeam != null ? values.latestTeam
+                : player.getTeam() != null ? player.getTeam().getNome() : null;
         return new LecInsightsResponse.PlayerPerformance(0, player.getId(), player.getNickname(), player.getRuolo(),
-                values.latestTeam != null ? values.latestTeam : player.getTeam() != null ? player.getTeam().getNome() : null,
-                values.games, values.kills, values.deaths, values.assists, values.cs, values.wins,
+                teamName, player.getImageUrl(), values.games, values.kills, values.deaths, values.assists, values.cs, values.wins,
                 values.total, values.games == 0 ? 0.0 : values.total / values.games);
     }
 

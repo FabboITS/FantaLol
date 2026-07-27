@@ -6,7 +6,8 @@ fantalol-backend,com.fantalol.backend.team.dto,LecTeamRequest,0,12,0,0,0,1,0,1,0
 fantalol-backend,com.fantalol.backend.config,SecurityConfig,0,282,0,0,0,38,0,11,0,11
 fantalol-backend,com.fantalol.backend.config,DataSeeder.PlayerSeed,0,15,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.config,AdminAccountInitializer,0,60,0,4,0,22,0,4,0,2
-fantalol-backend,com.fantalol.backend.config,DataSeeder,63,536,8,22,13,55,6,23,1,6
+fantalol-backend,com.fantalol.backend.config,DataSeeder.RosterCorrection,0,15,0,0,0,1,0,1,0,1
+fantalol-backend,com.fantalol.backend.config,DataSeeder,4,737,2,36,2,84,2,34,0,10
 fantalol-backend,com.fantalol.backend.league.dto,RosterEntryResponse,0,41,0,0,0,8,0,2,0,2
 fantalol-backend,com.fantalol.backend.league.dto,AuctionStartRequest,0,12,0,0,0,1,0,1,0,1
 fantalol-backend,com.fantalol.backend.league.dto,FantaTeamResponse,3,65,2,2,0,6,2,2,0,2

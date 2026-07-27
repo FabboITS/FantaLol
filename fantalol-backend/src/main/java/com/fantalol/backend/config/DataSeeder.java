@@ -31,9 +31,31 @@ public class DataSeeder implements CommandLineRunner {
     private record PlayerSeed(String nickname, PlayerRole ruolo, String nazionalita, int quotazione) {
     }
 
+    private record RosterCorrection(
+            String currentNickname,
+            String correctedNickname,
+            String nationality,
+            String teamName
+    ) {
+    }
+
+    private static final List<RosterCorrection> ROSTER_CORRECTIONS = List.of(
+            new RosterCorrection("Empyros", "Soboro", "Corea del Sud", "Fnatic"),
+            new RosterCorrection("Lot", "Oscarinin", "Spagna", "GIANTX"),
+            new RosterCorrection("Sheo", "Sheo", null, "Shifters"),
+            new RosterCorrection("Boukada", "Daglas", "Polonia", "Team Heretics"),
+            new RosterCorrection("Humanoid", "FIESTA", "Corea del Sud", "Team Vitality"),
+            new RosterCorrection("LIDER", "SlowQ", "Corea del Sud", "SK Gaming"),
+            new RosterCorrection("Noah", "Flakked", "Spagna", "GIANTX"),
+            new RosterCorrection("Ice", "Hype", "Corea del Sud", "Team Heretics"),
+            new RosterCorrection("Stend", "Stend", null, "Shifters"),
+            new RosterCorrection("Trymbi", "Way", "Corea del Sud", "Team Heretics")
+    );
+
     @Override
     public void run(String... args) {
         if (lecTeamRepository.count() > 0) {
+            synchronizeExistingRoster();
             backfillExistingAssetMetadata();
         } else {
             seedLecTeams();
@@ -47,7 +69,7 @@ public class DataSeeder implements CommandLineRunner {
         seedTeam("Team Vitality", "VIT", List.of(
                 new PlayerSeed("Naak Nako", PlayerRole.TOP, "Turchia", 55),
                 new PlayerSeed("Lyncas", PlayerRole.JUNGLE, "Lituania", 50),
-                new PlayerSeed("Humanoid", PlayerRole.MID, "Repubblica Ceca", 75),
+                new PlayerSeed("FIESTA", PlayerRole.MID, "Corea del Sud", 75),
                 new PlayerSeed("Carzzy", PlayerRole.ADC, "Danimarca", 80),
                 new PlayerSeed("Fleshy", PlayerRole.SUPPORT, "Turchia", 55)
         ));
@@ -85,15 +107,15 @@ public class DataSeeder implements CommandLineRunner {
         ));
 
         seedTeam("GIANTX", "GX", List.of(
-                new PlayerSeed("Lot", PlayerRole.TOP, "Turchia", 55),
+                new PlayerSeed("Oscarinin", PlayerRole.TOP, "Spagna", 55),
                 new PlayerSeed("Isma", PlayerRole.JUNGLE, "Francia", 55),
                 new PlayerSeed("Jackies", PlayerRole.MID, "Repubblica Ceca", 60),
-                new PlayerSeed("Noah", PlayerRole.ADC, "Corea del Sud", 60),
+                new PlayerSeed("Flakked", PlayerRole.ADC, "Spagna", 60),
                 new PlayerSeed("Jun", PlayerRole.SUPPORT, "Corea del Sud", 55)
         ));
 
         seedTeam("Fnatic", "FNC", List.of(
-                new PlayerSeed("Empyros", PlayerRole.TOP, "Grecia", 55),
+                new PlayerSeed("Soboro", PlayerRole.TOP, "Corea del Sud", 55),
                 new PlayerSeed("Razork", PlayerRole.JUNGLE, "Spagna", 75),
                 new PlayerSeed("Vladi", PlayerRole.MID, "Grecia", 70),
                 new PlayerSeed("Upset", PlayerRole.ADC, "Germania", 80),
@@ -103,27 +125,48 @@ public class DataSeeder implements CommandLineRunner {
         seedTeam("SK Gaming", "SK", List.of(
                 new PlayerSeed("Wunder", PlayerRole.TOP, "Danimarca", 65),
                 new PlayerSeed("Skeanz", PlayerRole.JUNGLE, "Francia", 55),
-                new PlayerSeed("LIDER", PlayerRole.MID, "Norvegia", 55),
+                new PlayerSeed("SlowQ", PlayerRole.MID, "Corea del Sud", 55),
                 new PlayerSeed("Jopa", PlayerRole.ADC, "Croazia", 50),
                 new PlayerSeed("Mikyx", PlayerRole.SUPPORT, "Slovenia", 75)
         ));
 
         seedTeam("Shifters", "SHFT", List.of(
                 new PlayerSeed("Rooster", PlayerRole.TOP, "Corea del Sud", 55),
-                new PlayerSeed("Boukada", PlayerRole.JUNGLE, "Francia", 55),
+                new PlayerSeed("Sheo", PlayerRole.JUNGLE, "Francia", 60),
                 new PlayerSeed("nuc", PlayerRole.MID, "Marocco/Francia", 55),
                 new PlayerSeed("Paduck", PlayerRole.ADC, "Corea del Sud", 55),
-                new PlayerSeed("Trymbi", PlayerRole.SUPPORT, "Polonia", 60)
+                new PlayerSeed("Stend", PlayerRole.SUPPORT, "Francia", 55)
         ));
 
         seedTeam("Team Heretics", "TH", List.of(
                 new PlayerSeed("Tracyn", PlayerRole.TOP, "Polonia", 50),
-                new PlayerSeed("Sheo", PlayerRole.JUNGLE, "Francia", 60),
+                new PlayerSeed("Daglas", PlayerRole.JUNGLE, "Polonia", 55),
                 new PlayerSeed("Serin", PlayerRole.MID, "Turchia", 55),
-                new PlayerSeed("Ice", PlayerRole.ADC, "Corea del Sud", 55),
-                new PlayerSeed("Stend", PlayerRole.SUPPORT, "Francia", 55)
+                new PlayerSeed("Hype", PlayerRole.ADC, "Corea del Sud", 55),
+                new PlayerSeed("Way", PlayerRole.SUPPORT, "Corea del Sud", 60)
         ));
 
+    }
+
+    private void synchronizeExistingRoster() {
+        for (RosterCorrection correction : ROSTER_CORRECTIONS) {
+            var targetTeam = lecTeamRepository.findByNomeIgnoreCase(correction.teamName());
+            if (targetTeam.isEmpty()) {
+                continue;
+            }
+            var player = lecPlayerRepository.findFirstByNicknameIgnoreCase(correction.currentNickname())
+                    .or(() -> lecPlayerRepository.findFirstByNicknameIgnoreCase(correction.correctedNickname()));
+            if (player.isEmpty()) {
+                continue;
+            }
+            LecPlayer existingPlayer = player.orElseThrow();
+            existingPlayer.setNickname(correction.correctedNickname());
+            if (correction.nationality() != null) {
+                existingPlayer.setNazionalita(correction.nationality());
+            }
+            existingPlayer.setTeam(targetTeam.orElseThrow());
+            lecPlayerRepository.save(existingPlayer);
+        }
     }
 
     private void backfillExistingAssetMetadata() {

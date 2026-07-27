@@ -52,7 +52,7 @@ END;
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
 ('Naak Nako', NULL, 'Turchia', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality')),
 ('Lyncas', NULL, 'Lituania', 'JUNGLE', 50, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality')),
-('Humanoid', NULL, 'Repubblica Ceca', 'MID', 75, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality')),
+('FIESTA', NULL, 'Corea del Sud', 'MID', 75, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality')),
 ('Carzzy', NULL, 'Danimarca', 'ADC', 80, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality')),
 ('Fleshy', NULL, 'Turchia', 'SUPPORT', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Vitality'));
 
@@ -90,15 +90,15 @@ INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, t
 
 -- GIANTX
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
-('Lot', NULL, 'Turchia', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
+('Oscarinin', NULL, 'Spagna', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
 ('Isma', NULL, 'Francia', 'JUNGLE', 55, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
 ('Jackies', NULL, 'Repubblica Ceca', 'MID', 60, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
-('Noah', NULL, 'Corea del Sud', 'ADC', 60, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
+('Flakked', NULL, 'Spagna', 'ADC', 60, (SELECT id FROM lec_teams WHERE nome = 'GIANTX')),
 ('Jun', NULL, 'Corea del Sud', 'SUPPORT', 55, (SELECT id FROM lec_teams WHERE nome = 'GIANTX'));
 
 -- Fnatic
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
-('Empyros', NULL, 'Grecia', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'Fnatic')),
+('Soboro', NULL, 'Corea del Sud', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'Fnatic')),
 ('Razork', NULL, 'Spagna', 'JUNGLE', 75, (SELECT id FROM lec_teams WHERE nome = 'Fnatic')),
 ('Vladi', NULL, 'Grecia', 'MID', 70, (SELECT id FROM lec_teams WHERE nome = 'Fnatic')),
 ('Upset', NULL, 'Germania', 'ADC', 80, (SELECT id FROM lec_teams WHERE nome = 'Fnatic')),
@@ -108,31 +108,31 @@ INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, t
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
 ('Wunder', NULL, 'Danimarca', 'TOP', 65, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming')),
 ('Skeanz', NULL, 'Francia', 'JUNGLE', 55, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming')),
-('LIDER', NULL, 'Norvegia', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming')),
+('SlowQ', NULL, 'Corea del Sud', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming')),
 ('Jopa', NULL, 'Croazia', 'ADC', 50, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming')),
 ('Mikyx', NULL, 'Slovenia', 'SUPPORT', 75, (SELECT id FROM lec_teams WHERE nome = 'SK Gaming'));
 
 -- Shifters
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
 ('Rooster', NULL, 'Corea del Sud', 'TOP', 55, (SELECT id FROM lec_teams WHERE nome = 'Shifters')),
-('Boukada', NULL, 'Francia', 'JUNGLE', 55, (SELECT id FROM lec_teams WHERE nome = 'Shifters')),
+('Sheo', NULL, 'Francia', 'JUNGLE', 60, (SELECT id FROM lec_teams WHERE nome = 'Shifters')),
 ('nuc', NULL, 'Marocco/Francia', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'Shifters')),
 ('Paduck', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Shifters')),
-('Trymbi', NULL, 'Polonia', 'SUPPORT', 60, (SELECT id FROM lec_teams WHERE nome = 'Shifters'));
+('Stend', NULL, 'Francia', 'SUPPORT', 55, (SELECT id FROM lec_teams WHERE nome = 'Shifters'));
 
 -- Team Heretics
 INSERT INTO lec_players (nickname, nome_reale, nazionalita, ruolo, quotazione, team_id) VALUES
 ('Tracyn', NULL, 'Polonia', 'TOP', 50, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
-('Sheo', NULL, 'Francia', 'JUNGLE', 60, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
+('Daglas', NULL, 'Polonia', 'JUNGLE', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
 ('Serin', NULL, 'Turchia', 'MID', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
-('Ice', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
-('Stend', NULL, 'Francia', 'SUPPORT', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics'));
+('Hype', NULL, 'Corea del Sud', 'ADC', 55, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics')),
+('Way', NULL, 'Corea del Sud', 'SUPPORT', 60, (SELECT id FROM lec_teams WHERE nome = 'Team Heretics'));
 
 -- Ritratti locali serviti dal frontend
 UPDATE lec_players SET image_url = CASE nickname
 WHEN 'Naak Nako' THEN '/Player_immage/Top/Naak_Nako.jpg'
 WHEN 'Lyncas' THEN '/Player_immage/Jungle/Lyncas.jpg'
-WHEN 'Humanoid' THEN '/Player_immage/Mid/Humanoid.jpg'
+WHEN 'FIESTA' THEN '/Player_immage/Mid/FIESTA.jpg'
 WHEN 'Carzzy' THEN '/Player_immage/Adc/Carzzy.jpg'
 WHEN 'Fleshy' THEN '/Player_immage/Support/Fleshy.jpg'
 WHEN 'Canna' THEN '/Player_immage/Top/Canna.jpg'
@@ -155,31 +155,31 @@ WHEN 'Rhilech' THEN '/Player_immage/Jungle/Rhilech.jpg'
 WHEN 'Poby' THEN '/Player_immage/Mid/Poby.jpg'
 WHEN 'SamD' THEN '/Player_immage/Adc/SamD.jpg'
 WHEN 'Parus' THEN '/Player_immage/Support/Parus.jpg'
-WHEN 'Lot' THEN '/Player_immage/Top/Lot.jpg'
+WHEN 'Oscarinin' THEN '/Player_immage/Top/Oscarinin.jpg'
 WHEN 'Isma' THEN '/Player_immage/Jungle/ISMA.jpg'
 WHEN 'Jackies' THEN '/Player_immage/Mid/Jackies.jpg'
-WHEN 'Noah' THEN '/Player_immage/Adc/Noah.jpg'
+WHEN 'Flakked' THEN '/Player_immage/Adc/Flakked.jpg'
 WHEN 'Jun' THEN '/Player_immage/Support/Jun.jpg'
-WHEN 'Empyros' THEN '/Player_immage/Top/Empyros.jpg'
+WHEN 'Soboro' THEN '/Player_immage/Top/Soboro.jpg'
 WHEN 'Razork' THEN '/Player_immage/Jungle/Razork.jpg'
 WHEN 'Vladi' THEN '/Player_immage/Mid/Vladi.jpg'
 WHEN 'Upset' THEN '/Player_immage/Adc/Upset.jpg'
 WHEN 'Lospa' THEN '/Player_immage/Support/Lospa.jpg'
 WHEN 'Wunder' THEN '/Player_immage/Top/Wunder.jpg'
 WHEN 'Skeanz' THEN '/Player_immage/Jungle/Skeanz.jpg'
-WHEN 'LIDER' THEN '/Player_immage/Mid/LIDER.jpg'
+WHEN 'SlowQ' THEN '/Player_immage/Mid/SlowQ.jpg'
 WHEN 'Jopa' THEN '/Player_immage/Adc/Jopa.jpg'
 WHEN 'Mikyx' THEN '/Player_immage/Support/Mikyx.jpg'
 WHEN 'Rooster' THEN '/Player_immage/Top/Rooster.jpg'
-WHEN 'Boukada' THEN '/Player_immage/Jungle/Boukada.jpg'
+WHEN 'Sheo' THEN '/Player_immage/Jungle/Sheo.jpg'
 WHEN 'nuc' THEN '/Player_immage/Mid/nuc.jpg'
 WHEN 'Paduck' THEN '/Player_immage/Adc/Paduck.jpg'
-WHEN 'Trymbi' THEN '/Player_immage/Support/Trymbi.jpg'
-WHEN 'Tracyn' THEN '/Player_immage/Top/Tracyn.jpg'
-WHEN 'Sheo' THEN '/Player_immage/Jungle/Sheo.jpg'
-WHEN 'Serin' THEN '/Player_immage/Mid/Serin.jpg'
-WHEN 'Ice' THEN '/Player_immage/Adc/Ice.jpg'
 WHEN 'Stend' THEN '/Player_immage/Support/Stend.jpg'
+WHEN 'Tracyn' THEN '/Player_immage/Top/Tracyn.jpg'
+WHEN 'Daglas' THEN '/Player_immage/Jungle/Daglas.jpg'
+WHEN 'Serin' THEN '/Player_immage/Mid/Serin.jpg'
+WHEN 'Hype' THEN '/Player_immage/Adc/Hype.jpg'
+WHEN 'Way' THEN '/Player_immage/Support/Way.jpg'
 END;
 
 -- -------------------------------------------------------------------------

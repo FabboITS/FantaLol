@@ -61,17 +61,22 @@ Un giocatore che non disputa una partita ufficiale non riceve punti.
 
 I punteggi vengono calcolati utilizzando le statistiche ufficiali ottenute dai giocatori nelle partite della competizione.
 
-Dalla Summer 2026 il punteggio viene calcolato per ogni singola partita. I
-coefficienti sono elencati nell’ordine kill / assist / morte / 100 CS:
+Dalla Summer 2026 il punteggio viene calcolato per ogni singola partita. Per
+Top, Jungle, Mid e ADC i coefficienti sono elencati nell’ordine kill / assist /
+morte / 100 CS:
 
 - Top: 3,00 / 2,00 / -2,00 / 1,25;
 - Jungle: 3,00 / 2,25 / -2,00 / 0,70;
 - Mid: 3,00 / 2,00 / -2,00 / 1,00;
-- ADC: 3,25 / 1,75 / -2,25 / 1,10;
-- Support: 2,15 / 2,55 / -1,75 / 0,20.
+- ADC: 3,25 / 1,75 / -2,25 / 1,10.
 
-Ogni vittoria assegna 3 punti. I CS sono calcolati in modo continuo: per
-esempio, 50 CS valgono metà del coefficiente previsto per il ruolo.
+Per i Support i coefficienti sono 2,15 per kill, 2,55 per assist e -1,75 per
+morte. Inoltre ricevono 1 punto ogni 50 di vision score; i CS dei Support non
+assegnano punti. Il vision score è continuo: 25 valgono 0,5 punti, 50 valgono 1
+punto e 100 valgono 2 punti.
+
+Ogni vittoria assegna 3 punti. Per gli altri quattro ruoli i CS sono calcolati
+in modo continuo: per esempio, 50 CS valgono metà del coefficiente previsto.
 
 In una serie si calcola la media delle sole partite effettivamente disputate dal
 player. Se una giornata comprende più serie, i relativi punteggi vengono

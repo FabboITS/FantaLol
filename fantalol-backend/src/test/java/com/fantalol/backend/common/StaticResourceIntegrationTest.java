@@ -199,8 +199,10 @@ class StaticResourceIntegrationTest {
         }
 
         mockMvc.perform(get("/js/lec-data-source.js"))
-                .andExpect(content().string(containsString("status:'not-connected'")))
-                .andExpect(content().string(not(containsString("position:"))));
+                .andExpect(content().string(containsString("/lec/standings")))
+                .andExpect(content().string(containsString("/lec/performances")))
+                .andExpect(content().string(containsString("/lec/matches")))
+                .andExpect(content().string(not(containsString("not-connected"))));
     }
 
     @Test

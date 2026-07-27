@@ -41,7 +41,9 @@ test('public rules publish the approved Summer 2026 scoring system', () => {
   assert.match(homepage, /Jungle[^<]*3,00[^<]*2,25[^<]*-2,00[^<]*0,70/);
   assert.match(homepage, /Mid[^<]*3,00[^<]*2,00[^<]*-2,00[^<]*1,00/);
   assert.match(homepage, /ADC[^<]*3,25[^<]*1,75[^<]*-2,25[^<]*1,10/);
-  assert.match(homepage, /Support[^<]*2,15[^<]*2,55[^<]*-1,75[^<]*0,20/);
+  assert.match(homepage, /Support[^<]*2,15[^<]*2,55[^<]*-1,75/);
+  assert.match(homepage, /1 punto ogni 50 di vision score/);
+  assert.match(homepage, /CS dei Support non assegnano punti/);
   assert.match(homepage, /CS sono calcolati in modo continuo/);
   assert.match(homepage, /Ogni vittoria assegna 3 punti/);
   assert.doesNotMatch(homepage, /MVP <b>\+3<\/b>|VITTORIA <b>\+1<\/b>/);

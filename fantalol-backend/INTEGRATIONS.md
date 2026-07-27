@@ -3,7 +3,7 @@
 ## Responsibilities
 
 - **PandaScore free plan**: tournament calendar, scheduled matches, match status and final series result.
-- **Oracle's Elixir CSV**: per-game player statistics used by FantaLoL: kills, deaths, assists, total CS and game result.
+- **Oracle's Elixir CSV**: per-game player statistics used by FantaLoL: champion, kills, deaths, assists, total CS, vision score and game result.
 - **FantaLoL backend**: weekly aggregation, fantasy score calculation, five-starter average and general standings.
 
 ## Environment variables
@@ -13,9 +13,29 @@ Add these values locally and on Render:
 ```env
 PANDASCORE_API_TOKEN=your-private-token
 PANDASCORE_BASE_URL=https://api.pandascore.co
+LEC_TOURNAMENT_ID=21344
+LEC_LEAGUE=LEC
+LEC_SPLIT=Summer
+ORACLE_ELIXIR_CSV_URL=https://example.invalid/2026_LoL_esports_match_data_from_OraclesElixir.csv
+LEC_SYNC_CRON=0 15 */6 * * *
 ```
 
 Never expose `PANDASCORE_API_TOKEN` in frontend JavaScript or commit it to Git.
+
+## Automatic LEC synchronization
+
+The backend synchronizes PandaScore match data and the configured Oracle's
+Elixir CSV every six hours by default. A global administrator can trigger the
+same idempotent operation immediately:
+
+```http
+POST /api/admin/lec/synchronize
+Authorization: Bearer ADMIN_JWT
+```
+
+The league page reads `/api/lec/standings`, `/api/lec/performances`, and
+`/api/lec/matches`. If a provider fails, the last complete in-memory snapshot
+remains available with status `stale`; no incomplete statistics are invented.
 
 ## PandaScore admin endpoints
 
@@ -70,9 +90,12 @@ For every player, statistics from all imported games assigned to the matchday ar
 player score = kills * 3
              + assists * 2
              - deaths * 2
-             + floor(total CS / 100)
+             + role resource score
              + wins * 3
 ```
+
+For Top, Jungle, Mid and ADC, the role resource score is the continuous CS
+coefficient. For Support it is `vision score / 50`; Support CS contributes zero.
 
 When the matchday closes, the fantasy-team score is the arithmetic mean of the five active starters. Missing player statistics count as zero and the divisor remains five.
 

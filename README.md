@@ -93,14 +93,16 @@ singola partita con coefficienti specifici per ruolo:
 fantapunti = uccisioni × K(ruolo)
             + assist × A(ruolo)
             - morti × D(ruolo)
-            + (CS / 100) × C(ruolo)
+            + risorsa(ruolo)
             + 3 in caso di vittoria
 ```
 
-I coefficienti K/A/D/C sono: Top 3,00/2,00/2,00/1,25; Jungle
+Per Top, Jungle, Mid e ADC la risorsa è `(CS / 100) × C(ruolo)`. I
+coefficienti K/A/D/C sono: Top 3,00/2,00/2,00/1,25; Jungle
 3,00/2,25/2,00/0,70; Mid 3,00/2,00/2,00/1,00; ADC
-3,25/1,75/2,25/1,10; Support 2,15/2,55/1,75/0,20. I CS sono continui e
-non vengono arrotondati a centinaia intere.
+3,25/1,75/2,25/1,10. Per i Support K/A/D sono 2,15/2,55/1,75 e la risorsa
+è `vision score / 50`: ricevono 1 punto ogni 50 di vision score e i loro CS
+non assegnano punti. CS e vision score sono continui.
 
 In una serie si usa la media delle sole partite disputate dal player; le serie
 della giornata vengono poi sommate. Il punteggio del FantaTeam è la media
@@ -212,6 +214,11 @@ Il backend legge queste variabili:
 | `JWT_EXPIRATION_MS` | Durata del token in millisecondi | `86400000` |
 | `PANDASCORE_BASE_URL` | URL base PandaScore | `https://api.pandascore.co` |
 | `PANDASCORE_API_TOKEN` | Token privato PandaScore | vuoto |
+| `LEC_TOURNAMENT_ID` | Tournament ID PandaScore sincronizzato | `21344` |
+| `LEC_LEAGUE` | Filtro lega Oracle's Elixir | `LEC` |
+| `LEC_SPLIT` | Filtro split Oracle's Elixir | `Summer` |
+| `ORACLE_ELIXIR_CSV_URL` | URL del CSV annuale Oracle's Elixir | vuoto |
+| `LEC_SYNC_CRON` | Pianificazione Spring della sincronizzazione | ogni 6 ore |
 
 In produzione bisogna usare password robuste, un segreto JWT casuale e sufficientemente
 lungo e un token PandaScore mantenuto esclusivamente sul server. Nessun segreto deve

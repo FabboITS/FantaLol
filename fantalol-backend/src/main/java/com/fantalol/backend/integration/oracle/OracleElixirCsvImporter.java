@@ -101,6 +101,7 @@ public class OracleElixirCsvImporter {
                     stat.setMorti(stat.getMorti() + integer(row.record(), "deaths"));
                     stat.setAssist(stat.getAssist() + integer(row.record(), "assists"));
                     stat.setCs(stat.getCs() + integer(row.record(), "total cs"));
+                    stat.setVisionScore(stat.getVisionScore() + integer(row.record(), "visionscore"));
                     int currentWins = stat.getWins() != null ? stat.getWins() : (stat.isVittoria() ? 1 : 0);
                     stat.setWins(currentWins + integer(row.record(), "result"));
                     int currentGames = stat.getGamesPlayed() != null ? stat.getGamesPlayed() : 0;

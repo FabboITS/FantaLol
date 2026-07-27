@@ -29,8 +29,8 @@ class OracleElixirCsvImporterTest {
     void importsCompleteLecRowsAndSkipsDuplicateGames() {
         Matchday matchday = Matchday.builder().id(4L).numero(1).build();
         LecPlayer player = LecPlayer.builder().id(7L).nickname("Caps").build();
-        String csv = "gameid,league,split,datacompleteness,position,playerid,playername,kills,deaths,assists,total cs,result\n"
-                + "GAME-1,LEC,Spring,complete,mid,oe-caps,Caps,4,1,7,245,1\n";
+        String csv = "gameid,league,split,datacompleteness,position,playerid,playername,champion,kills,deaths,assists,total cs,visionscore,result\n"
+                + "GAME-1,LEC,Spring,complete,mid,oe-caps,Caps,Ahri,4,1,7,245,31,1\n";
 
         when(matchdayRepository.findById(4L)).thenReturn(Optional.of(matchday));
         when(importedGameRepository.existsByProviderAndExternalGameId("ORACLES_ELIXIR", "GAME-1"))
@@ -48,6 +48,7 @@ class OracleElixirCsvImporterTest {
                 && stat.getMorti() == 1
                 && stat.getAssist() == 7
                 && stat.getCs() == 245
+                && stat.getVisionScore() == 31
                 && stat.getWins() == 1));
         verify(importedGameRepository).save(any(ImportedGame.class));
     }

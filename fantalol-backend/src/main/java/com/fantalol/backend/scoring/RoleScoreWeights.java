@@ -13,7 +13,7 @@ public final class RoleScoreWeights {
         VALUES.put(PlayerRole.JUNGLE, new Weights(3.00, 2.25, 2.00, 0.70));
         VALUES.put(PlayerRole.MID, new Weights(3.00, 2.00, 2.00, 1.00));
         VALUES.put(PlayerRole.ADC, new Weights(3.25, 1.75, 2.25, 1.10));
-        VALUES.put(PlayerRole.SUPPORT, new Weights(2.15, 2.55, 1.75, 0.20));
+        VALUES.put(PlayerRole.SUPPORT, new Weights(2.15, 2.55, 1.75, 0.0));
     }
 
     private RoleScoreWeights() {

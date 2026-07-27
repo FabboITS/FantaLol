@@ -27,6 +27,7 @@ public class FantaScoreCalculator {
                 stat.getMorti(),
                 stat.getAssist(),
                 stat.getCs(),
+                stat.getVisionScore(),
                 stat.getWins(),
                 stat.getGamesPlayed()
         );

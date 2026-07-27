@@ -96,6 +96,7 @@ public class MatchdayService {
         stat.setMorti(request.morti() != null ? request.morti() : 0);
         stat.setAssist(request.assist() != null ? request.assist() : 0);
         stat.setCs(request.cs() != null ? request.cs() : 0);
+        stat.setVisionScore(request.visionScore() != null ? request.visionScore() : 0);
         stat.setVittoria(request.vittoria());
         stat.setWins(request.vittoria() ? 1 : 0);
         stat.setGamesPlayed(1);

@@ -61,6 +61,11 @@ public class PlayerStat {
     @Builder.Default
     private Integer cs = 0;
 
+    @Min(0)
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer visionScore = 0;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean vittoria = false;
@@ -87,6 +92,9 @@ public class PlayerStat {
         }
         if (gamesPlayed == null || gamesPlayed < 1) {
             gamesPlayed = 1;
+        }
+        if (visionScore == null) {
+            visionScore = 0;
         }
         if (formulaVersion == null) {
             formulaVersion = ScoringFormulaVersion.HISTORICAL;

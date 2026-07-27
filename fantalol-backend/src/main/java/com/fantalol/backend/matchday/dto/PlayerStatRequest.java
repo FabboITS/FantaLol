@@ -9,6 +9,7 @@ public record PlayerStatRequest(
         @Min(0) Integer morti,
         @Min(0) Integer assist,
         @Min(0) Integer cs,
+        @Min(0) Integer visionScore,
         boolean vittoria
 ) {
 }

@@ -78,7 +78,7 @@ class MatchdayLifecycleServiceTest {
         when(userService.findByUsernameOrThrow("creator")).thenReturn(league.getAdmin());
 
         assertThatThrownBy(() -> service.inserisciStatistiche("creator", 1L,
-                new PlayerStatRequest(10L, 0, 0, 0, 0, false)))
+                new PlayerStatRequest(10L, 0, 0, 0, 0, 0, false)))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("asta");
         assertThatThrownBy(() -> service.chiudiGiornata("creator", 1L))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("asta");

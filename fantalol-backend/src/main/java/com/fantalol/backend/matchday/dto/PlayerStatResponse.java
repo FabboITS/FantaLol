@@ -11,6 +11,7 @@ public record PlayerStatResponse(
         Integer morti,
         Integer assist,
         Integer cs,
+        Integer visionScore,
         boolean vittoria,
         Integer wins,
         Double fantavoto
@@ -19,7 +20,7 @@ public record PlayerStatResponse(
         return new PlayerStatResponse(
                 stat.getId(), stat.getMatchday().getId(), stat.getLecPlayer().getId(), stat.getLecPlayer().getNickname(),
                 stat.getKills(), stat.getMorti(), stat.getAssist(), stat.getCs(),
-                stat.isVittoria(), stat.getWins(), stat.getFantavoto()
+                stat.getVisionScore(), stat.isVittoria(), stat.getWins(), stat.getFantavoto()
         );
     }
 }

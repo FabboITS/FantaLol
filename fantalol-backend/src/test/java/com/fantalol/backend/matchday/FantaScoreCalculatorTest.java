@@ -38,10 +38,11 @@ class FantaScoreCalculatorTest {
                 .morti(1)
                 .assist(1)
                 .cs(100)
+                .visionScore(50)
                 .wins(1)
                 .build();
 
-        assertThat(calculator.calculate(stat)).isCloseTo(6.15, within(0.0001));
+        assertThat(calculator.calculate(stat)).isCloseTo(6.95, within(0.0001));
     }
 
     @Test

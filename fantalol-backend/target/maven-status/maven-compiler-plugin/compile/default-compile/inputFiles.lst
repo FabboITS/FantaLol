@@ -60,6 +60,9 @@
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/matchday/dto/MatchdayResponse.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/matchday/dto/PlayerStatRequest.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/matchday/dto/PlayerStatResponse.java
+/workspace/fantalol-backend/src/main/java/com/fantalol/backend/scoring/GameScoreCalculator.java
+/workspace/fantalol-backend/src/main/java/com/fantalol/backend/scoring/RoleScoreWeights.java
+/workspace/fantalol-backend/src/main/java/com/fantalol/backend/scoring/ScoringFormulaVersion.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/security/CustomUserDetailsService.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/security/JwtAuthFilter.java
 /workspace/fantalol-backend/src/main/java/com/fantalol/backend/security/JwtUtil.java

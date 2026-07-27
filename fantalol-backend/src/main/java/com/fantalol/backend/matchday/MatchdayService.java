@@ -98,6 +98,7 @@ public class MatchdayService {
         stat.setCs(request.cs() != null ? request.cs() : 0);
         stat.setVittoria(request.vittoria());
         stat.setWins(request.vittoria() ? 1 : 0);
+        stat.setGamesPlayed(1);
         stat.setFantavoto(fantaScoreCalculator.calcola(stat));
 
         return PlayerStatResponse.from(playerStatRepository.save(stat));

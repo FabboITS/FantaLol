@@ -92,67 +92,73 @@ public class OracleElixirCsvImporter {
 <span class="fc bfc" id="L92" title="All 2 branches covered.">                for (ResolvedRow row : resolvedRows) {</span>
 <span class="fc" id="L93">                    PlayerStat stat = playerStatRepository</span>
 <span class="fc" id="L94">                            .findByMatchdayIdAndLecPlayerId(matchdayId, row.player().getId())</span>
-<span class="fc" id="L95">                            .orElse(PlayerStat.builder().matchday(matchday).lecPlayer(row.player()).build());</span>
-<span class="fc" id="L96">                    stat.setKills(stat.getKills() + integer(row.record(), &quot;kills&quot;));</span>
-<span class="fc" id="L97">                    stat.setMorti(stat.getMorti() + integer(row.record(), &quot;deaths&quot;));</span>
-<span class="fc" id="L98">                    stat.setAssist(stat.getAssist() + integer(row.record(), &quot;assists&quot;));</span>
-<span class="fc" id="L99">                    stat.setCs(stat.getCs() + integer(row.record(), &quot;total cs&quot;));</span>
-<span class="pc bpc" id="L100" title="3 of 4 branches missed.">                    int currentWins = stat.getWins() != null ? stat.getWins() : (stat.isVittoria() ? 1 : 0);</span>
-<span class="fc" id="L101">                    stat.setWins(currentWins + integer(row.record(), &quot;result&quot;));</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                    stat.setVittoria(stat.getWins() &gt; 0);</span>
-<span class="fc" id="L103">                    stat.setFantavoto(scoreCalculator.calculate(stat));</span>
-<span class="fc" id="L104">                    playerStatRepository.save(stat);</span>
-<span class="fc" id="L105">                    importedRows++;</span>
-<span class="fc" id="L106">                }</span>
+<span class="fc" id="L95">                            .orElse(PlayerStat.builder()</span>
+<span class="fc" id="L96">                                    .matchday(matchday)</span>
+<span class="fc" id="L97">                                    .lecPlayer(row.player())</span>
+<span class="fc" id="L98">                                    .gamesPlayed(0)</span>
+<span class="fc" id="L99">                                    .build());</span>
+<span class="fc" id="L100">                    stat.setKills(stat.getKills() + integer(row.record(), &quot;kills&quot;));</span>
+<span class="fc" id="L101">                    stat.setMorti(stat.getMorti() + integer(row.record(), &quot;deaths&quot;));</span>
+<span class="fc" id="L102">                    stat.setAssist(stat.getAssist() + integer(row.record(), &quot;assists&quot;));</span>
+<span class="fc" id="L103">                    stat.setCs(stat.getCs() + integer(row.record(), &quot;total cs&quot;));</span>
+<span class="pc bpc" id="L104" title="3 of 4 branches missed.">                    int currentWins = stat.getWins() != null ? stat.getWins() : (stat.isVittoria() ? 1 : 0);</span>
+<span class="fc" id="L105">                    stat.setWins(currentWins + integer(row.record(), &quot;result&quot;));</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                    int currentGames = stat.getGamesPlayed() != null ? stat.getGamesPlayed() : 0;</span>
+<span class="fc" id="L107">                    stat.setGamesPlayed(currentGames + 1);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">                    stat.setVittoria(stat.getWins() &gt; 0);</span>
+<span class="fc" id="L109">                    stat.setFantavoto(scoreCalculator.calculate(stat));</span>
+<span class="fc" id="L110">                    playerStatRepository.save(stat);</span>
+<span class="fc" id="L111">                    importedRows++;</span>
+<span class="fc" id="L112">                }</span>
 
-<span class="fc" id="L108">                importedGameRepository.save(ImportedGame.builder()</span>
-<span class="fc" id="L109">                        .provider(PROVIDER)</span>
-<span class="fc" id="L110">                        .externalGameId(gameId)</span>
-<span class="fc" id="L111">                        .matchday(matchday)</span>
-<span class="fc" id="L112">                        .build());</span>
-<span class="fc" id="L113">                importedGames++;</span>
-<span class="fc" id="L114">            }</span>
+<span class="fc" id="L114">                importedGameRepository.save(ImportedGame.builder()</span>
+<span class="fc" id="L115">                        .provider(PROVIDER)</span>
+<span class="fc" id="L116">                        .externalGameId(gameId)</span>
+<span class="fc" id="L117">                        .matchday(matchday)</span>
+<span class="fc" id="L118">                        .build());</span>
+<span class="fc" id="L119">                importedGames++;</span>
+<span class="fc" id="L120">            }</span>
 
-<span class="fc" id="L116">            return new OracleImportResult(importedGames, skippedGames, importedRows, List.copyOf(unmatched));</span>
-<span class="nc" id="L117">        } catch (BusinessRuleException exception) {</span>
-<span class="nc" id="L118">            throw exception;</span>
-<span class="nc" id="L119">        } catch (Exception exception) {</span>
-<span class="nc" id="L120">            throw new BusinessRuleException(&quot;Unable to import Oracle's Elixir CSV: &quot; + exception.getMessage());</span>
+<span class="fc" id="L122">            return new OracleImportResult(importedGames, skippedGames, importedRows, List.copyOf(unmatched));</span>
+<span class="nc" id="L123">        } catch (BusinessRuleException exception) {</span>
+<span class="nc" id="L124">            throw exception;</span>
+<span class="nc" id="L125">        } catch (Exception exception) {</span>
+<span class="nc" id="L126">            throw new BusinessRuleException(&quot;Unable to import Oracle's Elixir CSV: &quot; + exception.getMessage());</span>
         }
     }
 
     private Optional&lt;LecPlayer&gt; resolvePlayer(CSVRecord record) {
-<span class="fc" id="L125">        String externalId = value(record, &quot;playerid&quot;);</span>
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!externalId.isBlank()) {</span>
-<span class="fc" id="L127">            Optional&lt;LecPlayer&gt; byExternalId = lecPlayerRepository.findByOraclePlayerId(externalId);</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            if (byExternalId.isPresent()) {</span>
-<span class="fc" id="L129">                return byExternalId;</span>
+<span class="fc" id="L131">        String externalId = value(record, &quot;playerid&quot;);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (!externalId.isBlank()) {</span>
+<span class="fc" id="L133">            Optional&lt;LecPlayer&gt; byExternalId = lecPlayerRepository.findByOraclePlayerId(externalId);</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">            if (byExternalId.isPresent()) {</span>
+<span class="fc" id="L135">                return byExternalId;</span>
             }
         }
-<span class="nc" id="L132">        Optional&lt;LecPlayer&gt; byNickname = lecPlayerRepository.findFirstByNicknameIgnoreCase(value(record, &quot;playername&quot;));</span>
-<span class="nc" id="L133">        byNickname.ifPresent(player -&gt; {</span>
-<span class="nc bnc" id="L134" title="All 4 branches missed.">            if (!externalId.isBlank() &amp;&amp; player.getOraclePlayerId() == null) {</span>
-<span class="nc" id="L135">                player.setOraclePlayerId(externalId);</span>
-<span class="nc" id="L136">                lecPlayerRepository.save(player);</span>
+<span class="nc" id="L138">        Optional&lt;LecPlayer&gt; byNickname = lecPlayerRepository.findFirstByNicknameIgnoreCase(value(record, &quot;playername&quot;));</span>
+<span class="nc" id="L139">        byNickname.ifPresent(player -&gt; {</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">            if (!externalId.isBlank() &amp;&amp; player.getOraclePlayerId() == null) {</span>
+<span class="nc" id="L141">                player.setOraclePlayerId(externalId);</span>
+<span class="nc" id="L142">                lecPlayerRepository.save(player);</span>
             }
-<span class="nc" id="L138">        });</span>
-<span class="nc" id="L139">        return byNickname;</span>
+<span class="nc" id="L144">        });</span>
+<span class="nc" id="L145">        return byNickname;</span>
     }
 
     private static boolean equalsIgnoreCase(CSVRecord record, String column, String expected) {
-<span class="pc bpc" id="L143" title="3 of 6 branches missed.">        return expected == null || expected.isBlank() || expected.equalsIgnoreCase(value(record, column));</span>
+<span class="pc bpc" id="L149" title="3 of 6 branches missed.">        return expected == null || expected.isBlank() || expected.equalsIgnoreCase(value(record, column));</span>
     }
 
     private static String value(CSVRecord record, String column) {
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        return record.isMapped(column) ? Optional.ofNullable(record.get(column)).orElse(&quot;&quot;).trim() : &quot;&quot;;</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        return record.isMapped(column) ? Optional.ofNullable(record.get(column)).orElse(&quot;&quot;).trim() : &quot;&quot;;</span>
     }
 
     private static int integer(CSVRecord record, String column) {
-<span class="fc" id="L151">        String value = value(record, column);</span>
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        return value.isBlank() ? 0 : (int) Double.parseDouble(value);</span>
+<span class="fc" id="L157">        String value = value(record, column);</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        return value.isBlank() ? 0 : (int) Double.parseDouble(value);</span>
     }
 
-<span class="fc" id="L155">    private record ResolvedRow(LecPlayer player, CSVRecord record) {</span>
+<span class="fc" id="L161">    private record ResolvedRow(LecPlayer player, CSVRecord record) {</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -92,13 +92,19 @@ public class OracleElixirCsvImporter {
                 for (ResolvedRow row : resolvedRows) {
                     PlayerStat stat = playerStatRepository
                             .findByMatchdayIdAndLecPlayerId(matchdayId, row.player().getId())
-                            .orElse(PlayerStat.builder().matchday(matchday).lecPlayer(row.player()).build());
+                            .orElse(PlayerStat.builder()
+                                    .matchday(matchday)
+                                    .lecPlayer(row.player())
+                                    .gamesPlayed(0)
+                                    .build());
                     stat.setKills(stat.getKills() + integer(row.record(), "kills"));
                     stat.setMorti(stat.getMorti() + integer(row.record(), "deaths"));
                     stat.setAssist(stat.getAssist() + integer(row.record(), "assists"));
                     stat.setCs(stat.getCs() + integer(row.record(), "total cs"));
                     int currentWins = stat.getWins() != null ? stat.getWins() : (stat.isVittoria() ? 1 : 0);
                     stat.setWins(currentWins + integer(row.record(), "result"));
+                    int currentGames = stat.getGamesPlayed() != null ? stat.getGamesPlayed() : 0;
+                    stat.setGamesPlayed(currentGames + 1);
                     stat.setVittoria(stat.getWins() > 0);
                     stat.setFantavoto(scoreCalculator.calculate(stat));
                     playerStatRepository.save(stat);

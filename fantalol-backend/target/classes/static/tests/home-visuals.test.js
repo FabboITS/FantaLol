@@ -35,3 +35,14 @@ test('favicon letter uses the page brand gradient', () => {
   assert.match(favicon, /<path[^>]*fill="url\(#brand-gradient\)"/);
   assert.doesNotMatch(favicon, /#c8ff33/i);
 });
+
+test('public rules publish the approved Summer 2026 scoring system', () => {
+  assert.match(homepage, /Top[^<]*3,00[^<]*2,00[^<]*-2,00[^<]*1,25/);
+  assert.match(homepage, /Jungle[^<]*3,00[^<]*2,25[^<]*-2,00[^<]*0,70/);
+  assert.match(homepage, /Mid[^<]*3,00[^<]*2,00[^<]*-2,00[^<]*1,00/);
+  assert.match(homepage, /ADC[^<]*3,25[^<]*1,75[^<]*-2,25[^<]*1,10/);
+  assert.match(homepage, /Support[^<]*2,15[^<]*2,55[^<]*-1,75[^<]*0,20/);
+  assert.match(homepage, /CS sono calcolati in modo continuo/);
+  assert.match(homepage, /Ogni vittoria assegna 3 punti/);
+  assert.doesNotMatch(homepage, /MVP <b>\+3<\/b>|VITTORIA <b>\+1<\/b>/);
+});

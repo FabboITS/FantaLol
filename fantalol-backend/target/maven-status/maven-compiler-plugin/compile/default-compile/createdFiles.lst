@@ -10,6 +10,7 @@ com/fantalol/backend/FantaLolBackendApplication.class
 com/fantalol/backend/team/LecTeamService.class
 com/fantalol/backend/matchday/dto/PlayerStatResponse.class
 com/fantalol/backend/team/LecTeam.class
+com/fantalol/backend/scoring/ScoringFormulaVersion.class
 com/fantalol/backend/team/LecPlayer.class
 com/fantalol/backend/league/dto/RosterEntryResponse.class
 com/fantalol/backend/matchday/MatchdayRepository.class
@@ -56,6 +57,7 @@ com/fantalol/backend/matchday/FantaScoreCalculator.class
 com/fantalol/backend/common/ResourceNotFoundException.class
 com/fantalol/backend/league/RosterPolicy$Limits.class
 com/fantalol/backend/matchday/dto/MatchdayRequest.class
+com/fantalol/backend/scoring/RoleScoreWeights.class
 com/fantalol/backend/team/LecPlayerRepository.class
 com/fantalol/backend/league/RosterPolicy.class
 com/fantalol/backend/matchday/FormationService.class
@@ -77,6 +79,7 @@ com/fantalol/backend/matchday/FormationController.class
 com/fantalol/backend/security/JwtAuthFilter.class
 com/fantalol/backend/matchday/Formation$FormationBuilder.class
 com/fantalol/backend/team/LecTeam$LecTeamBuilder.class
+com/fantalol/backend/scoring/GameScoreCalculator.class
 com/fantalol/backend/team/LecTeamRepository.class
 com/fantalol/backend/matchday/PlayerStat.class
 com/fantalol/backend/league/League.class
@@ -105,4 +108,5 @@ com/fantalol/backend/integration/oracle/OracleElixirImportController.class
 com/fantalol/backend/user/User$UserBuilder.class
 com/fantalol/backend/league/dto/AcquistoPlayerRequest.class
 com/fantalol/backend/user/dto/UserDirectoryEntry.class
+com/fantalol/backend/scoring/RoleScoreWeights$Weights.class
 com/fantalol/backend/config/DataSeeder.class

@@ -1,6 +1,7 @@
 package com.fantalol.backend.matchday;
 
 import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.scoring.ScoringFormulaVersion;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -69,10 +70,26 @@ public class PlayerStat {
     @Builder.Default
     private Integer wins = 0;
 
+    @Min(0)
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer gamesPlayed = 1;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 40)
+    @Builder.Default
+    private ScoringFormulaVersion formulaVersion = ScoringFormulaVersion.SUMMER_2026_V1;
+
     @PostLoad
     void initializeWinsForLegacyRows() {
         if (wins == null) {
             wins = vittoria ? 1 : 0;
+        }
+        if (gamesPlayed == null || gamesPlayed < 1) {
+            gamesPlayed = 1;
+        }
+        if (formulaVersion == null) {
+            formulaVersion = ScoringFormulaVersion.HISTORICAL;
         }
     }
 

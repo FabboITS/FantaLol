@@ -61,17 +61,27 @@ Un giocatore che non disputa una partita ufficiale non riceve punti.
 
 I punteggi vengono calcolati utilizzando le statistiche ufficiali ottenute dai giocatori nelle partite della competizione.
 
-La valutazione può tenere conto di:
+Dalla Summer 2026 il punteggio viene calcolato per ogni singola partita. I
+coefficienti sono elencati nell’ordine kill / assist / morte / 100 CS:
 
-- kill (+3 pt);
-- assist (+2 pt);
-- morti (-2 pt);
-- CS ottenuti (+1 pt per ogni 100 CS);
-- vittorie (+3 pt);
+- Top: 3,00 / 2,00 / -2,00 / 1,25;
+- Jungle: 3,00 / 2,25 / -2,00 / 0,70;
+- Mid: 3,00 / 2,00 / -2,00 / 1,00;
+- ADC: 3,25 / 1,75 / -2,25 / 1,10;
+- Support: 2,15 / 2,55 / -1,75 / 0,20.
 
-Il punteggio della giornata del fantasy team è la media aritmetica dei punteggi dei cinque player attivi. Un player senza statistiche vale 0 punti e il totale viene comunque diviso per cinque. I punteggi medi delle giornate chiuse vengono sommati per determinare la classifica generale.
+Ogni vittoria assegna 3 punti. I CS sono calcolati in modo continuo: per
+esempio, 50 CS valgono metà del coefficiente previsto per il ruolo.
 
-Le prestazioni vengono valutate considerando il ruolo del giocatore. Ad esempio, le statistiche di visione e gli assist possono avere maggiore importanza per un Support, mentre CS e danni possono incidere maggiormente sulla valutazione di un ADC.
+In una serie si calcola la media delle sole partite effettivamente disputate dal
+player. Se una giornata comprende più serie, i relativi punteggi vengono
+sommati.
+
+Il punteggio della giornata del fantasy team è la media aritmetica dei punteggi
+dei cinque player attivi. Un player senza statistiche vale 0 punti e il totale
+viene comunque diviso per cinque. I punteggi medi delle giornate chiuse vengono
+sommati per determinare la classifica generale. I risultati precedenti alla
+Summer 2026 conservano la formula storica.
 
 ## Mercato e cambi
 

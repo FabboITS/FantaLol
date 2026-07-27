@@ -86,20 +86,27 @@ della rosa formano automaticamente la squadra attiva.
 ## Giornate e punteggi
 
 Le statistiche importate includono uccisioni, morti, assist, minion eliminati e
-risultato della partita. Il punteggio individuale viene calcolato così:
+risultato della partita. Dalla Summer 2026 il punteggio viene calcolato per
+singola partita con coefficienti specifici per ruolo:
 
 ```text
-fantapunti = uccisioni × 3
-            + assist × 2
-            - morti × 2
-            + parte intera dei minion / 100
-            + vittorie × 3
+fantapunti = uccisioni × K(ruolo)
+            + assist × A(ruolo)
+            - morti × D(ruolo)
+            + (CS / 100) × C(ruolo)
+            + 3 in caso di vittoria
 ```
 
-Il punteggio del FantaTeam è la media aritmetica dei cinque giocatori attivi. Un
-giocatore senza statistiche vale zero e il divisore resta cinque. Le giornate chiuse
-contribuiscono alla classifica generale; una giornata in attesa di partite rinviate ne
-rimane esclusa finché non viene completata e chiusa.
+I coefficienti K/A/D/C sono: Top 3,00/2,00/2,00/1,25; Jungle
+3,00/2,25/2,00/0,70; Mid 3,00/2,00/2,00/1,00; ADC
+3,25/1,75/2,25/1,10; Support 2,15/2,55/1,75/0,20. I CS sono continui e
+non vengono arrotondati a centinaia intere.
+
+In una serie si usa la media delle sole partite disputate dal player; le serie
+della giornata vengono poi sommate. Il punteggio del FantaTeam è la media
+aritmetica dei cinque giocatori attivi. Un giocatore senza statistiche vale zero
+e il divisore resta cinque. I risultati precedenti alla Summer 2026 mantengono
+la formula storica.
 
 ## Architettura e tecnologie
 

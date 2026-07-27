@@ -40,6 +40,13 @@ fantalol:
     base-url: ${PANDASCORE_BASE_URL:https://api.pandascore.co}
     token: ${PANDASCORE_API_TOKEN:}
 
+  lec:
+    tournament-id: ${LEC_TOURNAMENT_ID:21344}
+    league: ${LEC_LEAGUE:LEC}
+    split: ${LEC_SPLIT:Summer}
+    oracle-csv-url: ${ORACLE_ELIXIR_CSV_URL:}
+    sync-cron: ${LEC_SYNC_CRON:0 15 */6 * * *}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

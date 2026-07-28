@@ -6,6 +6,7 @@ const path = require('node:path');
 const stylesheet = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
 const favicon = fs.readFileSync(path.join(__dirname, '../favicon.svg'), 'utf8');
 const homepage = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+const integrations = fs.readFileSync(path.join(__dirname, '../../fantalol-backend/INTEGRATIONS.md'), 'utf8');
 
 test('hero portraits use original card sizes and high-resolution player assets', () => {
   assert.match(stylesheet, /\.hero-player-image\{[^}]*object-fit:cover/);
@@ -58,4 +59,12 @@ test('public rules explain cumulative scoring, lineup timing and synchronization
   assert.match(homepage, /più di 5 fantasy team.*formazione è fissa.*non può essere modificata/);
   assert.match(homepage, /sincronizza automaticamente.*ogni 6 ore/);
   assert.match(homepage, /Sincronizza ora.*ritenta.*fonti.*non può creare dati.*incompleti/);
+  assert.doesNotMatch(homepage, /scadenze delle formazioni/);
+});
+
+test('integration guide describes cumulative automatic publication only', () => {
+  assert.match(integrations, /per-game player statistics/);
+  assert.match(integrations, /cumulative average of played Summer games/);
+  assert.doesNotMatch(integrations, /weekly aggregation/i);
+  assert.doesNotMatch(integrations, /waiting-for-postponed|waiting week|matchdayId.*chiudi/i);
 });

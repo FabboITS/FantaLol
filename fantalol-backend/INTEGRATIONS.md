@@ -4,7 +4,8 @@
 
 - **PandaScore free plan**: tournament calendar, scheduled matches, match status and final series result.
 - **Oracle's Elixir CSV**: per-game player statistics used by FantaLoL: champion, kills, deaths, assists, total CS, vision score and game result.
-- **FantaLoL backend**: weekly aggregation, fantasy score calculation, five-starter average and general standings.
+- **FantaLoL backend**: durable per-game import, cumulative fantasy score
+  calculation, five-slot average and general standings.
 
 ## Environment variables
 
@@ -151,18 +152,10 @@ Authorization: Bearer ADMIN_JWT
 Restoring removes the override, reapplies the current stored provider values,
 and recalculates the affected projections.
 
-## Postponed matches
+## Late or postponed games
 
-When at least one scheduled match is postponed, mark the week as waiting:
-
-```http
-POST /api/matchdays/{matchdayId}/waiting-for-postponed
-```
-
-A waiting week:
-
-- keeps already imported statistics;
-- is excluded from the general standings;
-- does not block creation and processing of later weeks;
-- can receive the recovery game's CSV rows later;
-- enters the standings only when `/api/matchdays/{matchdayId}/chiudi` is called after the recovery.
+Publication is driven by complete provider games, not by a weekly matchday
+close. A postponed game contributes automatically after Oracle's Elixir
+publishes its complete rows and the next scheduled or ADMIN synchronization
+imports them. Existing cumulative observations remain published while the
+missing game is still unavailable.

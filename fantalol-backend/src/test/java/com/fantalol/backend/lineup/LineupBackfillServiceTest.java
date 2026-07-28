@@ -3,6 +3,7 @@ package com.fantalol.backend.lineup;
 import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.League;
+import com.fantalol.backend.league.RosterEntry;
 import com.fantalol.backend.league.RosterEntryRepository;
 import com.fantalol.backend.matchday.Formation;
 import com.fantalol.backend.matchday.FormationRepository;
@@ -67,8 +68,33 @@ class LineupBackfillServiceTest {
         verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, LineupBackfillService.BACKFILL_FROM);
     }
 
+    @Test
+    void skipsIncompleteFixedRosterAndContinuesBackfillingAValidTeam() {
+        FantaTeam incompleteTeam = fixedTeam(1L);
+        FantaTeam validTeam = fixedTeam(2L);
+        Set<LecPlayer> validPlayers = lineup();
+        when(fantaTeamRepository.findAll()).thenReturn(List.of(incompleteTeam, validTeam));
+        when(periodRepository.existsByFantaTeamId(anyLong())).thenReturn(false);
+        when(rosterEntryRepository.findByFantaTeamId(1L)).thenReturn(List.of(
+                RosterEntry.builder().lecPlayer(player(1L, PlayerRole.TOP)).build(),
+                RosterEntry.builder().lecPlayer(player(2L, PlayerRole.JUNGLE)).build()));
+        when(rosterEntryRepository.findByFantaTeamId(2L)).thenReturn(validPlayers.stream()
+                .map(player -> RosterEntry.builder().lecPlayer(player).build())
+                .toList());
+
+        backfillService.backfill();
+
+        verify(effectiveLineupService, never()).createBackfillPeriods(eq(incompleteTeam), anySet(),
+                eq(LineupBackfillService.BACKFILL_FROM));
+        verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, LineupBackfillService.BACKFILL_FROM);
+    }
+
     private FantaTeam team(Long id) {
         return FantaTeam.builder().id(id).league(League.builder().participantCount(5).build()).build();
+    }
+
+    private FantaTeam fixedTeam(Long id) {
+        return FantaTeam.builder().id(id).league(League.builder().participantCount(6).build()).build();
     }
 
     private Set<LecPlayer> lineup() {

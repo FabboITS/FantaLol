@@ -43,9 +43,10 @@ public class LineupBackfillService {
     private Optional<Set<LecPlayer>> playersToBackfill(FantaTeam fantaTeam) {
         Integer participants = fantaTeam.getLeague().getParticipantCount();
         if (participants != null && participants >= 6) {
-            return Optional.of(rosterEntryRepository.findByFantaTeamId(fantaTeam.getId()).stream()
+            Set<LecPlayer> players = rosterEntryRepository.findByFantaTeamId(fantaTeam.getId()).stream()
                     .map(entry -> entry.getLecPlayer())
-                    .collect(java.util.stream.Collectors.toSet()));
+                    .collect(java.util.stream.Collectors.toSet());
+            return isValidLineup(players) ? Optional.of(players) : Optional.empty();
         }
         return formationRepository.findByFantaTeamIdOrderByMatchdayNumeroDesc(fantaTeam.getId()).stream()
                 .filter(this::isValidSubmittedFormation)
@@ -57,7 +58,10 @@ public class LineupBackfillService {
         if (formation.getSource() != FormationSource.SUBMITTED && formation.getSource() != FormationSource.CARRIED) {
             return false;
         }
-        Set<LecPlayer> players = formation.getTitolari();
+        return isValidLineup(formation.getTitolari());
+    }
+
+    private boolean isValidLineup(Set<LecPlayer> players) {
         if (players == null || players.size() != PlayerRole.values().length
                 || players.stream().map(LecPlayer::getId).distinct().count() != PlayerRole.values().length) {
             return false;

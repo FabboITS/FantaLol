@@ -17,12 +17,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
 public class LecSynchronizationService {
     public static final String PANDASCORE = "PANDASCORE";
     public static final String ORACLES_ELIXIR = ProviderGame.ORACLES_ELIXIR;
+    private static final ReentrantLock ORACLE_SYNCHRONIZATION_LOCK = new ReentrantLock(true);
 
     private final PandaScoreClient pandaScoreClient;
     private final OracleElixirClient oracleElixirClient;
@@ -124,6 +126,7 @@ public class LecSynchronizationService {
     }
 
     private void synchronizeOracle() {
+        ORACLE_SYNCHRONIZATION_LOCK.lock();
         try {
             String csv = oracleElixirClient.download();
             lineupBackfillService.backfill();
@@ -132,6 +135,8 @@ public class LecSynchronizationService {
             stateService.recordOracleSuccess(summary);
         } catch (RuntimeException exception) {
             stateService.recordOracleFailure(exception);
+        } finally {
+            ORACLE_SYNCHRONIZATION_LOCK.unlock();
         }
     }
 

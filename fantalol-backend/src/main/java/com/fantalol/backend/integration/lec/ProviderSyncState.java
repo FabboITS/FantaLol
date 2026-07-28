@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -43,4 +44,24 @@ public class ProviderSyncState {
 
     @Column(name = "last_error", length = 1000)
     private String lastError;
+
+    @Lob
+    @Column(name = "provider_snapshot")
+    private String providerSnapshot;
+
+    @Column(name = "inserted_games", nullable = false)
+    private int insertedGames;
+
+    @Column(name = "updated_games", nullable = false)
+    private int updatedGames;
+
+    @Column(name = "skipped_games", nullable = false)
+    private int skippedGames;
+
+    @Column(name = "failed_games", nullable = false)
+    private int failedGames;
+
+    @Lob
+    @Column(name = "unmatched_players")
+    private String unmatchedPlayers;
 }

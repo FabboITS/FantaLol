@@ -48,3 +48,14 @@ test('public rules publish the approved Summer 2026 scoring system', () => {
   assert.match(homepage, /Ogni vittoria assegna 3 punti/);
   assert.doesNotMatch(homepage, /MVP <b>\+3<\/b>|VITTORIA <b>\+1<\/b>/);
 });
+
+test('public rules explain cumulative scoring, lineup timing and synchronization', () => {
+  assert.match(homepage, /media aritmetica di tutte le partite effettivamente disputate.*Summer Split/);
+  assert.match(homepage, /non viene aggiunto uno zero alla sua media cumulativa/);
+  assert.match(homepage, /riserve ricevono.*valutazione individuale.*non contribuiscono.*fantasy team/);
+  assert.match(homepage, /martedì alle 00:00.*giovedì alle 23:59:59.*Europe\/Rome/);
+  assert.match(homepage, /efficace dal venerdì alle 00:00/);
+  assert.match(homepage, /più di 5 fantasy team.*formazione è fissa.*non può essere modificata/);
+  assert.match(homepage, /sincronizza automaticamente.*ogni 6 ore/);
+  assert.match(homepage, /Sincronizza ora.*ritenta.*fonti.*non può creare dati.*incompleti/);
+});

@@ -49,6 +49,22 @@ class OracleElixirGameParserTest {
     }
 
     @Test
+    void rejectsRequestedFiltersOutsideLecSummer() {
+        String lckSpringCsv = csv(validPlayerRows()).replace(",LEC,Summer,", ",LCK,Spring,");
+
+        List<OracleGameBatch> games = parser.parse(lckSpringCsv, "LCK", "Spring");
+
+        assertThat(games).isEmpty();
+    }
+
+    @Test
+    void rejectsBlankRequestedFilters() {
+        List<OracleGameBatch> games = parser.parse(csv(validPlayerRows()), "", "");
+
+        assertThat(games).isEmpty();
+    }
+
+    @Test
     void createsTheSameFingerprintWhenEquivalentRowsArriveInDifferentOrder() {
         List<String> rows = validPlayerRows();
         List<String> reversedRows = new ArrayList<>(rows);

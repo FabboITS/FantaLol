@@ -29,9 +29,13 @@ import java.util.Optional;
 public class OracleElixirGameParser {
     private static final int PLAYERS_PER_GAME = 10;
     private static final char FINGERPRINT_SEPARATOR = '\u001f';
+    private static final String SUPPORTED_LEAGUE = "LEC";
+    private static final String SUPPORTED_SPLIT = "Summer";
 
     public List<OracleGameBatch> parse(String csv, String league, String split) {
-        if (csv == null || csv.isBlank()) {
+        if (csv == null || csv.isBlank()
+                || !SUPPORTED_LEAGUE.equalsIgnoreCase(league)
+                || !SUPPORTED_SPLIT.equalsIgnoreCase(split)) {
             return List.of();
         }
 
@@ -43,7 +47,7 @@ public class OracleElixirGameParser {
                 .build()
                 .parse(new StringReader(csv))) {
             for (CSVRecord record : records) {
-                parseEligibleRow(record, league, split).ifPresent(row ->
+                parseEligibleRow(record).ifPresent(row ->
                         rowsByGame.computeIfAbsent(row.externalGameId(), ignored -> new ArrayList<>()).add(row));
             }
         } catch (IOException exception) {
@@ -56,9 +60,9 @@ public class OracleElixirGameParser {
                 .toList();
     }
 
-    private Optional<ParsedPlayerRow> parseEligibleRow(CSVRecord record, String league, String split) {
-        if (!equalsIgnoreCase(record, "league", league)
-                || !equalsIgnoreCase(record, "split", split)
+    private Optional<ParsedPlayerRow> parseEligibleRow(CSVRecord record) {
+        if (!SUPPORTED_LEAGUE.equalsIgnoreCase(value(record, "league"))
+                || !SUPPORTED_SPLIT.equalsIgnoreCase(value(record, "split"))
                 || !"complete".equalsIgnoreCase(value(record, "datacompleteness"))) {
             return Optional.empty();
         }
@@ -93,10 +97,6 @@ public class OracleElixirGameParser {
                 firstRow.playedAt(),
                 players,
                 fingerprint(firstRow.externalGameId(), firstRow.playedAt(), players));
-    }
-
-    private static boolean equalsIgnoreCase(CSVRecord record, String column, String expected) {
-        return expected == null || expected.isBlank() || expected.equalsIgnoreCase(value(record, column));
     }
 
     private static String value(CSVRecord record, String column) {

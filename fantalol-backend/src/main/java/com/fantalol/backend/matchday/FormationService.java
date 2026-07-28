@@ -9,6 +9,7 @@ import com.fantalol.backend.lineup.EffectiveLineupService;
 import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.matchday.dto.LineupWindowResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.user.Role;
@@ -63,6 +64,18 @@ public class FormationService {
                 }).toList();
     }
 
+    @Transactional(readOnly = true)
+    public LineupWindowResponse lineupWindow(String username, Long fantaTeamId) {
+        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
+                .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
+        verifyCanManage(username, fantaTeam);
+        LineupWindow.Status status = lineupWindow.status(clock.instant());
+        boolean fixedRoster = fantaTeam.getLeague().getParticipantCount() != null
+                && fantaTeam.getLeague().getParticipantCount() >= 6;
+        return new LineupWindowResponse(status.editable() && !fixedRoster,
+                status.nextEffectiveAt(), status.reason());
+    }
+
     @Transactional
     Formation resolveEffectiveFormation(FantaTeam fantaTeam, Matchday matchday) {
         Optional<Formation> existing = formationRepository.findByFantaTeamIdAndMatchdayId(
@@ -111,10 +124,7 @@ public class FormationService {
         FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
                 .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
 
-        if (!fantaTeam.getOwner().getUsername().equals(username)
-                && userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {
-            throw new BusinessRuleException("Non sei il proprietario di questa squadra fantacalcistica");
-        }
+        verifyCanManage(username, fantaTeam);
 
         var matchday = matchdayRepository.findById(request.matchdayId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + request.matchdayId()));
@@ -169,5 +179,12 @@ public class FormationService {
                 .orElseGet(Set::of).stream().toList();
         return FormationResponse.from(formation, scores, status.editable() && !fixedRoster,
                 status.nextEffectiveAt(), effectivePlayers);
+    }
+
+    private void verifyCanManage(String username, FantaTeam fantaTeam) {
+        if (!fantaTeam.getOwner().getUsername().equals(username)
+                && userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {
+            throw new BusinessRuleException("Non sei il proprietario di questa squadra fantacalcistica");
+        }
     }
 }

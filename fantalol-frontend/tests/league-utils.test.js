@@ -131,3 +131,12 @@ test('lineupWindowState keeps the backend open window for a selected matchday wi
     nextEffectiveAt: '2026-07-31T00:00:00Z'
   });
 });
+
+test('lineupWindowState enables a new formation from the standalone backend window when history is empty', () => {
+  const window = { editable: true, nextEffectiveAt: '2026-07-31T00:00:00Z' };
+
+  assert.deepEqual(lineupWindowState(null, [], window), {
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  });
+});

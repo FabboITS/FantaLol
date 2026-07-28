@@ -2,6 +2,7 @@ package com.fantalol.backend.matchday;
 
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.matchday.dto.LineupWindowResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,11 @@ public class FormationController {
     @GetMapping
     public java.util.List<FormationResponse> history(@PathVariable Long fantaTeamId) {
         return formationService.findHistory(fantaTeamId);
+    }
+
+    @GetMapping("/window")
+    public LineupWindowResponse window(Authentication authentication, @PathVariable Long fantaTeamId) {
+        return formationService.lineupWindow(authentication.getName(), fantaTeamId);
     }
 
     @GetMapping("/{matchdayId}")

@@ -20,8 +20,8 @@
         return [...(teams || [])];
     }
 
-    function lineupWindowState(selectedFormation, formationHistory) {
-        const response = selectedFormation || (formationHistory || [])
+    function lineupWindowState(selectedFormation, formationHistory, standaloneWindow) {
+        const response = selectedFormation || standaloneWindow || (formationHistory || [])
             .find(formation => typeof formation?.editable === 'boolean');
         return {
             editable: Boolean(response?.editable),

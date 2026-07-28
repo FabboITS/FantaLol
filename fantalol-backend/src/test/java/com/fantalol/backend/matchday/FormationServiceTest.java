@@ -9,6 +9,7 @@ import com.fantalol.backend.lineup.EffectiveLineupService;
 import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.matchday.dto.LineupWindowResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.PlayerRole;
@@ -197,5 +198,43 @@ class FormationServiceTest {
 
         assertThat(resolved.getSource()).isEqualTo(FormationSource.AUTOMATIC);
         assertThat(resolved.getTitolari()).containsExactlyInAnyOrderElementsOf(players);
+    }
+
+    @Test
+    void exposesTheBackendLineupWindowBeforeAnyFormationExists() {
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        Instant effectiveAt = Instant.parse("2026-07-31T22:00:00Z");
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(true, effectiveAt, "open"));
+
+        LineupWindowResponse response = formationService.lineupWindow("mago", 1L);
+
+        assertThat(response.editable()).isTrue();
+        assertThat(response.nextEffectiveAt()).isEqualTo(effectiveAt);
+    }
+
+    @Test
+    void locksTheStandaloneWindowForFixedRosters() {
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        fantaTeam.getLeague().setParticipantCount(6);
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(true, Instant.parse("2026-07-31T22:00:00Z"), "open"));
+
+        LineupWindowResponse response = formationService.lineupWindow("mago", 1L);
+
+        assertThat(response.editable()).isFalse();
+    }
+
+    @Test
+    void rejectsAStandaloneWindowRequestFromAnotherManager() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(userService.findByUsernameOrThrow("intruso"))
+                .thenReturn(User.builder().username("intruso").role(com.fantalol.backend.user.Role.USER).build());
+
+        assertThatThrownBy(() -> formationService.lineupWindow("intruso", 1L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Non sei il proprietario");
     }
 }

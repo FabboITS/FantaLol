@@ -5,6 +5,8 @@ import com.fantalol.backend.common.ResourceNotFoundException;
 import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.RosterEntryRepository;
+import com.fantalol.backend.lineup.EffectiveLineupService;
+import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
 import com.fantalol.backend.team.LecPlayer;
@@ -19,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.time.Clock;
 
 /**
  * Gestisce la formazione (titolari + capitano) che ogni FantaTeam schiera per una giornata.
@@ -36,12 +39,15 @@ public class FormationService {
     private final MatchdayRepository matchdayRepository;
     private final PlayerStatRepository playerStatRepository;
     private final UserService userService;
+    private final EffectiveLineupService effectiveLineupService;
+    private final LineupWindow lineupWindow;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public FormationResponse findByTeamAndMatchday(Long fantaTeamId, Long matchdayId) {
         Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, matchdayId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nessuna formazione trovata per la squadra e la giornata indicate"));
-        return FormationResponse.from(formation);
+        return formationResponse(formation, java.util.Map.of());
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +59,7 @@ public class FormationService {
                             java.util.stream.Collectors.toMap(LecPlayer::getId, player -> playerStatRepository
                                     .findByMatchdayIdAndLecPlayerId(formation.getMatchday().getId(), player.getId())
                                     .map(PlayerStat::getFantavoto).orElse(0.0)));
-                    return FormationResponse.from(formation, scores);
+                    return formationResponse(formation, scores);
                 }).toList();
     }
 
@@ -149,6 +155,19 @@ public class FormationService {
         formation.setTitolari(titolari);
         formation.setSource(FormationSource.SUBMITTED);
 
-        return FormationResponse.from(formationRepository.save(formation));
+        Formation saved = formationRepository.save(formation);
+        effectiveLineupService.schedule(username, fantaTeamId, titolari);
+        return formationResponse(saved, java.util.Map.of());
+    }
+
+    private FormationResponse formationResponse(Formation formation, java.util.Map<Long, Double> scores) {
+        LineupWindow.Status status = lineupWindow.status(clock.instant());
+        boolean fixedRoster = formation.getFantaTeam().getLeague().getParticipantCount() != null
+                && formation.getFantaTeam().getLeague().getParticipantCount() >= 6;
+        List<LecPlayer> effectivePlayers = Optional.ofNullable(
+                        effectiveLineupService.activePlayersAt(formation.getFantaTeam().getId(), clock.instant()))
+                .orElseGet(Set::of).stream().toList();
+        return FormationResponse.from(formation, scores, status.editable() && !fixedRoster,
+                status.nextEffectiveAt(), effectivePlayers);
     }
 }

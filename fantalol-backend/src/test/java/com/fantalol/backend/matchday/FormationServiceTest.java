@@ -5,6 +5,8 @@ import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.League;
 import com.fantalol.backend.league.RosterEntryRepository;
+import com.fantalol.backend.lineup.EffectiveLineupService;
+import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
 import com.fantalol.backend.team.LecPlayer;
@@ -22,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.time.Clock;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,6 +47,12 @@ class FormationServiceTest {
     private MatchdayRepository matchdayRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private EffectiveLineupService effectiveLineupService;
+    @Mock
+    private LineupWindow lineupWindow;
+    @Mock
+    private Clock clock;
 
     @InjectMocks
     private FormationService formationService;
@@ -63,6 +73,9 @@ class FormationServiceTest {
 
     @Test
     void impostaCorrettamenteUnaFormazioneValida() {
+        when(clock.instant()).thenReturn(Instant.parse("2026-07-29T10:00:00Z"));
+        when(lineupWindow.status(Instant.parse("2026-07-29T10:00:00Z")))
+                .thenReturn(new LineupWindow.Status(true, Instant.parse("2026-07-30T22:00:00Z"), "open"));
         List<LecPlayer> titolari = List.of(
                 LecPlayer.builder().id(11L).nickname("Top").ruolo(PlayerRole.TOP).build(),
                 LecPlayer.builder().id(12L).nickname("Jungle").ruolo(PlayerRole.JUNGLE).build(),

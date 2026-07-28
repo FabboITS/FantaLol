@@ -15,6 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -191,6 +198,63 @@ class OracleGameImportServiceTest {
                 .extracting(ProviderSyncState::getStatus, ProviderSyncState::getLastError)
                 .containsExactly("FAILED", "Oracle unavailable");
         assertThat(syncStates.get("PANDASCORE")).isSameAs(pandaState);
+    }
+
+    @Test
+    void rejectsAGameWhenTwoProviderRowsResolveToTheSameLocalPlayer() {
+        players.put("player-2", players.get("player-1"));
+
+        OracleImportSummary result = service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
+
+        assertThat(result).extracting(OracleImportSummary::insertedGames, OracleImportSummary::failedGames)
+                .containsExactly(0, 1);
+        assertThat(result.unmatchedPlayers()).containsExactly("Player 2");
+        assertThat(games).isEmpty();
+        assertThat(stats).isEmpty();
+    }
+
+    @Test
+    void serializesConcurrentIdenticalImportsIntoOneInsertAndOneSkip() throws Exception {
+        CyclicBarrier concurrentLookups = new CyclicBarrier(2);
+        when(providerGameRepository.findByProviderAndExternalGameId(eq(ProviderGame.ORACLES_ELIXIR), any()))
+                .thenAnswer(invocation -> {
+                    try {
+                        concurrentLookups.await(250, TimeUnit.MILLISECONDS);
+                    } catch (BrokenBarrierException | java.util.concurrent.TimeoutException ignored) {
+                        // A serialized caller is expected to time out here before the later lookup observes its game.
+                    }
+                    return Optional.ofNullable(games.get(invocation.getArgument(1)));
+                });
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            Future<OracleImportSummary> first = executor.submit(() -> importAfterStarting(ready, start));
+            Future<OracleImportSummary> second = executor.submit(() -> importAfterStarting(ready, start));
+            assertThat(ready.await(1, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+
+            List<OracleImportSummary> summaries = List.of(
+                    first.get(2, TimeUnit.SECONDS),
+                    second.get(2, TimeUnit.SECONDS));
+
+            assertThat(summaries).extracting(OracleImportSummary::insertedGames).containsExactlyInAnyOrder(1, 0);
+            assertThat(summaries).extracting(OracleImportSummary::skippedGames).containsExactlyInAnyOrder(0, 1);
+            assertThat(games).hasSize(1);
+            assertThat(stats).hasSize(10);
+            assertThat(syncStates.get(ProviderGame.ORACLES_ELIXIR))
+                    .extracting(ProviderSyncState::getStatus, ProviderSyncState::getLastError)
+                    .containsExactly("SUCCESS", null);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private OracleImportSummary importAfterStarting(CountDownLatch ready, CountDownLatch start)
+            throws InterruptedException {
+        ready.countDown();
+        assertThat(start.await(1, TimeUnit.SECONDS)).isTrue();
+        return service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
     }
 
     private static String csv(List<String> rows) {

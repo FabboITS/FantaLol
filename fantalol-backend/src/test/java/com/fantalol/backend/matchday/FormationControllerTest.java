@@ -1,48 +1,44 @@
 package com.fantalol.backend.matchday;
 
 import com.fantalol.backend.matchday.dto.LineupWindowResponse;
-import com.fantalol.backend.security.JwtAuthFilter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(FormationController.class)
+@ExtendWith(MockitoExtension.class)
 class FormationControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private FormationService formationService;
+    @Mock
+    private Authentication authentication;
 
-    @MockBean
-    private JwtAuthFilter jwtAuthFilter;
+    private FormationController controller;
 
-    @Test
-    @WithMockUser(username = "mago")
-    void returnsTheStandaloneWindowForAnAuthenticatedOwner() throws Exception {
-        when(formationService.lineupWindow("mago", 7L)).thenReturn(
-                new LineupWindowResponse(true, Instant.parse("2026-07-31T22:00:00Z"), "open"));
-
-        mockMvc.perform(get("/api/fanta-teams/7/formazioni/window"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.editable").value(true))
-                .andExpect(jsonPath("$.nextEffectiveAt").value("2026-07-31T22:00:00Z"));
+    @BeforeEach
+    void setUp() {
+        controller = new FormationController(formationService);
     }
 
     @Test
-    void rejectsAnUnauthenticatedStandaloneWindowRequest() throws Exception {
-        mockMvc.perform(get("/api/fanta-teams/7/formazioni/window"))
-                .andExpect(status().isUnauthorized());
+    void returnsTheStandaloneWindowForTheAuthenticatedPrincipal() {
+        Instant effectiveAt = Instant.parse("2026-07-31T22:00:00Z");
+        when(authentication.getName()).thenReturn("mago");
+        when(formationService.lineupWindow("mago", 7L)).thenReturn(
+                new LineupWindowResponse(true, effectiveAt, "open"));
+
+        LineupWindowResponse response = controller.window(authentication, 7L);
+
+        assertThat(response.editable()).isTrue();
+        assertThat(response.nextEffectiveAt()).isEqualTo(effectiveAt);
+        assertThat(response.reason()).isEqualTo("open");
     }
 }

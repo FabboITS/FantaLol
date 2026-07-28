@@ -118,8 +118,8 @@ public class ProviderPlayerGameStat {
     @Column(name = "overridden_at")
     private Instant overriddenAt;
 
-    public boolean isCurrentSourceVersion() {
-        return providerGame != null
+    public boolean isActiveSourceVersion() {
+        return overridden || providerGame != null
                 && Objects.equals(sourceFingerprint, providerGame.getSourceFingerprint());
     }
 }

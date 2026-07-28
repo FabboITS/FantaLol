@@ -6,12 +6,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface EffectiveLineupPeriodRepository extends JpaRepository<EffectiveLineupPeriod, Long> {
 
     List<EffectiveLineupPeriod> findByFantaTeamIdAndEffectiveUntilIsNull(Long fantaTeamId);
+
+    @Query("""
+            select period from EffectiveLineupPeriod period
+            join fetch period.fantaTeam
+            join fetch period.lecPlayer
+            where period.fantaTeam.id in :fantaTeamIds
+            order by period.fantaTeam.id, period.effectiveFrom
+            """)
+    List<EffectiveLineupPeriod> findByFantaTeamIdIn(
+            @Param("fantaTeamIds") Collection<Long> fantaTeamIds);
 
     boolean existsByFantaTeamId(Long fantaTeamId);
 

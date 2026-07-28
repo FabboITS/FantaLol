@@ -24,8 +24,12 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,14 +74,13 @@ class CumulativeScoringServiceTest {
                 stat(starters.get(PlayerRole.ADC), "2026-07-29T12:00:00Z", 13.0));
         when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(stats);
         lenient().when(fantaTeamRepository.findById(TEAM_ID)).thenReturn(Optional.of(team));
-        lenient().when(lineupPeriodRepository.findActiveByFantaTeamIdAndRole(eq(TEAM_ID), any(), any()))
-                .thenAnswer(invocation -> {
-                    PlayerRole role = invocation.getArgument(1);
-                    Instant playedAt = invocation.getArgument(2);
-                    LecPlayer player = role == PlayerRole.MID && !playedAt.isBefore(FRIDAY)
-                            ? newMid : starters.get(role);
-                    return Optional.of(period(role, player));
-                });
+        lenient().when(lineupPeriodRepository.findByFantaTeamIdIn(anyCollection())).thenReturn(List.of(
+                period(team, PlayerRole.TOP, starters.get(PlayerRole.TOP), Instant.EPOCH, null),
+                period(team, PlayerRole.JUNGLE, starters.get(PlayerRole.JUNGLE), Instant.EPOCH, null),
+                period(team, PlayerRole.MID, oldMid, Instant.EPOCH, FRIDAY),
+                period(team, PlayerRole.MID, newMid, FRIDAY, null),
+                period(team, PlayerRole.ADC, starters.get(PlayerRole.ADC), Instant.EPOCH, null),
+                period(team, PlayerRole.SUPPORT, starters.get(PlayerRole.SUPPORT), Instant.EPOCH, null)));
     }
 
     @Test
@@ -99,6 +102,9 @@ class CumulativeScoringServiceTest {
         assertThat(mid.gamesPlayed()).isEqualTo(4);
         assertThat(mid.average()).isEqualTo(25.0);
         assertThat(mid.contributingPlayers()).containsExactly("Old Mid", "New Mid");
+        verify(statRepository, times(1)).findAllByOrderByProviderGamePlayedAtAsc();
+        verify(lineupPeriodRepository, times(1)).findByFantaTeamIdIn(anyCollection());
+        verify(lineupPeriodRepository, never()).findActiveByFantaTeamIdAndRole(anyLong(), any(), any());
     }
 
     @Test
@@ -135,14 +141,91 @@ class CumulativeScoringServiceTest {
     }
 
     @Test
-    void staleSourceVersionDoesNotContributeEvenWhenItsOverrideParticipates() {
+    void removedProviderRowStillContributesWhileItsOverrideParticipates() {
         ProviderPlayerGameStat stale = stat(oldMid, "2026-07-28T12:00:00Z", 25.0);
+        stale.setOverridden(true);
         stale.setCorrectedParticipated(true);
         stale.setSourceFingerprint("former");
         stale.getProviderGame().setSourceFingerprint("current");
         when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(List.of(stale));
 
+        assertThat(service.playerScore(oldMid.getId()))
+                .extracting(
+                        score -> score.gamesPlayed(),
+                        score -> score.average())
+                .containsExactly(1, 25.0);
+    }
+
+    @Test
+    void removedProviderRowDoesNotContributeWhenItsOverrideMarksNonparticipation() {
+        ProviderPlayerGameStat stale = stat(oldMid, "2026-07-28T12:00:00Z", 25.0);
+        stale.setOverridden(true);
+        stale.setCorrectedParticipated(false);
+        stale.setSourceFingerprint("former");
+        stale.getProviderGame().setSourceFingerprint("current");
+        when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(List.of(stale));
+
         assertThat(service.playerScores()).isEmpty();
+    }
+
+    @Test
+    void leagueRankingBatchLoadsObservationsAndPeriodsWhilePreservingAttributionAndOrder() {
+        FantaTeam zeta = FantaTeam.builder().id(8L).nome("Zeta").build();
+        FantaTeam ghost = FantaTeam.builder().id(9L).nome("Ghost").build();
+        List<LecPlayer> zetaPlayers = List.of(
+                player(31L, "Zeta Top", PlayerRole.TOP),
+                player(32L, "Zeta Jungle", PlayerRole.JUNGLE),
+                player(33L, "Zeta Mid", PlayerRole.MID),
+                player(34L, "Zeta Adc", PlayerRole.ADC),
+                player(35L, "Zeta Support", PlayerRole.SUPPORT));
+        List<ProviderPlayerGameStat> observations = List.of(
+                stat(starters.get(PlayerRole.TOP), "2026-07-29T12:00:00Z", 10.0),
+                stat(starters.get(PlayerRole.JUNGLE), "2026-07-29T12:00:00Z", 10.0),
+                stat(oldMid, "2026-07-29T12:00:00Z", 10.0),
+                stat(newMid, "2026-08-01T12:00:00Z", 30.0),
+                stat(starters.get(PlayerRole.ADC), "2026-07-29T12:00:00Z", 10.0),
+                stat(starters.get(PlayerRole.SUPPORT), "2026-07-29T12:00:00Z", 10.0),
+                stat(zetaPlayers.get(0), "2026-07-29T12:00:00Z", 50.0),
+                stat(zetaPlayers.get(1), "2026-07-29T12:00:00Z", 50.0),
+                stat(zetaPlayers.get(2), "2026-07-29T12:00:00Z", 50.0),
+                stat(zetaPlayers.get(3), "2026-07-29T12:00:00Z", 50.0),
+                stat(zetaPlayers.get(4), "2026-07-29T12:00:00Z", 50.0));
+        List<EffectiveLineupPeriod> periods = List.of(
+                period(team, PlayerRole.TOP, starters.get(PlayerRole.TOP), Instant.EPOCH, null),
+                period(team, PlayerRole.JUNGLE, starters.get(PlayerRole.JUNGLE), Instant.EPOCH, null),
+                period(team, PlayerRole.MID, oldMid, Instant.EPOCH, FRIDAY),
+                period(team, PlayerRole.MID, newMid, FRIDAY, null),
+                period(team, PlayerRole.ADC, starters.get(PlayerRole.ADC), Instant.EPOCH, null),
+                period(team, PlayerRole.SUPPORT, starters.get(PlayerRole.SUPPORT), Instant.EPOCH, null),
+                period(zeta, PlayerRole.TOP, zetaPlayers.get(0), Instant.EPOCH, null),
+                period(zeta, PlayerRole.JUNGLE, zetaPlayers.get(1), Instant.EPOCH, null),
+                period(zeta, PlayerRole.MID, zetaPlayers.get(2), Instant.EPOCH, null),
+                period(zeta, PlayerRole.ADC, zetaPlayers.get(3), Instant.EPOCH, null),
+                period(zeta, PlayerRole.SUPPORT, zetaPlayers.get(4), Instant.EPOCH, null),
+                period(ghost, PlayerRole.TOP, starters.get(PlayerRole.TOP), Instant.EPOCH, null),
+                period(ghost, PlayerRole.JUNGLE, starters.get(PlayerRole.JUNGLE), Instant.EPOCH, null),
+                period(ghost, PlayerRole.MID, oldMid, Instant.EPOCH, null),
+                period(ghost, PlayerRole.ADC, starters.get(PlayerRole.ADC), Instant.EPOCH, null));
+        when(fantaTeamRepository.findByLeagueId(5L)).thenReturn(List.of(team, zeta, ghost));
+        lenient().when(fantaTeamRepository.findById(8L)).thenReturn(Optional.of(zeta));
+        lenient().when(fantaTeamRepository.findById(9L)).thenReturn(Optional.of(ghost));
+        when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(observations);
+        when(lineupPeriodRepository.findByFantaTeamIdIn(anyCollection())).thenReturn(periods);
+
+        var ranking = service.leagueRanking(5L);
+
+        assertThat(ranking).extracting(score -> score.teamName())
+                .containsExactly("Zeta", "Blue Phoenix", "Ghost");
+        assertThat(ranking.get(1).slots().stream()
+                .filter(slot -> slot.role() == PlayerRole.MID)
+                .findFirst().orElseThrow().contributingPlayers())
+                .containsExactly("Old Mid", "New Mid");
+        assertThat(ranking.get(2).provisional()).isTrue();
+        verify(fantaTeamRepository, times(1)).findByLeagueId(5L);
+        verify(statRepository, times(1)).findAllByOrderByProviderGamePlayedAtAsc();
+        verify(lineupPeriodRepository, times(1)).findByFantaTeamIdIn(anyCollection());
+        verify(fantaTeamRepository, never()).findById(anyLong());
+        verify(lineupPeriodRepository, never()).findActiveByFantaTeamIdAndRole(anyLong(), any(), any());
     }
 
     private LecPlayer player(Long id, String nickname, PlayerRole role) {
@@ -158,8 +241,9 @@ class CumulativeScoringServiceTest {
                 .build();
     }
 
-    private EffectiveLineupPeriod period(PlayerRole role, LecPlayer player) {
-        return EffectiveLineupPeriod.builder().fantaTeam(team).role(role).lecPlayer(player)
-                .effectiveFrom(Instant.EPOCH).build();
+    private EffectiveLineupPeriod period(FantaTeam fantasyTeam, PlayerRole role, LecPlayer player,
+                                         Instant effectiveFrom, Instant effectiveUntil) {
+        return EffectiveLineupPeriod.builder().fantaTeam(fantasyTeam).role(role).lecPlayer(player)
+                .effectiveFrom(effectiveFrom).effectiveUntil(effectiveUntil).build();
     }
 }

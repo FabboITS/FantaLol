@@ -182,7 +182,7 @@ class OracleGameImportServiceTest {
     }
 
     @Test
-    void preservesAnOverrideAsAnInactiveAuditRowWhenTheProviderRemovesItsParticipant() {
+    void preservesRemovedOverrideAsActiveUntilExplicitRestore() {
         service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
         ProviderPlayerGameStat overridden = stats.values().stream()
                 .filter(stat -> stat.getLecPlayer().getId().equals(1L))
@@ -216,9 +216,9 @@ class OracleGameImportServiceTest {
                         Instant.parse("2026-07-28T10:00:00Z"), 4, 12.0,
                         initialFingerprint, replacementFingerprint);
         assertThat(stats.values())
-                .filteredOn(stat -> stat.getSourceFingerprint()
-                        .equals(stat.getProviderGame().getSourceFingerprint()))
-                .hasSize(10);
+                .filteredOn(stat -> stat.isOverridden()
+                        || stat.getSourceFingerprint().equals(stat.getProviderGame().getSourceFingerprint()))
+                .hasSize(11);
     }
 
     @Test

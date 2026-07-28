@@ -90,3 +90,13 @@ test('league page renders cumulative standings, lineup window state, and ADMIN d
   assert.match(script, /Modifiche aperte da martedì a giovedì\./);
   assert.match(script, /La nuova formazione sarà valida da venerdì\./);
 });
+
+test('cumulative UI renders source freshness separately from team provisional scoring', () => {
+  assert.match(script, /cumulativePerformanceSection/);
+  assert.match(script, /cumulativeRankingSection/);
+  assert.match(script, /LecDataSource\.cumulativeFreshnessLabel\(section\)/);
+  assert.match(script, /cumulative-source-state/);
+  assert.match(script, /team\.provisional\?'Formazione provvisoria/);
+  assert.match(script, /state\.cumulativePerformances=performances\.items/);
+  assert.match(script, /state\.cumulativeRanking=ranking\.items/);
+});

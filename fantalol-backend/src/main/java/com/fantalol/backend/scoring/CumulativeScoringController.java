@@ -2,6 +2,7 @@ package com.fantalol.backend.scoring;
 
 import com.fantalol.backend.league.FantaTeamService;
 import com.fantalol.backend.league.LeagueService;
+import com.fantalol.backend.scoring.dto.CumulativeDataResponse;
 import com.fantalol.backend.scoring.dto.CumulativeFantasyTeamScore;
 import com.fantalol.backend.scoring.dto.CumulativePlayerScore;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class CumulativeScoringController {
@@ -19,10 +18,11 @@ public class CumulativeScoringController {
     private final CumulativeScoringService cumulativeScoringService;
     private final FantaTeamService fantaTeamService;
     private final LeagueService leagueService;
+    private final CumulativeDataFreshnessService freshnessService;
 
     @GetMapping("/api/lec/cumulative-performances")
-    public List<CumulativePlayerScore> playerScores() {
-        return cumulativeScoringService.playerScores();
+    public CumulativeDataResponse<CumulativePlayerScore> playerScores() {
+        return freshnessService.wrap(cumulativeScoringService.playerScores());
     }
 
     @GetMapping("/api/fanta-teams/{id}/cumulative-score")
@@ -31,8 +31,11 @@ public class CumulativeScoringController {
     }
 
     @GetMapping("/api/leagues/{id}/cumulative-ranking")
-    public List<CumulativeFantasyTeamScore> leagueRanking(Authentication authentication, @PathVariable Long id) {
+    public CumulativeDataResponse<CumulativeFantasyTeamScore> leagueRanking(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
         leagueService.findById(authentication.getName(), id);
-        return cumulativeScoringService.leagueRanking(id);
+        return freshnessService.wrap(cumulativeScoringService.leagueRanking(id));
     }
 }

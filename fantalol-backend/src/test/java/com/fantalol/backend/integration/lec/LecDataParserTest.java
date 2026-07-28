@@ -62,26 +62,30 @@ class LecDataParserTest {
     }
 
     @Test
-    void persistedProjectionIncludesCurrentCorrectionAndExcludesStaleSourceVersion() {
+    void persistedProjectionKeepsRemovedOverrideActiveUntilExplicitRestore() {
         ProviderPlayerGameStat current = persistedStat("Current", "current", "current");
         current.setRawParticipated(false);
         current.setCorrectedParticipated(true);
         ProviderPlayerGameStat stale = persistedStat("Former", "former", "current");
+        stale.setOverridden(true);
         stale.setCorrectedParticipated(true);
+        ProviderPlayerGameStat staleNonparticipant = persistedStat("Former Bench", "former", "current");
+        staleNonparticipant.setOverridden(true);
+        staleNonparticipant.setCorrectedParticipated(false);
 
         LecDataSnapshot snapshot = parser.project(
                 objectMapper.createArrayNode(),
-                List.of(current, stale),
+                List.of(current, stale, staleNonparticipant),
                 "fresh",
                 Instant.parse("2026-07-28T12:00:00Z"));
 
         assertThat(snapshot.performances())
                 .extracting(LecDataSnapshot.PlayerPerformance::nickname)
-                .containsExactly("Current");
+                .containsExactly("Current", "Former");
         assertThat(snapshot.matches()).singleElement()
                 .satisfies(match -> assertThat(match.games().get(0).players())
                         .extracting(LecDataSnapshot.GamePlayer::nickname)
-                        .containsExactly("Current"));
+                        .containsExactly("Current", "Former"));
     }
 
     private static ProviderPlayerGameStat persistedStat(

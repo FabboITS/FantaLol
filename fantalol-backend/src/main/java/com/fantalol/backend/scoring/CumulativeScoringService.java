@@ -5,6 +5,7 @@ import com.fantalol.backend.integration.oracle.ProviderPlayerGameStat;
 import com.fantalol.backend.integration.oracle.ProviderPlayerGameStatRepository;
 import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
+import com.fantalol.backend.lineup.EffectiveLineupPeriod;
 import com.fantalol.backend.lineup.EffectiveLineupPeriodRepository;
 import com.fantalol.backend.scoring.dto.CumulativeFantasyTeamScore;
 import com.fantalol.backend.scoring.dto.CumulativePlayerScore;
@@ -59,19 +60,63 @@ public class CumulativeScoringService {
     public CumulativeFantasyTeamScore teamScore(Long fantasyTeamId) {
         FantaTeam team = fantaTeamRepository.findById(fantasyTeamId)
                 .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantasyTeamId));
+        return scoreTeams(List.of(team)).get(0);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CumulativeFantasyTeamScore> leagueRanking(Long leagueId) {
+        List<FantaTeam> teams = fantaTeamRepository.findByLeagueId(leagueId);
+        if (teams.isEmpty()) {
+            return List.of();
+        }
+        return scoreTeams(teams).stream()
+                .sorted(Comparator.comparing(CumulativeFantasyTeamScore::overallAverage,
+                        Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(CumulativeFantasyTeamScore::teamName))
+                .toList();
+    }
+
+    private List<CumulativeFantasyTeamScore> scoreTeams(List<FantaTeam> teams) {
+        Map<Long, FantaTeam> teamsById = teams.stream()
+                .collect(Collectors.toMap(FantaTeam::getId, team -> team));
+        Map<Long, Map<PlayerRole, SlotAccumulator>> slotsByTeam = teams.stream()
+                .collect(Collectors.toMap(FantaTeam::getId, ignored -> emptySlots()));
+        List<EffectiveLineupPeriod> periods = lineupPeriodRepository.findByFantaTeamIdIn(teamsById.keySet());
+        Map<Long, List<EffectiveLineupPeriod>> periodsByPlayer = periods.stream()
+                .collect(Collectors.groupingBy(period -> period.getLecPlayer().getId()));
+
+        for (ProviderPlayerGameStat stat : observations()) {
+            Instant playedAt = stat.getProviderGame().getPlayedAt();
+            for (EffectiveLineupPeriod period : periodsByPlayer
+                    .getOrDefault(stat.getLecPlayer().getId(), List.of())) {
+                Long teamId = period.getFantaTeam().getId();
+                if (teamsById.containsKey(teamId) && activeAt(period, playedAt)) {
+                    slotsByTeam.get(teamId).get(period.getRole()).add(stat);
+                }
+            }
+        }
+
+        return teams.stream()
+                .map(team -> fantasyTeamScore(team, slotsByTeam.get(team.getId())))
+                .toList();
+    }
+
+    private Map<PlayerRole, SlotAccumulator> emptySlots() {
         Map<PlayerRole, SlotAccumulator> slots = new EnumMap<>(PlayerRole.class);
         for (PlayerRole role : PlayerRole.values()) {
             slots.put(role, new SlotAccumulator());
         }
+        return slots;
+    }
 
-        for (ProviderPlayerGameStat stat : observations()) {
-            Instant playedAt = stat.getProviderGame().getPlayedAt();
-            PlayerRole role = stat.getLecPlayer().getRuolo();
-            lineupPeriodRepository.findActiveByFantaTeamIdAndRole(fantasyTeamId, role, playedAt)
-                    .filter(period -> period.getLecPlayer().getId().equals(stat.getLecPlayer().getId()))
-                    .ifPresent(ignored -> slots.get(role).add(stat));
-        }
+    private boolean activeAt(EffectiveLineupPeriod period, Instant playedAt) {
+        return !period.getEffectiveFrom().isAfter(playedAt)
+                && (period.getEffectiveUntil() == null || period.getEffectiveUntil().isAfter(playedAt));
+    }
 
+    private CumulativeFantasyTeamScore fantasyTeamScore(
+            FantaTeam team,
+            Map<PlayerRole, SlotAccumulator> slots) {
         List<FantasyRoleSlotScore> projections = slots.entrySet().stream()
                 .map(entry -> entry.getValue().toScore(entry.getKey()))
                 .toList();
@@ -83,16 +128,6 @@ public class CumulativeScoringService {
         return new CumulativeFantasyTeamScore(team.getId(), team.getNome(), projections, overallAverage, provisional);
     }
 
-    @Transactional(readOnly = true)
-    public List<CumulativeFantasyTeamScore> leagueRanking(Long leagueId) {
-        return fantaTeamRepository.findByLeagueId(leagueId).stream()
-                .map(team -> teamScore(team.getId()))
-                .sorted(Comparator.comparing(CumulativeFantasyTeamScore::overallAverage,
-                        Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(CumulativeFantasyTeamScore::teamName))
-                .toList();
-    }
-
     private CumulativePlayerScore playerScore(List<ProviderPlayerGameStat> playerStats) {
         LecPlayer player = playerStats.get(0).getLecPlayer();
         double average = playerStats.stream().mapToDouble(ProviderPlayerGameStat::getFantasyScore).average().orElseThrow();
@@ -102,7 +137,7 @@ public class CumulativeScoringService {
 
     private List<ProviderPlayerGameStat> observations() {
         return statRepository.findAllByOrderByProviderGamePlayedAtAsc().stream()
-                .filter(ProviderPlayerGameStat::isCurrentSourceVersion)
+                .filter(ProviderPlayerGameStat::isActiveSourceVersion)
                 .filter(this::participated)
                 .filter(stat -> stat.getProviderGame() != null && stat.getProviderGame().getPlayedAt() != null)
                 .toList();

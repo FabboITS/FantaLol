@@ -23,5 +23,7 @@ public interface LecPlayerRepository extends JpaRepository<LecPlayer, Long> {
 
     Optional<LecPlayer> findByOraclePlayerId(String oraclePlayerId);
 
+    Optional<LecPlayer> findFirstByOraclePlayerIdIgnoreCase(String oraclePlayerId);
+
     Optional<LecPlayer> findFirstByNicknameIgnoreCase(String nickname);
 }

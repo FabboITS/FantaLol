@@ -29,6 +29,17 @@ class LineupWindowTest {
                 .isEqualTo(rome("2026-04-03T00:00:00"));
     }
 
+    @Test
+    void configuredTimezoneChangesTheCalendarBoundary() {
+        Instant mondayAt2330Utc = Instant.parse("2026-07-27T23:30:00Z");
+
+        LineupWindow romeWindow = new LineupWindow(ZoneId.of("Europe/Rome"));
+        LineupWindow utcWindow = new LineupWindow(ZoneId.of("UTC"));
+
+        assertThat(romeWindow.status(mondayAt2330Utc).editable()).isTrue();
+        assertThat(utcWindow.status(mondayAt2330Utc).editable()).isFalse();
+    }
+
     private Instant rome(String dateTime) {
         return LocalDateTime.parse(dateTime).atZone(ZoneId.of("Europe/Rome")).toInstant();
     }

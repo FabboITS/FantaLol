@@ -13,15 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class LineupBackfillService {
-
-    public static final Instant BACKFILL_FROM = Instant.parse("2026-07-23T22:00:00Z");
 
     private final FantaTeamRepository fantaTeamRepository;
     private final RosterEntryRepository rosterEntryRepository;

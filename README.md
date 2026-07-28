@@ -219,6 +219,8 @@ Il backend legge queste variabili:
 | `LEC_TOURNAMENT_ID` | Tournament ID PandaScore sincronizzato | `21344` |
 | `LEC_LEAGUE` | Filtro lega Oracle's Elixir | `LEC` |
 | `LEC_SPLIT` | Filtro split Oracle's Elixir | `Summer` |
+| `LEC_TIMEZONE` | Fuso usato per la finestra formazione e l'efficacia del venerdì | `Europe/Rome` |
+| `LEC_BACKFILL_FROM` | Inizio iniziale delle formazioni effettive per il backfill idempotente | `2026-07-24T00:00:00+02:00` |
 | `ORACLE_ELIXIR_CSV_URL` | URL del CSV annuale Oracle's Elixir | vuoto |
 | `LEC_SYNC_CRON` | Espressione cron Spring della sincronizzazione | `0 15 */6 * * *` |
 
@@ -274,7 +276,12 @@ predefinito). L'ADMIN globale può eseguire `Sincronizza ora`: l'operazione rite
 entrambi i provider e il ricalcolo, ma non può creare statistiche che la fonte non ha
 pubblicato in forma completa. Per il primo avvio della Summer 2026, le formazioni
 valide correnti vengono retrodatate in modo idempotente al
-`2026-07-24T00:00:00+02:00` (`Europe/Rome`).
+`LEC_BACKFILL_FROM`, per impostazione predefinita
+`2026-07-24T00:00:00+02:00`. Il fuso `LEC_TIMEZONE` (predefinito
+`Europe/Rome`) governa la finestra settimanale e l'efficacia del venerdì. Il
+backfill crea soltanto i periodi effettivi iniziali mancanti: dopo che una
+squadra possiede già dei periodi, cambiare `LEC_BACKFILL_FROM` non riscrive né
+retrodata nuovamente lo storico esistente.
 
 Gli endpoint di importazione e verifica del fornitore sono riservati all'amministratore
 globale. I dettagli operativi sono disponibili in

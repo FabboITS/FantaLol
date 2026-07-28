@@ -17,14 +17,20 @@ PANDASCORE_API_TOKEN=<private PandaScore token>
 LEC_TOURNAMENT_ID=21344
 LEC_LEAGUE=LEC
 LEC_SPLIT=Summer
+LEC_TIMEZONE=Europe/Rome
+LEC_BACKFILL_FROM=2026-07-24T00:00:00+02:00
 ORACLE_ELIXIR_CSV_URL=<direct URL of the 2026 annual CSV>
 LEC_SYNC_CRON=0 15 */6 * * *
 ```
 
 These are the exact environment-variable names bound by `application.yml`.
-`PANDASCORE_BASE_URL`, `LEC_TOURNAMENT_ID`, `LEC_LEAGUE`, `LEC_SPLIT`, and
-`LEC_SYNC_CRON` have the defaults shown above. The token and direct CSV URL have
-no default and must be supplied with real private/configured values in Render.
+`PANDASCORE_BASE_URL`, `LEC_TOURNAMENT_ID`, `LEC_LEAGUE`, `LEC_SPLIT`,
+`LEC_TIMEZONE`, `LEC_BACKFILL_FROM`, and `LEC_SYNC_CRON` have the exact defaults
+shown above. `LEC_TIMEZONE` controls the lineup editing calendar and Friday
+effective boundary. `LEC_BACKFILL_FROM` is the initial effective-lineup start
+used only when a fantasy team has no effective periods yet. The token and
+direct CSV URL have no default and must be supplied with real
+private/configured values in Render.
 Never expose `PANDASCORE_API_TOKEN` in frontend JavaScript or commit it to Git.
 
 ## Automatic LEC synchronization
@@ -89,7 +95,9 @@ Before importing Summer games, the backend creates missing effective lineup
 periods from `2026-07-24T00:00:00+02:00` (`Europe/Rome`). For leagues of at
 most five teams it uses the latest valid saved formation; for larger leagues it
 uses the fixed five-player roster. Existing periods are not recreated, so the
-backfill is safe to run again.
+backfill is safe to run again. This is an initial, idempotent operation:
+changing `LEC_BACKFILL_FROM` after effective periods exist does not rewrite,
+move, or delete those periods.
 
 ## Cumulative score calculation
 

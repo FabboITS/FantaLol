@@ -7,7 +7,8 @@ const {
   remainingAuctionSeconds,
   mergeBidDraft,
   participantCreditBalances,
-  rankCumulativeTeams
+  rankCumulativeTeams,
+  lineupWindowState
 } = require('../js/league-utils.js');
 
 test('parseLeagueId accepts a positive integer id', () => {
@@ -116,4 +117,17 @@ test('rankCumulativeTeams preserves the server cumulative order without mutable 
 
   assert.deepEqual(rankCumulativeTeams(ranking).map(team => team.teamName), ['Seconda', 'Prima']);
   assert.notEqual(rankCumulativeTeams(ranking), ranking);
+});
+
+test('lineupWindowState keeps the backend open window for a selected matchday without a formation', () => {
+  const previousBackendResponse = {
+    matchdayId: 4,
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  };
+
+  assert.deepEqual(lineupWindowState(null, [previousBackendResponse]), {
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  });
 });

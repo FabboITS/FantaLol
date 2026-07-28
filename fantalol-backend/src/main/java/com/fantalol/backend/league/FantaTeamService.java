@@ -66,7 +66,8 @@ public class FantaTeamService {
     }
 
     @Transactional(readOnly = true)
-    public List<FantaTeamResponse> findByLeague(Long leagueId) {
+    public List<FantaTeamResponse> findByLeague(String username, Long leagueId) {
+        leagueService.findById(username, leagueId);
         return fantaTeamRepository.findByLeagueId(leagueId).stream().map(this::response).toList();
     }
 
@@ -76,8 +77,10 @@ public class FantaTeamService {
     }
 
     @Transactional(readOnly = true)
-    public FantaTeamResponse findById(Long id) {
-        return response(getOrThrow(id));
+    public FantaTeamResponse findById(String username, Long id) {
+        FantaTeam team = getOrThrow(id);
+        leagueService.findById(username, team.getLeague().getId());
+        return response(team);
     }
 
     @Transactional(readOnly = true)

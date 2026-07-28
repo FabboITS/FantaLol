@@ -15,7 +15,7 @@ public record FantaTeamResponse(
         List<RosterEntryResponse> rosa
 ) {
     public static FantaTeamResponse from(FantaTeam team) {
-        return from(team, team.getPunti() != null ? team.getPunti() : 0.0);
+        return from(team, null);
     }
 
     public static FantaTeamResponse from(FantaTeam team, Double punti) {

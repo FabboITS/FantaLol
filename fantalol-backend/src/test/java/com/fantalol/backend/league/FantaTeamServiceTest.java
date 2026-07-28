@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -175,5 +176,38 @@ class FantaTeamServiceTest {
         assertThatThrownBy(() -> fantaTeamService.acquistaPlayer("altro-utente", 1L, new AcquistoPlayerRequest(10L, 90)))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("proprietario");
+    }
+
+    @Test
+    void memberCanReadATeamOnlyAfterLeagueVisibilityIsChecked() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+
+        var response = fantaTeamService.findById("mago", 1L);
+
+        assertThat(response.id()).isEqualTo(1L);
+        verify(leagueService).findById("mago", 1L);
+        verify(cumulativeScoringService).teamScore(1L);
+    }
+
+    @Test
+    void nonMemberCannotReadATeamOrItsCumulativePoints() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(leagueService.findById("estraneo", 1L)).thenThrow(new AccessDeniedException("denied"));
+
+        assertThatThrownBy(() -> fantaTeamService.findById("estraneo", 1L))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(cumulativeScoringService, never()).teamScore(1L);
+    }
+
+    @Test
+    void memberCanReadLeagueTeamsOnlyAfterLeagueVisibilityIsChecked() {
+        when(fantaTeamRepository.findByLeagueId(1L)).thenReturn(List.of(fantaTeam));
+
+        var response = fantaTeamService.findByLeague("mago", 1L);
+
+        assertThat(response).extracting(team -> team.id()).containsExactly(1L);
+        verify(leagueService).findById("mago", 1L);
+        verify(cumulativeScoringService).teamScore(1L);
     }
 }

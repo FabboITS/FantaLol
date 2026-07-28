@@ -36,13 +36,13 @@ public class FantaTeamController {
     }
 
     @GetMapping("/{id}")
-    public FantaTeamResponse findById(@PathVariable Long id) {
-        return fantaTeamService.findById(id);
+    public FantaTeamResponse findById(Authentication authentication, @PathVariable Long id) {
+        return fantaTeamService.findById(authentication.getName(), id);
     }
 
     @GetMapping("/by-league/{leagueId}")
-    public List<FantaTeamResponse> findByLeague(@PathVariable Long leagueId) {
-        return fantaTeamService.findByLeague(leagueId);
+    public List<FantaTeamResponse> findByLeague(Authentication authentication, @PathVariable Long leagueId) {
+        return fantaTeamService.findByLeague(authentication.getName(), leagueId);
     }
 
     @PostMapping("/{id}/rosa/gratis")

@@ -118,6 +118,33 @@ class CumulativeScoringServiceTest {
         assertThat(score.provisional()).isTrue();
     }
 
+    @Test
+    void currentAdminCorrectionCanActivateARawNonparticipant() {
+        ProviderPlayerGameStat corrected = stat(oldMid, "2026-07-28T12:00:00Z", 25.0);
+        corrected.setRawParticipated(false);
+        corrected.setCorrectedParticipated(true);
+        corrected.setSourceFingerprint("current");
+        corrected.getProviderGame().setSourceFingerprint("current");
+        when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(List.of(corrected));
+
+        assertThat(service.playerScore(oldMid.getId()))
+                .extracting(
+                        score -> score.gamesPlayed(),
+                        score -> score.average())
+                .containsExactly(1, 25.0);
+    }
+
+    @Test
+    void staleSourceVersionDoesNotContributeEvenWhenItsOverrideParticipates() {
+        ProviderPlayerGameStat stale = stat(oldMid, "2026-07-28T12:00:00Z", 25.0);
+        stale.setCorrectedParticipated(true);
+        stale.setSourceFingerprint("former");
+        stale.getProviderGame().setSourceFingerprint("current");
+        when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(List.of(stale));
+
+        assertThat(service.playerScores()).isEmpty();
+    }
+
     private LecPlayer player(Long id, String nickname, PlayerRole role) {
         return LecPlayer.builder().id(id).nickname(nickname).ruolo(role).build();
     }

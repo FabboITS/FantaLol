@@ -132,7 +132,11 @@ public class LecSynchronizationService {
             lineupBackfillService.backfill();
             OracleImportSummary summary =
                     oracleImportService.importCsvOrThrow(csv, properties.league(), properties.split());
-            stateService.recordOracleSuccess(summary);
+            if (summary.isSuccessfulImport()) {
+                stateService.recordOracleSuccess(summary);
+            } else {
+                stateService.recordOracleFailure(summary);
+            }
         } catch (RuntimeException exception) {
             stateService.recordOracleFailure(exception);
         } finally {

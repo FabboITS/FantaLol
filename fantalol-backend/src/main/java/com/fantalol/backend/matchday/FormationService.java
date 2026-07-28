@@ -9,6 +9,9 @@ import com.fantalol.backend.lineup.EffectiveLineupService;
 import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.matchday.dto.FormationPlayerResponse;
+import com.fantalol.backend.matchday.dto.LineupRequest;
+import com.fantalol.backend.matchday.dto.LineupResponse;
 import com.fantalol.backend.matchday.dto.LineupWindowResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.time.Clock;
+import java.time.Instant;
 
 /**
  * Gestisce la formazione (titolari + capitano) che ogni FantaTeam schiera per una giornata.
@@ -74,6 +78,51 @@ public class FormationService {
                 && fantaTeam.getLeague().getParticipantCount() >= 6;
         return new LineupWindowResponse(status.editable() && !fixedRoster,
                 status.nextEffectiveAt(), status.reason());
+    }
+
+    @Transactional(readOnly = true)
+    public LineupResponse findLineup(String username, Long fantaTeamId) {
+        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
+                .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
+        verifyCanManage(username, fantaTeam);
+        return lineupResponse(fantaTeam, effectiveLineupService.scheduledPlayers(fantaTeamId));
+    }
+
+    @Transactional
+    public LineupResponse scheduleLineup(String username, Long fantaTeamId, LineupRequest request) {
+        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
+                .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
+        verifyCanManage(username, fantaTeam);
+        if (fantaTeam.getLeague().isAuctionOpen()) {
+            throw new BusinessRuleException("Termina l'asta prima di modificare la formazione");
+        }
+        if (fantaTeam.getLeague().getParticipantCount() != null
+                && fantaTeam.getLeague().getParticipantCount() >= 6) {
+            throw new BusinessRuleException(
+                    "Nelle leghe con almeno 6 squadre la formazione coincide automaticamente con la rosa");
+        }
+
+        List<Long> playerIds = request.titolariIds();
+        if (playerIds.size() != NUMERO_TITOLARI || new HashSet<>(playerIds).size() != NUMERO_TITOLARI) {
+            throw new BusinessRuleException("Devi schierare esattamente " + NUMERO_TITOLARI + " titolari diversi");
+        }
+
+        Set<LecPlayer> players = new HashSet<>();
+        for (Long playerId : playerIds) {
+            if (!rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(fantaTeamId, playerId)) {
+                throw new BusinessRuleException(
+                        "Il player con id " + playerId + " non appartiene alla rosa di questa squadra");
+            }
+            players.add(lecPlayerRepository.findById(playerId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Player LEC non trovato con id: " + playerId)));
+        }
+        if (players.stream().map(LecPlayer::getRuolo).distinct().count() != NUMERO_TITOLARI) {
+            throw new BusinessRuleException(
+                    "La formazione deve contenere un player per ruolo: TOP, JUNGLE, MID, ADC e SUPPORT");
+        }
+
+        effectiveLineupService.schedule(username, fantaTeamId, players);
+        return lineupResponse(fantaTeam, players);
     }
 
     @Transactional
@@ -179,6 +228,24 @@ public class FormationService {
                 .orElseGet(Set::of).stream().toList();
         return FormationResponse.from(formation, scores, status.editable() && !fixedRoster,
                 status.nextEffectiveAt(), effectivePlayers);
+    }
+
+    private LineupResponse lineupResponse(FantaTeam fantaTeam, Set<LecPlayer> selectedPlayers) {
+        Instant now = clock.instant();
+        LineupWindow.Status status = lineupWindow.status(now);
+        boolean fixedRoster = fantaTeam.getLeague().getParticipantCount() != null
+                && fantaTeam.getLeague().getParticipantCount() >= 6;
+        Set<LecPlayer> effectivePlayers = Optional.ofNullable(
+                effectiveLineupService.activePlayersAt(fantaTeam.getId(), now)).orElseGet(Set::of);
+        return new LineupResponse(lineupPlayers(selectedPlayers), lineupPlayers(effectivePlayers),
+                status.editable() && !fixedRoster, status.nextEffectiveAt());
+    }
+
+    private List<FormationPlayerResponse> lineupPlayers(Set<LecPlayer> players) {
+        return players.stream()
+                .map(player -> new FormationPlayerResponse(
+                        player.getId(), player.getNickname(), player.getRuolo(), 0.0))
+                .toList();
     }
 
     private void verifyCanManage(String username, FantaTeam fantaTeam) {

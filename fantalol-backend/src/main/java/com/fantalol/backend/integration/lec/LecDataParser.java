@@ -40,6 +40,7 @@ public class LecDataParser {
     ) {
         List<LecDataSnapshot.Standing> standings = parseStandings(pandaMatches);
         List<PlayerRow> rows = persistedStats.stream()
+                .filter(ProviderPlayerGameStat::isCurrentSourceVersion)
                 .filter(this::participated)
                 .filter(stat -> stat.getProviderGame() != null && stat.getProviderGame().getPlayedAt() != null)
                 .map(this::persistedRow)

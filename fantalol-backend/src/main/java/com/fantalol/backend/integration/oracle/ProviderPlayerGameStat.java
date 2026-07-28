@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "provider_player_game_stats", uniqueConstraints = {
@@ -116,4 +117,9 @@ public class ProviderPlayerGameStat {
 
     @Column(name = "overridden_at")
     private Instant overriddenAt;
+
+    public boolean isCurrentSourceVersion() {
+        return providerGame != null
+                && Objects.equals(sourceFingerprint, providerGame.getSourceFingerprint());
+    }
 }

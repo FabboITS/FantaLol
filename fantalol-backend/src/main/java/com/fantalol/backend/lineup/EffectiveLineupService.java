@@ -44,6 +44,13 @@ public class EffectiveLineupService {
         return periodRepository.findActiveByFantaTeamIdAndRole(fantaTeamId, role, playedAt);
     }
 
+    @Transactional(readOnly = true)
+    public Set<LecPlayer> scheduledPlayers(Long fantaTeamId) {
+        return periodRepository.findByFantaTeamIdAndEffectiveUntilIsNull(fantaTeamId).stream()
+                .map(EffectiveLineupPeriod::getLecPlayer)
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
     @Transactional
     public void schedule(String username, Long fantaTeamId, Set<LecPlayer> players) {
         FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)

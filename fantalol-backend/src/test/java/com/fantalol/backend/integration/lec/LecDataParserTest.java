@@ -1,8 +1,15 @@
 package com.fantalol.backend.integration.lec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fantalol.backend.integration.oracle.ProviderGame;
+import com.fantalol.backend.integration.oracle.ProviderPlayerGameStat;
 import com.fantalol.backend.scoring.GameScoreCalculator;
+import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.PlayerRole;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,5 +59,57 @@ class LecDataParserTest {
         LecDataSnapshot snapshot = parser.parse(objectMapper.readTree("[]"), csv, "LEC", "Summer");
 
         assertThat(snapshot.performances().get(0).fantasyAverage()).isEqualTo(1.0);
+    }
+
+    @Test
+    void persistedProjectionIncludesCurrentCorrectionAndExcludesStaleSourceVersion() {
+        ProviderPlayerGameStat current = persistedStat("Current", "current", "current");
+        current.setRawParticipated(false);
+        current.setCorrectedParticipated(true);
+        ProviderPlayerGameStat stale = persistedStat("Former", "former", "current");
+        stale.setCorrectedParticipated(true);
+
+        LecDataSnapshot snapshot = parser.project(
+                objectMapper.createArrayNode(),
+                List.of(current, stale),
+                "fresh",
+                Instant.parse("2026-07-28T12:00:00Z"));
+
+        assertThat(snapshot.performances())
+                .extracting(LecDataSnapshot.PlayerPerformance::nickname)
+                .containsExactly("Current");
+        assertThat(snapshot.matches()).singleElement()
+                .satisfies(match -> assertThat(match.games().get(0).players())
+                        .extracting(LecDataSnapshot.GamePlayer::nickname)
+                        .containsExactly("Current"));
+    }
+
+    private static ProviderPlayerGameStat persistedStat(
+            String nickname,
+            String statFingerprint,
+            String gameFingerprint
+    ) {
+        return ProviderPlayerGameStat.builder()
+                .providerGame(ProviderGame.builder()
+                        .externalGameId("GAME-1")
+                        .playedAt(Instant.parse("2026-07-28T09:00:00Z"))
+                        .sourceFingerprint(gameFingerprint)
+                        .build())
+                .lecPlayer(LecPlayer.builder().id((long) nickname.hashCode()).nickname(nickname)
+                        .ruolo(PlayerRole.MID).build())
+                .sourceNickname(nickname)
+                .sourceTeamName("G2 Esports")
+                .sourceRole(PlayerRole.MID)
+                .sourceChampion("Azir")
+                .sourceFingerprint(statFingerprint)
+                .rawParticipated(true)
+                .rawKills(4)
+                .rawDeaths(2)
+                .rawAssists(6)
+                .rawCs(250)
+                .rawVisionScore(20)
+                .rawWin(true)
+                .fantasyScore(25.0)
+                .build();
     }
 }

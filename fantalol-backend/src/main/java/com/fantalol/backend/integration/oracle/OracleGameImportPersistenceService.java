@@ -90,7 +90,7 @@ class OracleGameImportPersistenceService {
             existingStatsByPlayer.put(stat.getLecPlayer().getId(), stat);
         }
         for (ResolvedRow row : resolvedRows) {
-            ProviderPlayerGameStat stat = existingStatsByPlayer.get(row.player().getId());
+            ProviderPlayerGameStat stat = existingStatsByPlayer.remove(row.player().getId());
             if (stat == null) {
                 playerGameStatRepository.save(newProviderStat(game, row, batch.sourceFingerprint()));
                 continue;
@@ -101,7 +101,14 @@ class OracleGameImportPersistenceService {
             }
             playerGameStatRepository.save(stat);
         }
+        existingStatsByPlayer.values().forEach(this::removeMissingProviderStat);
         counts.updatedGames++;
+    }
+
+    private void removeMissingProviderStat(ProviderPlayerGameStat stat) {
+        if (!stat.isOverridden()) {
+            playerGameStatRepository.delete(stat);
+        }
     }
 
     private List<ResolvedRow> resolveRows(List<OraclePlayerGameRow> rows, Set<String> unmatchedPlayers) {

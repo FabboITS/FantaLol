@@ -9,6 +9,8 @@ import com.fantalol.backend.lineup.EffectiveLineupService;
 import com.fantalol.backend.lineup.LineupWindow;
 import com.fantalol.backend.matchday.dto.FormationRequest;
 import com.fantalol.backend.matchday.dto.FormationResponse;
+import com.fantalol.backend.matchday.dto.LineupRequest;
+import com.fantalol.backend.matchday.dto.LineupResponse;
 import com.fantalol.backend.matchday.dto.LineupWindowResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
@@ -236,5 +238,117 @@ class FormationServiceTest {
         assertThatThrownBy(() -> formationService.lineupWindow("intruso", 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Non sei il proprietario");
+    }
+
+    @Test
+    void schedulesALineupWithoutLookingUpOrPersistingAMatchdayFormation() {
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        Instant effectiveAt = Instant.parse("2026-07-30T22:00:00Z");
+        List<LecPlayer> selected = validPlayers(20L, "Nuovo");
+        List<LecPlayer> effective = validPlayers(10L, "Attivo");
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(true, effectiveAt, "open"));
+        when(effectiveLineupService.activePlayersAt(1L, now)).thenReturn(Set.copyOf(effective));
+        for (LecPlayer player : selected) {
+            when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, player.getId())).thenReturn(true);
+            when(lecPlayerRepository.findById(player.getId())).thenReturn(Optional.of(player));
+        }
+
+        LineupResponse response = formationService.scheduleLineup(
+                "mago", 1L, new LineupRequest(selected.stream().map(LecPlayer::getId).toList()));
+
+        assertThat(response.players()).extracting(player -> player.nickname())
+                .containsExactlyInAnyOrderElementsOf(selected.stream().map(LecPlayer::getNickname).toList());
+        assertThat(response.effectivePlayers()).extracting(player -> player.nickname())
+                .containsExactlyInAnyOrderElementsOf(effective.stream().map(LecPlayer::getNickname).toList());
+        assertThat(response.nextEffectiveAt()).isEqualTo(effectiveAt);
+        verify(effectiveLineupService).schedule("mago", 1L, Set.copyOf(selected));
+        verifyNoInteractions(matchdayRepository, formationRepository);
+    }
+
+    @Test
+    void returnsTheScheduledSelectionAndCurrentEffectivePlayersSeparately() {
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        Instant effectiveAt = Instant.parse("2026-07-30T22:00:00Z");
+        Set<LecPlayer> scheduled = Set.copyOf(validPlayers(20L, "Nuovo"));
+        Set<LecPlayer> effective = Set.copyOf(validPlayers(10L, "Attivo"));
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(true, effectiveAt, "open"));
+        when(effectiveLineupService.scheduledPlayers(1L)).thenReturn(scheduled);
+        when(effectiveLineupService.activePlayersAt(1L, now)).thenReturn(effective);
+
+        LineupResponse response = formationService.findLineup("mago", 1L);
+
+        assertThat(response.players()).extracting(player -> player.nickname())
+                .containsExactlyInAnyOrderElementsOf(scheduled.stream().map(LecPlayer::getNickname).toList());
+        assertThat(response.effectivePlayers()).extracting(player -> player.nickname())
+                .containsExactlyInAnyOrderElementsOf(effective.stream().map(LecPlayer::getNickname).toList());
+        assertThat(response.editable()).isTrue();
+        assertThat(response.nextEffectiveAt()).isEqualTo(effectiveAt);
+    }
+
+    @Test
+    void rejectsAMatchdayIndependentLineupContainingAPlayerOutsideTheRoster() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, 20L)).thenReturn(false);
+
+        assertThatThrownBy(() -> formationService.scheduleLineup(
+                "mago", 1L, new LineupRequest(List.of(20L, 21L, 22L, 23L, 24L))))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("non appartiene alla rosa");
+
+        verify(effectiveLineupService, never()).schedule(anyString(), anyLong(), anySet());
+    }
+
+    @Test
+    void rejectsAMatchdayIndependentLineupWithoutOnePlayerPerRole() {
+        List<LecPlayer> selected = java.util.stream.LongStream.range(20L, 25L)
+                .mapToObj(id -> LecPlayer.builder().id(id).nickname("Top " + id).ruolo(PlayerRole.TOP).build())
+                .toList();
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        for (LecPlayer player : selected) {
+            when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, player.getId())).thenReturn(true);
+            when(lecPlayerRepository.findById(player.getId())).thenReturn(Optional.of(player));
+        }
+
+        assertThatThrownBy(() -> formationService.scheduleLineup(
+                "mago", 1L, new LineupRequest(selected.stream().map(LecPlayer::getId).toList())))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("un player per ruolo");
+
+        verify(effectiveLineupService, never()).schedule(anyString(), anyLong(), anySet());
+    }
+
+    @Test
+    void allowsAnAdminToScheduleAnotherManagersLineup() {
+        List<LecPlayer> selected = validPlayers(20L, "Admin");
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(userService.findByUsernameOrThrow("admin"))
+                .thenReturn(User.builder().username("admin").role(com.fantalol.backend.user.Role.ADMIN).build());
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(
+                new LineupWindow.Status(true, Instant.parse("2026-07-30T22:00:00Z"), "open"));
+        when(effectiveLineupService.activePlayersAt(1L, now)).thenReturn(Set.of());
+        for (LecPlayer player : selected) {
+            when(rosterEntryRepository.existsByFantaTeamIdAndLecPlayerId(1L, player.getId())).thenReturn(true);
+            when(lecPlayerRepository.findById(player.getId())).thenReturn(Optional.of(player));
+        }
+
+        formationService.scheduleLineup(
+                "admin", 1L, new LineupRequest(selected.stream().map(LecPlayer::getId).toList()));
+
+        verify(effectiveLineupService).schedule("admin", 1L, Set.copyOf(selected));
+    }
+
+    private List<LecPlayer> validPlayers(long firstId, String prefix) {
+        return List.of(
+                LecPlayer.builder().id(firstId).nickname(prefix + " Top").ruolo(PlayerRole.TOP).build(),
+                LecPlayer.builder().id(firstId + 1).nickname(prefix + " Jungle").ruolo(PlayerRole.JUNGLE).build(),
+                LecPlayer.builder().id(firstId + 2).nickname(prefix + " Mid").ruolo(PlayerRole.MID).build(),
+                LecPlayer.builder().id(firstId + 3).nickname(prefix + " Adc").ruolo(PlayerRole.ADC).build(),
+                LecPlayer.builder().id(firstId + 4).nickname(prefix + " Support").ruolo(PlayerRole.SUPPORT).build());
     }
 }

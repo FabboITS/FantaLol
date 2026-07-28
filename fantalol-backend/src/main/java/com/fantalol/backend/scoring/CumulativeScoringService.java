@@ -102,6 +102,7 @@ public class CumulativeScoringService {
 
     private List<ProviderPlayerGameStat> observations() {
         return statRepository.findAllByOrderByProviderGamePlayedAtAsc().stream()
+                .filter(ProviderPlayerGameStat::isCurrentSourceVersion)
                 .filter(this::participated)
                 .filter(stat -> stat.getProviderGame() != null && stat.getProviderGame().getPlayedAt() != null)
                 .toList();

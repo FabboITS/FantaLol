@@ -54,7 +54,11 @@ public class OracleGameImportService {
     public OracleImportSummary importCsv(String csv, String league, String split) {
         try {
             OracleImportSummary summary = importCsvOrThrow(csv, league, split);
-            recordOracleSuccess(summary);
+            if (summary.isSuccessfulImport()) {
+                recordOracleSuccess(summary);
+            } else {
+                recordOracleFailure(summary);
+            }
             return summary;
         } catch (RuntimeException exception) {
             recordOracleFailure(exception);
@@ -70,10 +74,6 @@ public class OracleGameImportService {
         } finally {
             IMPORT_LOCK.unlock();
         }
-    }
-
-    public void recordOracleSuccess() {
-        recordOracleSuccess(new OracleImportSummary(0, 0, 0, 0, List.of()));
     }
 
     public void recordOracleSuccess(OracleImportSummary summary) {
@@ -104,6 +104,20 @@ public class OracleGameImportService {
         state.setSkippedGames(0);
         state.setFailedGames(1);
         state.setUnmatchedPlayers("[]");
+        providerSyncStateRepository.save(state);
+    }
+
+    public void recordOracleFailure(OracleImportSummary summary) {
+        ProviderSyncState state = providerSyncStateRepository.findByProvider(ORACLE_PROVIDER)
+                .orElseGet(() -> ProviderSyncState.builder().provider(ORACLE_PROVIDER).build());
+        state.setStatus(FAILED);
+        state.setLastAttemptAt(Instant.now());
+        state.setLastError(summary.failureMessage());
+        state.setInsertedGames(summary.insertedGames());
+        state.setUpdatedGames(summary.updatedGames());
+        state.setSkippedGames(summary.skippedGames());
+        state.setFailedGames(summary.diagnosticFailedGames());
+        state.setUnmatchedPlayers(jsonArray(summary.unmatchedPlayers()));
         providerSyncStateRepository.save(state);
     }
 

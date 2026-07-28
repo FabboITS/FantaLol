@@ -68,6 +68,20 @@ public class ProviderSyncStateService {
         repository.save(state);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordOracleFailure(OracleImportSummary summary) {
+        ProviderSyncState state = state(ProviderGame.ORACLES_ELIXIR);
+        state.setStatus(FAILED);
+        state.setLastAttemptAt(clock.instant());
+        state.setLastError(summary.failureMessage());
+        state.setInsertedGames(summary.insertedGames());
+        state.setUpdatedGames(summary.updatedGames());
+        state.setSkippedGames(summary.skippedGames());
+        state.setFailedGames(summary.diagnosticFailedGames());
+        state.setUnmatchedPlayers(writeUnmatchedPlayers(summary.unmatchedPlayers()));
+        repository.save(state);
+    }
+
     @Transactional(readOnly = true)
     public List<ProviderSyncState> all() {
         return repository.findAll();

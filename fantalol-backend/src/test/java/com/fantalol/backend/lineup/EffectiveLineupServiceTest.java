@@ -134,6 +134,18 @@ class EffectiveLineupServiceTest {
                 .contains(period);
     }
 
+    @Test
+    void returnsTheOpenScheduledSelectionBeforeItBecomesEffective() {
+        Instant friday = Instant.parse("2026-07-30T22:00:00Z");
+        List<EffectiveLineupPeriod> pending = players.stream()
+                .map(player -> EffectiveLineupPeriod.builder().fantaTeam(fantaTeam).role(player.getRuolo())
+                        .lecPlayer(player).effectiveFrom(friday).origin(LineupPeriodOrigin.USER).build())
+                .toList();
+        when(periodRepository.findByFantaTeamIdAndEffectiveUntilIsNull(7L)).thenReturn(pending);
+
+        assertThat(service.scheduledPlayers(7L)).containsExactlyInAnyOrderElementsOf(players);
+    }
+
     private LecPlayer player(Long id, PlayerRole role) {
         return LecPlayer.builder().id(id).nickname(role.name()).ruolo(role).build();
     }

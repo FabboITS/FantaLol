@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +45,7 @@ class OracleGameImportServiceTest {
 
     @BeforeEach
     void setUp() {
-        for (int index = 1; index <= 10; index++) {
+        for (int index = 1; index <= 11; index++) {
             LecPlayer player = LecPlayer.builder()
                     .id((long) index)
                     .oraclePlayerId("player-" + index)
@@ -80,6 +81,11 @@ class OracleGameImportServiceTest {
             stats.put(stat.getId(), stat);
             return stat;
         });
+        doAnswer(invocation -> {
+            ProviderPlayerGameStat stat = invocation.getArgument(0);
+            stats.remove(stat.getId());
+            return null;
+        }).when(playerGameStatRepository).delete(any(ProviderPlayerGameStat.class));
         when(providerSyncStateRepository.findByProvider(any()))
                 .thenAnswer(invocation -> Optional.ofNullable(syncStates.get(invocation.getArgument(0))));
         when(providerSyncStateRepository.save(any(ProviderSyncState.class))).thenAnswer(invocation -> {
@@ -164,6 +170,58 @@ class OracleGameImportServiceTest {
     }
 
     @Test
+    void replacesAFormerParticipantWithoutLeavingItsProviderStatActive() {
+        service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
+
+        service.importCsv(csv(replaceFirstPlayer(rows("GAME-1", "Player 1", 4), "player-11", "Player 11")),
+                "LEC", "Summer");
+
+        assertThat(stats.values()).hasSize(10);
+        assertThat(stats.values()).extracting(stat -> stat.getLecPlayer().getId())
+                .containsExactlyInAnyOrder(2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L);
+    }
+
+    @Test
+    void preservesAnOverrideAsAnInactiveAuditRowWhenTheProviderRemovesItsParticipant() {
+        service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
+        ProviderPlayerGameStat overridden = stats.values().stream()
+                .filter(stat -> stat.getLecPlayer().getId().equals(1L))
+                .findFirst()
+                .orElseThrow();
+        overridden.setOverridden(true);
+        overridden.setCorrectedParticipated(true);
+        overridden.setCorrectedKills(2);
+        overridden.setOverrideActor("admin");
+        overridden.setOverriddenAt(Instant.parse("2026-07-28T10:00:00Z"));
+        overridden.setFantasyScore(12.0);
+        String initialFingerprint = overridden.getSourceFingerprint();
+
+        service.importCsv(csv(replaceFirstPlayer(rows("GAME-1", "Player 1", 4), "player-11", "Player 11")),
+                "LEC", "Summer");
+        String replacementFingerprint = overridden.getProviderGame().getSourceFingerprint();
+
+        assertThat(overridden)
+                .extracting(
+                        ProviderPlayerGameStat::isRawParticipated,
+                        ProviderPlayerGameStat::isOverridden,
+                        ProviderPlayerGameStat::getCorrectedParticipated,
+                        ProviderPlayerGameStat::getCorrectedKills,
+                        ProviderPlayerGameStat::getOverrideActor,
+                        ProviderPlayerGameStat::getOverriddenAt,
+                        ProviderPlayerGameStat::getRawKills,
+                        ProviderPlayerGameStat::getFantasyScore,
+                        ProviderPlayerGameStat::getSourceFingerprint,
+                        stat -> stat.getProviderGame().getSourceFingerprint())
+                .containsExactly(true, true, true, 2, "admin",
+                        Instant.parse("2026-07-28T10:00:00Z"), 4, 12.0,
+                        initialFingerprint, replacementFingerprint);
+        assertThat(stats.values())
+                .filteredOn(stat -> stat.getSourceFingerprint()
+                        .equals(stat.getProviderGame().getSourceFingerprint()))
+                .hasSize(10);
+    }
+
+    @Test
     void recordsOracleSuccessWithoutChangingPandaScoreState() {
         ProviderSyncState pandaState = ProviderSyncState.builder()
                 .provider("PANDASCORE")
@@ -198,6 +256,63 @@ class OracleGameImportServiceTest {
                 .extracting(ProviderSyncState::getStatus, ProviderSyncState::getLastError)
                 .containsExactly("FAILED", "Oracle unavailable");
         assertThat(syncStates.get("PANDASCORE")).isSameAs(pandaState);
+    }
+
+    @Test
+    void emptyInputMarksOracleFailedWithoutReplacingLastKnownGoodGames() {
+        service.importCsv(csv(rows("GAME-1", "Player 1", 4)), "LEC", "Summer");
+        Instant lastSuccessAt = syncStates.get(ProviderGame.ORACLES_ELIXIR).getLastSuccessAt();
+
+        OracleImportSummary result = service.importCsv("", "LEC", "Summer");
+
+        assertThat(result).extracting(
+                        OracleImportSummary::insertedGames,
+                        OracleImportSummary::updatedGames,
+                        OracleImportSummary::skippedGames,
+                        OracleImportSummary::failedGames)
+                .containsExactly(0, 0, 0, 0);
+        assertThat(syncStates.get(ProviderGame.ORACLES_ELIXIR))
+                .extracting(
+                        ProviderSyncState::getStatus,
+                        ProviderSyncState::getLastSuccessAt,
+                        ProviderSyncState::getFailedGames,
+                        ProviderSyncState::getLastError)
+                .containsExactly(
+                        "FAILED",
+                        lastSuccessAt,
+                        1,
+                        "Oracle import contained no usable complete LEC Summer games");
+        assertThat(games).hasSize(1);
+        assertThat(stats.values())
+                .filteredOn(stat -> stat.getSourceFingerprint()
+                        .equals(stat.getProviderGame().getSourceFingerprint()))
+                .hasSize(10);
+    }
+
+    @Test
+    void partialImportKeepsAcceptedGameButMarksOracleFailedWithUnmatchedDiagnostics() {
+        List<String> mixedRows = new ArrayList<>(rows("GAME-1", "Player 1", 4));
+        mixedRows.addAll(rows("GAME-2", "Unresolved", 4));
+
+        OracleImportSummary result = service.importCsv(csv(mixedRows), "LEC", "Summer");
+
+        assertThat(result).extracting(
+                        OracleImportSummary::insertedGames,
+                        OracleImportSummary::failedGames,
+                        OracleImportSummary::unmatchedPlayers)
+                .containsExactly(1, 1, List.of("Unresolved"));
+        assertThat(syncStates.get(ProviderGame.ORACLES_ELIXIR))
+                .extracting(
+                        ProviderSyncState::getStatus,
+                        ProviderSyncState::getInsertedGames,
+                        ProviderSyncState::getFailedGames,
+                        ProviderSyncState::getUnmatchedPlayers)
+                .containsExactly("FAILED", 1, 1, "[\"Unresolved\"]");
+        assertThat(games).containsOnlyKeys("GAME-1");
+        assertThat(stats.values())
+                .filteredOn(stat -> stat.getSourceFingerprint()
+                        .equals(stat.getProviderGame().getSourceFingerprint()))
+                .hasSize(10);
     }
 
     @Test
@@ -275,5 +390,16 @@ class OracleGameImportServiceTest {
                     String.valueOf(100 + index), String.valueOf(10 + index), index <= 5 ? "1" : "0"));
         }
         return rows;
+    }
+
+    private static List<String> replaceFirstPlayer(
+            List<String> originalRows,
+            String externalPlayerId,
+            String nickname
+    ) {
+        List<String> replaced = new ArrayList<>(originalRows);
+        replaced.set(0, replaced.get(0)
+                .replace(",player-1,Player 1,", "," + externalPlayerId + "," + nickname + ","));
+        return replaced;
     }
 }

@@ -267,6 +267,6 @@ public class FantaTeamService {
     }
 
     private FantaTeamResponse response(FantaTeam team) {
-        return FantaTeamResponse.from(team, cumulativeScoringService.teamScore(team.getId()).overallAverage());
+        return FantaTeamResponse.from(team);
     }
 }

@@ -186,7 +186,7 @@ class FantaTeamServiceTest {
 
         assertThat(response.id()).isEqualTo(1L);
         verify(leagueService).findById("mago", 1L);
-        verify(cumulativeScoringService).teamScore(1L);
+        verify(cumulativeScoringService, never()).teamScore(1L);
     }
 
     @Test
@@ -201,13 +201,13 @@ class FantaTeamServiceTest {
     }
 
     @Test
-    void memberCanReadLeagueTeamsOnlyAfterLeagueVisibilityIsChecked() {
+    void memberCanReadLeagueTeamsWithoutCalculatingCumulativeScores() {
         when(fantaTeamRepository.findByLeagueId(1L)).thenReturn(List.of(fantaTeam));
 
         var response = fantaTeamService.findByLeague("mago", 1L);
 
         assertThat(response).extracting(team -> team.id()).containsExactly(1L);
         verify(leagueService).findById("mago", 1L);
-        verify(cumulativeScoringService).teamScore(1L);
+        verify(cumulativeScoringService, never()).teamScore(1L);
     }
 }

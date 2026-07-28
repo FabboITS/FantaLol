@@ -171,6 +171,38 @@ class LecSynchronizationServiceTest {
     }
 
     @Test
+    void partiallyRejectedOracleBatchMakesFreshnessStaleAndKeepsLastSuccess() throws Exception {
+        Instant lastOracleSuccess = NOW.minusSeconds(7200);
+        states.put(LecSynchronizationService.ORACLES_ELIXIR, ProviderSyncState.builder()
+                .provider(LecSynchronizationService.ORACLES_ELIXIR)
+                .status("SUCCESS")
+                .lastAttemptAt(lastOracleSuccess)
+                .lastSuccessAt(lastOracleSuccess)
+                .build());
+        when(pandaScoreClient.getTournamentMatches(42L)).thenReturn(objectMapper.readTree("[]"));
+        when(oracleElixirClient.download()).thenReturn("oracle-csv");
+        when(oracleImportService.importCsvOrThrow("oracle-csv", "LEC", "Summer"))
+                .thenReturn(new OracleImportSummary(1, 0, 0, 1, List.of("Unresolved")));
+
+        service.synchronize(SyncTrigger.MANUAL);
+
+        ProviderSyncState oracle = states.get(LecSynchronizationService.ORACLES_ELIXIR);
+        assertThat(oracle)
+                .extracting(
+                        ProviderSyncState::getStatus,
+                        ProviderSyncState::getLastSuccessAt,
+                        ProviderSyncState::getInsertedGames,
+                        ProviderSyncState::getFailedGames)
+                .containsExactly("FAILED", lastOracleSuccess, 1, 1);
+        assertThat(service.status())
+                .extracting(
+                        LecSyncStatusResponse::status,
+                        LecSyncStatusResponse::provisional,
+                        LecSyncStatusResponse::unmatchedPlayers)
+                .containsExactly("stale", false, List.of("Unresolved"));
+    }
+
+    @Test
     void concurrentTriggersSerializeBackfillAndOracleImport() throws Exception {
         when(pandaScoreClient.getTournamentMatches(42L)).thenReturn(objectMapper.readTree("[]"));
         when(oracleElixirClient.download()).thenReturn("oracle-csv");

@@ -10,8 +10,21 @@ test('league page runs synchronization and countdown independently across every 
   assert.match(script, /function startPageSynchronization\(/);
   assert.match(script, /function synchronizeLeaguePage\(/);
   assert.match(script, /function startCountdown\(/);
-  assert.match(script, /startPageSynchronization\(\);startCountdown\(\)/);
+  assert.match(script, /startPageSynchronization\(\);startCumulativeRefresh\(\);startCountdown\(\)/);
   assert.doesNotMatch(script, /if\(section==='auction'\)startAuctionPolling/);
+});
+
+test('auction polling keeps cumulative scoring on a dedicated low-frequency refresh', () => {
+  assert.match(script, /function startCumulativeRefresh\(/);
+  assert.match(script, /setInterval\(refreshCumulativeData,90000\)/);
+  assert.match(script, /function refreshCumulativeData\(/);
+  assert.match(script, /LecDataSource\.loadCumulativePerformances\(api\)/);
+  assert.match(script, /LecDataSource\.loadCumulativeRanking\(api,state\.leagueId\)/);
+  const pollStart = script.indexOf('async function synchronizeLeaguePage()');
+  const pollEnd = script.indexOf('function renderDashboardState()');
+  assert.ok(pollStart >= 0 && pollEnd > pollStart);
+  assert.doesNotMatch(script.slice(pollStart, pollEnd), /loadCumulative|refreshCumulativeData/);
+  assert.match(script, /catch\(error\)\{if\(!state\.cumulativeRefreshErrorNotified\)\{toast\(`Fonte non disponibile: \$\{error\.message\}`,true\);state\.cumulativeRefreshErrorNotified=true\}\}finally\{state\.cumulativeRefreshPending=false\}/);
 });
 
 test('live auction protects custom bids and hides reraises from the current leader', () => {
@@ -33,9 +46,20 @@ test('live auction renders synchronized participant credit balances', () => {
 test('formation save remains visible in the dialog and can return to editing', () => {
   assert.match(page, /id="edit-formation-button"/);
   assert.match(script, /function renderFormationSummary\(/);
-  assert.match(script, /state\.currentFormation=await api/);
-  assert.doesNotMatch(script, /state\.currentFormation=await api[\s\S]{0,300}formation-dialog'\)\.close/);
+  assert.match(script, /state\.currentLineup=await LineupUi\.saveLineup/);
+  assert.doesNotMatch(script, /LineupUi\.saveLineup[\s\S]{0,300}formation-dialog'\)\.close/);
   assert.match(script, /synchronizeLeaguePage\(\)/);
+});
+
+test('weekly lineup controls and pending status are independent from matchdays', () => {
+  assert.doesNotMatch(page, /name="matchdayId"/);
+  assert.match(page, /\/js\/lineup-ui\.js/);
+  assert.match(script, /\/formazioni\/lineup/);
+  assert.match(script, /rosterButton\.classList\.toggle\('hidden',!state\.activeTeam\|\|state\.activeTeam\.rosa\.length<5\|\|state\.league\.auctionOpen\)/);
+  assert.doesNotMatch(script, /rosa\.length<5\|\|!state\.matchdays\.length/);
+  assert.match(script, /LineupUi\.lineupViewModel\(lineup\)/);
+  assert.match(script, /ATTIVA ORA/);
+  assert.match(script, /SALVATA · ATTIVA DA/);
 });
 
 test('LEC views render standings, fantasy averages and selectable per-game statistics', () => {

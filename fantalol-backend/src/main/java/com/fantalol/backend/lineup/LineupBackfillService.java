@@ -5,7 +5,9 @@ import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.RosterEntryRepository;
 import com.fantalol.backend.matchday.Formation;
 import com.fantalol.backend.matchday.FormationRepository;
+import com.fantalol.backend.matchday.FormationSource;
 import com.fantalol.backend.team.LecPlayer;
+import com.fantalol.backend.team.PlayerRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +47,23 @@ public class LineupBackfillService {
                     .map(entry -> entry.getLecPlayer())
                     .collect(java.util.stream.Collectors.toSet()));
         }
-        return formationRepository.findFirstByFantaTeamIdOrderByMatchdayNumeroDesc(fantaTeam.getId())
-                .map(Formation::getTitolari);
+        return formationRepository.findByFantaTeamIdOrderByMatchdayNumeroDesc(fantaTeam.getId()).stream()
+                .filter(this::isValidSubmittedFormation)
+                .map(Formation::getTitolari)
+                .findFirst();
+    }
+
+    private boolean isValidSubmittedFormation(Formation formation) {
+        if (formation.getSource() != FormationSource.SUBMITTED && formation.getSource() != FormationSource.CARRIED) {
+            return false;
+        }
+        Set<LecPlayer> players = formation.getTitolari();
+        if (players == null || players.size() != PlayerRole.values().length
+                || players.stream().map(LecPlayer::getId).distinct().count() != PlayerRole.values().length) {
+            return false;
+        }
+        Set<PlayerRole> roles = players.stream().map(LecPlayer::getRuolo)
+                .collect(java.util.stream.Collectors.toSet());
+        return roles.equals(java.util.EnumSet.allOf(PlayerRole.class));
     }
 }

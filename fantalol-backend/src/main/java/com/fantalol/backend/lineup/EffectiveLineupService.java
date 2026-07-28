@@ -73,9 +73,19 @@ public class EffectiveLineupService {
 
     private void replaceOpenPeriods(FantaTeam fantaTeam, Set<LecPlayer> players, Instant effectiveFrom,
                                     LineupPeriodOrigin origin) {
-        List<EffectiveLineupPeriod> changed = new ArrayList<>(
-                periodRepository.findByFantaTeamIdAndEffectiveUntilIsNull(fantaTeam.getId()));
-        changed.forEach(period -> period.setEffectiveUntil(effectiveFrom));
+        List<EffectiveLineupPeriod> openPeriods = periodRepository
+                .findByFantaTeamIdAndEffectiveUntilIsNull(fantaTeam.getId());
+        List<EffectiveLineupPeriod> pendingPeriods = openPeriods.stream()
+                .filter(period -> !period.getEffectiveFrom().isBefore(effectiveFrom))
+                .toList();
+        if (!pendingPeriods.isEmpty()) {
+            periodRepository.deleteAll(pendingPeriods);
+            periodRepository.flush();
+        }
+        List<EffectiveLineupPeriod> changed = new ArrayList<>(openPeriods.stream()
+                .filter(period -> period.getEffectiveFrom().isBefore(effectiveFrom))
+                .toList());
+        changed.forEach(period -> period.closeAt(effectiveFrom));
         changed.addAll(newPeriods(fantaTeam, players, effectiveFrom, origin));
         periodRepository.saveAll(changed);
     }

@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Instant;
 
@@ -30,7 +29,6 @@ import java.time.Instant;
         uniqueConstraints = @UniqueConstraint(columnNames = {"fanta_team_id", "role", "effective_from"}),
         indexes = @Index(name = "idx_lineup_period_active", columnList = "fanta_team_id,role,effective_from"))
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -41,15 +39,15 @@ public class EffectiveLineupPeriod {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "fanta_team_id", nullable = false)
+    @JoinColumn(name = "fanta_team_id", nullable = false, updatable = false)
     private FantaTeam fantaTeam;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, updatable = false)
     private PlayerRole role;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "lec_player_id", nullable = false)
+    @JoinColumn(name = "lec_player_id", nullable = false, updatable = false)
     private LecPlayer lecPlayer;
 
     @Column(name = "effective_from", nullable = false, updatable = false)
@@ -70,5 +68,9 @@ public class EffectiveLineupPeriod {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
+    }
+
+    void closeAt(Instant effectiveUntil) {
+        this.effectiveUntil = effectiveUntil;
     }
 }

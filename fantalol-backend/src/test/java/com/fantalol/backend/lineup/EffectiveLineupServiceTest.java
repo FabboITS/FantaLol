@@ -26,6 +26,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +76,27 @@ class EffectiveLineupServiceTest {
         assertThat(savedPeriods.getValue()).filteredOn(period -> period.getEffectiveFrom().equals(friday))
                 .hasSize(5)
                 .allSatisfy(period -> assertThat(period.getOrigin()).isEqualTo(LineupPeriodOrigin.USER));
+    }
+
+    @Test
+    void replacesPendingFridayPeriodsWhenTheLineupIsSavedAgainBeforeFriday() {
+        Instant friday = Instant.parse("2026-07-30T22:00:00Z");
+        List<EffectiveLineupPeriod> pending = players.stream()
+                .map(player -> EffectiveLineupPeriod.builder().fantaTeam(fantaTeam).role(player.getRuolo())
+                        .lecPlayer(player).effectiveFrom(friday).origin(LineupPeriodOrigin.USER).build())
+                .toList();
+        when(fantaTeamRepository.findById(7L)).thenReturn(Optional.of(fantaTeam));
+        when(periodRepository.findByFantaTeamIdAndEffectiveUntilIsNull(7L)).thenReturn(pending);
+        when(periodRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.schedule("mago", 7L, players);
+
+        verify(periodRepository).deleteAll(pending);
+        verify(periodRepository).flush();
+        verify(periodRepository).saveAll(savedPeriods.capture());
+        assertThat(pending).allSatisfy(period -> assertThat(period.getEffectiveUntil()).isNull());
+        assertThat(savedPeriods.getValue()).hasSize(5)
+                .allSatisfy(period -> assertThat(period.getEffectiveFrom()).isEqualTo(friday));
     }
 
     @Test

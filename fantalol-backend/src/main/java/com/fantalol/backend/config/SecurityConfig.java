@@ -78,6 +78,7 @@ public class SecurityConfig {
 
                         // Consultazione pubblica dell'anagrafica LEC (team e player) e delle giornate
                         .requestMatchers(HttpMethod.GET, "/api/teams/**", "/api/players/**", "/api/matchdays/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/lec/cumulative-performances").permitAll()
 
                         // Scrittura sull'anagrafica LEC: solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/teams/**", "/api/players/**").hasRole("ADMIN")

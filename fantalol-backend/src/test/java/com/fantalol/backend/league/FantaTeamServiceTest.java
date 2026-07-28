@@ -7,6 +7,8 @@ import com.fantalol.backend.league.dto.RosterEntryResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.PlayerRole;
+import com.fantalol.backend.scoring.CumulativeScoringService;
+import com.fantalol.backend.scoring.dto.CumulativeFantasyTeamScore;
 import com.fantalol.backend.user.User;
 import com.fantalol.backend.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,8 @@ class FantaTeamServiceTest {
     private LecPlayerRepository lecPlayerRepository;
     @Mock
     private RosterPolicy rosterPolicy;
+    @Mock
+    private CumulativeScoringService cumulativeScoringService;
 
     @InjectMocks
     private FantaTeamService fantaTeamService;
@@ -55,6 +59,8 @@ class FantaTeamServiceTest {
         fantaTeam = FantaTeam.builder().id(1L).nome("I Signori del Rift").creditiResidui(500).league(league).owner(user).build();
         player = LecPlayer.builder().id(10L).nickname("Caps").ruolo(PlayerRole.MID).quotazione(80).build();
         lenient().when(rosterPolicy.forLeague(league)).thenReturn(new RosterPolicy.Limits(10, 2));
+        lenient().when(cumulativeScoringService.teamScore(any())).thenReturn(
+                new CumulativeFantasyTeamScore(1L, "I Signori del Rift", List.of(), null, true));
     }
 
     @Test

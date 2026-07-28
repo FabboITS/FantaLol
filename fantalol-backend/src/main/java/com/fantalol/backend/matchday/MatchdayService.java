@@ -131,7 +131,6 @@ public class MatchdayService {
             }
             double media = formazione.getSource() == FormationSource.MISSING ? 0.0 : totale / 5.0;
             formazione.setPunteggioTotale(media);
-            team.setPunti((team.getPunti() != null ? team.getPunti() : 0.0) + media);
             formazioni.add(formazione);
         }
         formationRepository.saveAll(formazioni);

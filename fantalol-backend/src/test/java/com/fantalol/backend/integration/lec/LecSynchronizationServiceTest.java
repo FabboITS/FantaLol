@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,7 +49,9 @@ class LecSynchronizationServiceTest {
             Collections.synchronizedMap(new LinkedHashMap<>());
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final LecSyncProperties properties =
-            new LecSyncProperties(42L, "LEC", "Summer", "https://example.test/oracle.csv");
+            new LecSyncProperties(42L, "LEC", "Summer", ZoneId.of("Europe/Rome"),
+                    OffsetDateTime.parse("2026-07-24T00:00:00+02:00"),
+                    "https://example.test/oracle.csv");
     private LecSynchronizationService service;
 
     @BeforeEach

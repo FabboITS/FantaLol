@@ -10,6 +10,9 @@ import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.PlayerRole;
 import org.junit.jupiter.api.Test;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -22,7 +25,9 @@ class LecLiveDataServiceTest {
         PandaScoreClient pandaScore = mock(PandaScoreClient.class);
         OracleElixirClient oracle = mock(OracleElixirClient.class);
         LecDataParser parser = mock(LecDataParser.class);
-        LecSyncProperties properties = new LecSyncProperties(42, "LEC", "Summer", "https://example.test/data.csv");
+        LecSyncProperties properties = new LecSyncProperties(42, "LEC", "Summer",
+                ZoneId.of("Europe/Rome"), OffsetDateTime.parse("2026-07-24T00:00:00+02:00"),
+                "https://example.test/data.csv");
         LecDataSnapshot complete = new LecDataSnapshot(
                 "fresh", java.time.Instant.now(), false, java.util.List.of(), java.util.List.of(), java.util.List.of());
         when(pandaScore.getTournamentMatches(42)).thenReturn(new ObjectMapper().readTree("[]"));

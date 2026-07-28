@@ -5,6 +5,7 @@ import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.League;
 import com.fantalol.backend.league.RosterEntry;
 import com.fantalol.backend.league.RosterEntryRepository;
+import com.fantalol.backend.integration.lec.LecSyncProperties;
 import com.fantalol.backend.matchday.Formation;
 import com.fantalol.backend.matchday.FormationRepository;
 import com.fantalol.backend.matchday.FormationSource;
@@ -12,6 +13,7 @@ import com.fantalol.backend.matchday.Matchday;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.PlayerRole;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Set;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -30,6 +34,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LineupBackfillServiceTest {
 
+    private static final Instant CONFIGURED_BACKFILL_FROM = Instant.parse("2026-07-20T00:00:00Z");
+
     @Mock
     private FantaTeamRepository fantaTeamRepository;
     @Mock
@@ -40,8 +46,16 @@ class LineupBackfillServiceTest {
     private EffectiveLineupPeriodRepository periodRepository;
     @Mock
     private EffectiveLineupService effectiveLineupService;
+    @Mock
+    private LecSyncProperties lecSyncProperties;
     @InjectMocks
     private LineupBackfillService backfillService;
+
+    @BeforeEach
+    void configureBackfillStart() {
+        when(lecSyncProperties.backfillFrom())
+                .thenReturn(OffsetDateTime.parse("2026-07-20T00:00:00Z"));
+    }
 
     @Test
     void skipsInvalidLatestFormationAndBackfillsAnotherTeamWithItsLatestValidFormation() {
@@ -64,8 +78,8 @@ class LineupBackfillServiceTest {
         backfillService.backfill();
 
         verify(effectiveLineupService, never()).createBackfillPeriods(eq(invalidTeam), anySet(),
-                eq(LineupBackfillService.BACKFILL_FROM));
-        verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, LineupBackfillService.BACKFILL_FROM);
+                eq(CONFIGURED_BACKFILL_FROM));
+        verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, CONFIGURED_BACKFILL_FROM);
     }
 
     @Test
@@ -85,8 +99,8 @@ class LineupBackfillServiceTest {
         backfillService.backfill();
 
         verify(effectiveLineupService, never()).createBackfillPeriods(eq(incompleteTeam), anySet(),
-                eq(LineupBackfillService.BACKFILL_FROM));
-        verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, LineupBackfillService.BACKFILL_FROM);
+                eq(CONFIGURED_BACKFILL_FROM));
+        verify(effectiveLineupService).createBackfillPeriods(validTeam, validPlayers, CONFIGURED_BACKFILL_FROM);
     }
 
     private FantaTeam team(Long id) {

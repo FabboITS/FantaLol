@@ -6,7 +6,8 @@ const {
   auctionViewState,
   remainingAuctionSeconds,
   mergeBidDraft,
-  participantCreditBalances
+  participantCreditBalances,
+  rankCumulativeTeams
 } = require('../js/league-utils.js');
 
 test('parseLeagueId accepts a positive integer id', () => {
@@ -105,4 +106,14 @@ test('participantCreditBalances clamps a projected balance to zero', () => {
 
   assert.equal(leader.displayCredits, 0);
   assert.equal(leader.isProjected, true);
+});
+
+test('rankCumulativeTeams preserves the server cumulative order without mutable point sorting', () => {
+  const ranking = [
+    { fantasyTeamId: 9, teamName: 'Seconda', overallAverage: 5.3, provisional: false },
+    { fantasyTeamId: 2, teamName: 'Prima', overallAverage: 8.1, provisional: false }
+  ];
+
+  assert.deepEqual(rankCumulativeTeams(ranking).map(team => team.teamName), ['Seconda', 'Prima']);
+  assert.notEqual(rankCumulativeTeams(ranking), ranking);
 });

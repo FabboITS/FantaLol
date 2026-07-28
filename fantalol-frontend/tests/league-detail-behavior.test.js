@@ -48,3 +48,21 @@ test('LEC views render standings, fantasy averages and selectable per-game stati
   assert.match(script, /Perfetto/);
   assert.doesNotMatch(script, /Fonte ufficiale non collegata|not-connected/);
 });
+
+test('league page renders cumulative standings, lineup window state, and ADMIN diagnostics hooks', () => {
+  assert.match(script, /LecDataSource\.loadCumulativePerformances\(api\)/);
+  assert.match(script, /LecDataSource\.loadCumulativeRanking\(api,state\.leagueId\)/);
+  assert.match(script, /function renderCumulativeRanking\(/);
+  assert.match(script, /function renderCumulativePerformances\(/);
+  assert.match(script, /state\.user\?\.role==='ADMIN'/);
+  assert.match(script, /function renderAdminDiagnostics\(/);
+  assert.match(page, /id="lec-admin-panel"/);
+  assert.match(page, /id="lec-sync-button"/);
+  assert.match(page, /id="lec-correction-form"/);
+  assert.match(page, /In attesa/);
+  assert.match(page, /Provvisorio/);
+  assert.match(page, /Aggiornato/);
+  assert.match(page, /Fonte non disponibile/);
+  assert.match(script, /Modifiche aperte da martedì a giovedì\./);
+  assert.match(script, /La nuova formazione sarà valida da venerdì\./);
+});

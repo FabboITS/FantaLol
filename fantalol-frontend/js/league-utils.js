@@ -16,6 +16,10 @@
             .sort((left, right) => right.punti - left.punti || left.nome.localeCompare(right.nome, 'it'));
     }
 
+    function rankCumulativeTeams(teams) {
+        return [...(teams || [])];
+    }
+
     function auctionViewState(auction, activeTeam, draftAmount) {
         const nextMinimum = Number(auction?.currentBid ?? 0) + 1;
         const credits = Number(activeTeam?.creditiResidui ?? 0);
@@ -72,6 +76,7 @@
     return {
         parseLeagueId,
         rankFantasyTeams,
+        rankCumulativeTeams,
         auctionViewState,
         remainingAuctionSeconds,
         mergeBidDraft,

@@ -3,6 +3,8 @@ package com.fantalol.backend.league;
 import com.fantalol.backend.common.BusinessRuleException;
 import com.fantalol.backend.common.ResourceNotFoundException;
 import com.fantalol.backend.league.dto.*;
+import com.fantalol.backend.scoring.CumulativeScoringService;
+import com.fantalol.backend.scoring.dto.CumulativeFantasyTeamScore;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.user.User;
@@ -34,6 +36,7 @@ public class FantaTeamService {
     private final UserService userService;
     private final LecPlayerRepository lecPlayerRepository;
     private final RosterPolicy rosterPolicy;
+    private final CumulativeScoringService cumulativeScoringService;
 
     @Transactional
     public FantaTeamResponse joinLeague(String username, JoinLeagueRequest request) {
@@ -59,22 +62,32 @@ public class FantaTeamService {
                 .owner(user)
                 .build();
 
-        return FantaTeamResponse.from(fantaTeamRepository.save(fantaTeam));
+        return response(fantaTeamRepository.save(fantaTeam));
     }
 
     @Transactional(readOnly = true)
-    public List<FantaTeamResponse> findByLeague(Long leagueId) {
-        return fantaTeamRepository.findByLeagueId(leagueId).stream().map(FantaTeamResponse::from).toList();
+    public List<FantaTeamResponse> findByLeague(String username, Long leagueId) {
+        leagueService.findById(username, leagueId);
+        return fantaTeamRepository.findByLeagueId(leagueId).stream().map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
     public List<FantaTeamResponse> findMine(String username) {
-        return fantaTeamRepository.findByOwnerUsername(username).stream().map(FantaTeamResponse::from).toList();
+        return fantaTeamRepository.findByOwnerUsername(username).stream().map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
-    public FantaTeamResponse findById(Long id) {
-        return FantaTeamResponse.from(getOrThrow(id));
+    public FantaTeamResponse findById(String username, Long id) {
+        FantaTeam team = getOrThrow(id);
+        leagueService.findById(username, team.getLeague().getId());
+        return response(team);
+    }
+
+    @Transactional(readOnly = true)
+    public CumulativeFantasyTeamScore cumulativeScore(String username, Long id) {
+        FantaTeam team = getOrThrow(id);
+        leagueService.findById(username, team.getLeague().getId());
+        return cumulativeScoringService.teamScore(id);
     }
 
     /**
@@ -218,7 +231,7 @@ public class FantaTeamService {
                 throw new BusinessRuleException("Un player casuale è appena stato assegnato: riprova");
             rosterEntryRepository.save(RosterEntry.builder().fantaTeam(team).lecPlayer(locked).creditiSpesi(0).build());
         }
-        return FantaTeamResponse.from(team);
+        return response(team);
     }
 
     @Transactional
@@ -251,5 +264,9 @@ public class FantaTeamService {
     FantaTeam getOrThrow(Long id) {
         return fantaTeamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + id));
+    }
+
+    private FantaTeamResponse response(FantaTeam team) {
+        return FantaTeamResponse.from(team);
     }
 }

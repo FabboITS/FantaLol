@@ -18,3 +18,11 @@ fantalol:
     expiration-ms: 3600000
   asta:
     crediti-iniziali: 1000
+  lec:
+    tournament-id: 21344
+    league: LEC
+    split: Summer
+    timezone: Europe/Rome
+    backfill-from: 2026-07-24T00:00:00+02:00
+    oracle-csv-url: https://example.test/oracle.csv
+    sync-cron: 0 15 */6 * * *

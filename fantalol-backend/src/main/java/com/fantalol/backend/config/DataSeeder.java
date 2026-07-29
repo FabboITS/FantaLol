@@ -1,11 +1,12 @@
 package com.fantalol.backend.config;
 
+import com.fantalol.backend.lineup.LineupBackfillService;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.LecTeam;
 import com.fantalol.backend.team.LecTeamRepository;
 import com.fantalol.backend.team.PlayerRole;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +22,33 @@ import java.util.List;
  * viene invece verificata a ogni avvio ed esegue la migrazione legacy una sola volta.
  */
 @Component
-@RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
     private final LecTeamRepository lecTeamRepository;
     private final LecPlayerRepository lecPlayerRepository;
     private final AdminAccountInitializer adminAccountInitializer;
+    private final LineupBackfillService lineupBackfillService;
+
+    @Autowired
+    public DataSeeder(
+            LecTeamRepository lecTeamRepository,
+            LecPlayerRepository lecPlayerRepository,
+            AdminAccountInitializer adminAccountInitializer,
+            LineupBackfillService lineupBackfillService
+    ) {
+        this.lecTeamRepository = lecTeamRepository;
+        this.lecPlayerRepository = lecPlayerRepository;
+        this.adminAccountInitializer = adminAccountInitializer;
+        this.lineupBackfillService = lineupBackfillService;
+    }
+
+    DataSeeder(
+            LecTeamRepository lecTeamRepository,
+            LecPlayerRepository lecPlayerRepository,
+            AdminAccountInitializer adminAccountInitializer
+    ) {
+        this(lecTeamRepository, lecPlayerRepository, adminAccountInitializer, null);
+    }
 
     private record PlayerSeed(String nickname, PlayerRole ruolo, String nazionalita, int quotazione) {
     }
@@ -62,6 +84,9 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         adminAccountInitializer.initialize();
+        if (lineupBackfillService != null) {
+            lineupBackfillService.backfill();
+        }
     }
 
     private void seedLecTeams() {

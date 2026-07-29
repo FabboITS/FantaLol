@@ -45,7 +45,7 @@ class LeagueRosterCompletionTest {
         creator = User.builder().id(1L).username("creator").role(Role.USER).build();
         league = League.builder().id(1L).nome("LEC").admin(creator).auctionOpen(false).build();
         team = FantaTeam.builder().id(2L).nome("Team").league(league).owner(creator)
-                .creditiResidui(1000).rosa(new ArrayList<>()).build();
+                .creditiResidui(1000).punti(91.0).rosa(new ArrayList<>()).build();
     }
 
     @Test
@@ -73,6 +73,7 @@ class LeagueRosterCompletionTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).rosa()).hasSize(10);
         assertThat(result.get(0).rosa()).allMatch(entry -> entry.creditiSpesi() == 0);
+        assertThat(result.get(0).punti()).isNull();
     }
 
     @Test

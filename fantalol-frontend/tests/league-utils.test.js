@@ -6,7 +6,9 @@ const {
   auctionViewState,
   remainingAuctionSeconds,
   mergeBidDraft,
-  participantCreditBalances
+  participantCreditBalances,
+  rankCumulativeTeams,
+  lineupWindowState
 } = require('../js/league-utils.js');
 
 test('parseLeagueId accepts a positive integer id', () => {
@@ -105,4 +107,36 @@ test('participantCreditBalances clamps a projected balance to zero', () => {
 
   assert.equal(leader.displayCredits, 0);
   assert.equal(leader.isProjected, true);
+});
+
+test('rankCumulativeTeams preserves the server cumulative order without mutable point sorting', () => {
+  const ranking = [
+    { fantasyTeamId: 9, teamName: 'Seconda', overallAverage: 5.3, provisional: false },
+    { fantasyTeamId: 2, teamName: 'Prima', overallAverage: 8.1, provisional: false }
+  ];
+
+  assert.deepEqual(rankCumulativeTeams(ranking).map(team => team.teamName), ['Seconda', 'Prima']);
+  assert.notEqual(rankCumulativeTeams(ranking), ranking);
+});
+
+test('lineupWindowState keeps the backend open window for a selected matchday without a formation', () => {
+  const previousBackendResponse = {
+    matchdayId: 4,
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  };
+
+  assert.deepEqual(lineupWindowState(null, [previousBackendResponse]), {
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  });
+});
+
+test('lineupWindowState enables a new formation from the standalone backend window when history is empty', () => {
+  const window = { editable: true, nextEffectiveAt: '2026-07-31T00:00:00Z' };
+
+  assert.deepEqual(lineupWindowState(null, [], window), {
+    editable: true,
+    nextEffectiveAt: '2026-07-31T00:00:00Z'
+  });
 });

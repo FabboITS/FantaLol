@@ -1,7 +1,11 @@
 package com.fantalol.backend.integration.lec;
 
 import com.fantalol.backend.common.ResourceNotFoundException;
+import com.fantalol.backend.integration.oracle.PlayerGameCorrectionService;
+import com.fantalol.backend.integration.oracle.dto.ManualPlayerGameCorrectionRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -11,6 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LecDataController {
     private final LecLiveDataService service;
+    private final LecSynchronizationService synchronizationService;
+    private final PlayerGameCorrectionService correctionService;
 
     @GetMapping("/api/lec/standings")
     public LecSection<LecDataSnapshot.Standing> standings() {
@@ -41,8 +47,28 @@ public class LecDataController {
     }
 
     @PostMapping("/api/admin/lec/synchronize")
-    public LecDataSnapshot synchronize() {
-        return service.synchronize();
+    public SyncReport synchronize() {
+        return synchronizationService.synchronize(SyncTrigger.MANUAL);
+    }
+
+    @GetMapping("/api/admin/lec/synchronization")
+    public LecSyncStatusResponse synchronizationStatus() {
+        return synchronizationService.status();
+    }
+
+    @PutMapping("/api/admin/lec/games/{gameId}/players/{playerId}")
+    public void correctPlayerGame(
+            @PathVariable String gameId,
+            @PathVariable Long playerId,
+            @Valid @RequestBody ManualPlayerGameCorrectionRequest request,
+            Authentication authentication
+    ) {
+        correctionService.correct(gameId, playerId, request, authentication.getName());
+    }
+
+    @DeleteMapping("/api/admin/lec/games/{gameId}/players/{playerId}/override")
+    public void restorePlayerGame(@PathVariable String gameId, @PathVariable Long playerId) {
+        correctionService.restore(gameId, playerId);
     }
 
     private static <T> LecSection<T> section(LecDataSnapshot snapshot, List<T> items) {

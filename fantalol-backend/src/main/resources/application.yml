@@ -44,6 +44,8 @@ fantalol:
     tournament-id: ${LEC_TOURNAMENT_ID:21344}
     league: ${LEC_LEAGUE:LEC}
     split: ${LEC_SPLIT:Summer}
+    timezone: ${LEC_TIMEZONE:Europe/Rome}
+    backfill-from: ${LEC_BACKFILL_FROM:2026-07-24T00:00:00+02:00}
     oracle-csv-url: ${ORACLE_ELIXIR_CSV_URL:}
     sync-cron: ${LEC_SYNC_CRON:0 15 */6 * * *}
 

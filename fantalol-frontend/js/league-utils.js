@@ -16,6 +16,19 @@
             .sort((left, right) => right.punti - left.punti || left.nome.localeCompare(right.nome, 'it'));
     }
 
+    function rankCumulativeTeams(teams) {
+        return [...(teams || [])];
+    }
+
+    function lineupWindowState(selectedFormation, formationHistory, standaloneWindow) {
+        const response = selectedFormation || standaloneWindow || (formationHistory || [])
+            .find(formation => typeof formation?.editable === 'boolean');
+        return {
+            editable: Boolean(response?.editable),
+            nextEffectiveAt: response?.nextEffectiveAt || null
+        };
+    }
+
     function auctionViewState(auction, activeTeam, draftAmount) {
         const nextMinimum = Number(auction?.currentBid ?? 0) + 1;
         const credits = Number(activeTeam?.creditiResidui ?? 0);
@@ -72,6 +85,8 @@
     return {
         parseLeagueId,
         rankFantasyTeams,
+        rankCumulativeTeams,
+        lineupWindowState,
         auctionViewState,
         remainingAuctionSeconds,
         mergeBidDraft,

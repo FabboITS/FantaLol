@@ -10,8 +10,21 @@ test('league page runs synchronization and countdown independently across every 
   assert.match(script, /function startPageSynchronization\(/);
   assert.match(script, /function synchronizeLeaguePage\(/);
   assert.match(script, /function startCountdown\(/);
-  assert.match(script, /startPageSynchronization\(\);startCountdown\(\)/);
+  assert.match(script, /startPageSynchronization\(\);startCumulativeRefresh\(\);startCountdown\(\)/);
   assert.doesNotMatch(script, /if\(section==='auction'\)startAuctionPolling/);
+});
+
+test('auction polling keeps cumulative scoring on a dedicated low-frequency refresh', () => {
+  assert.match(script, /function startCumulativeRefresh\(/);
+  assert.match(script, /setInterval\(refreshCumulativeData,90000\)/);
+  assert.match(script, /function refreshCumulativeData\(/);
+  assert.match(script, /LecDataSource\.loadCumulativePerformances\(api\)/);
+  assert.match(script, /LecDataSource\.loadCumulativeRanking\(api,state\.leagueId\)/);
+  const pollStart = script.indexOf('async function synchronizeLeaguePage()');
+  const pollEnd = script.indexOf('function renderDashboardState()');
+  assert.ok(pollStart >= 0 && pollEnd > pollStart);
+  assert.doesNotMatch(script.slice(pollStart, pollEnd), /loadCumulative|refreshCumulativeData/);
+  assert.match(script, /catch\(error\)\{if\(!state\.cumulativeRefreshErrorNotified\)\{toast\(`Fonte non disponibile: \$\{error\.message\}`,true\);state\.cumulativeRefreshErrorNotified=true\}\}finally\{state\.cumulativeRefreshPending=false\}/);
 });
 
 test('live auction protects custom bids and hides reraises from the current leader', () => {
@@ -33,9 +46,20 @@ test('live auction renders synchronized participant credit balances', () => {
 test('formation save remains visible in the dialog and can return to editing', () => {
   assert.match(page, /id="edit-formation-button"/);
   assert.match(script, /function renderFormationSummary\(/);
-  assert.match(script, /state\.currentFormation=await api/);
-  assert.doesNotMatch(script, /state\.currentFormation=await api[\s\S]{0,300}formation-dialog'\)\.close/);
+  assert.match(script, /state\.currentLineup=await LineupUi\.saveLineup/);
+  assert.doesNotMatch(script, /LineupUi\.saveLineup[\s\S]{0,300}formation-dialog'\)\.close/);
   assert.match(script, /synchronizeLeaguePage\(\)/);
+});
+
+test('weekly lineup controls and pending status are independent from matchdays', () => {
+  assert.doesNotMatch(page, /name="matchdayId"/);
+  assert.match(page, /\/js\/lineup-ui\.js/);
+  assert.match(script, /\/formazioni\/lineup/);
+  assert.match(script, /rosterButton\.classList\.toggle\('hidden',!state\.activeTeam\|\|state\.activeTeam\.rosa\.length<5\|\|state\.league\.auctionOpen\)/);
+  assert.doesNotMatch(script, /rosa\.length<5\|\|!state\.matchdays\.length/);
+  assert.match(script, /LineupUi\.lineupViewModel\(lineup\)/);
+  assert.match(script, /ATTIVA ORA/);
+  assert.match(script, /SALVATA · ATTIVA DA/);
 });
 
 test('LEC views render standings, fantasy averages and selectable per-game statistics', () => {
@@ -47,4 +71,32 @@ test('LEC views render standings, fantasy averages and selectable per-game stati
   assert.match(script, /\$\{player\.cs\} CS/);
   assert.match(script, /Perfetto/);
   assert.doesNotMatch(script, /Fonte ufficiale non collegata|not-connected/);
+});
+
+test('league page renders cumulative standings, lineup window state, and ADMIN diagnostics hooks', () => {
+  assert.match(script, /LecDataSource\.loadCumulativePerformances\(api\)/);
+  assert.match(script, /LecDataSource\.loadCumulativeRanking\(api,state\.leagueId\)/);
+  assert.match(script, /function renderCumulativeRanking\(/);
+  assert.match(script, /function renderCumulativePerformances\(/);
+  assert.match(script, /state\.user\?\.role==='ADMIN'/);
+  assert.match(script, /function renderAdminDiagnostics\(/);
+  assert.match(page, /id="lec-admin-panel"/);
+  assert.match(page, /id="lec-sync-button"/);
+  assert.match(page, /id="lec-correction-form"/);
+  assert.match(page, /In attesa/);
+  assert.match(page, /Provvisorio/);
+  assert.match(page, /Aggiornato/);
+  assert.match(page, /Fonte non disponibile/);
+  assert.match(script, /Modifiche aperte da martedì a giovedì\./);
+  assert.match(script, /La nuova formazione sarà valida da venerdì\./);
+});
+
+test('cumulative UI renders source freshness separately from team provisional scoring', () => {
+  assert.match(script, /cumulativePerformanceSection/);
+  assert.match(script, /cumulativeRankingSection/);
+  assert.match(script, /LecDataSource\.cumulativeFreshnessLabel\(section\)/);
+  assert.match(script, /cumulative-source-state/);
+  assert.match(script, /team\.provisional\?'Formazione provvisoria/);
+  assert.match(script, /state\.cumulativePerformances=performances\.items/);
+  assert.match(script, /state\.cumulativeRanking=ranking\.items/);
 });

@@ -166,7 +166,8 @@ class StaticResourceIntegrationTest {
                 .andExpect(content().string(containsString("Regole FantaLeague LEC")))
                 .andExpect(content().string(containsString("Cambi nei roster reali")))
                 .andExpect(content().string(containsString("media aritmetica")))
-                .andExpect(content().string(containsString("0 punti")))
+                .andExpect(content().string(containsString("In attesa")))
+                .andExpect(content().string(containsString("senza assegnare uno zero definitivo")))
                 .andExpect(content().string(containsString("Accettazione delle regole")));
 
         mockMvc.perform(get("/js/app.js"))

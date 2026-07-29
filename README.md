@@ -78,10 +78,12 @@ competizione:
 - nelle leghe da 2 a 5 partecipanti, ogni rosa contiene 10 giocatori, 2 per ruolo;
 - nelle leghe da 6 a 10 partecipanti, ogni rosa contiene 5 giocatori, 1 per ruolo.
 
-Nelle leghe piccole il proprietario sceglie un titolare per ogni ruolo. Se non aggiorna
-la formazione viene riutilizzata l'ultima formazione valida; se non ne ha mai salvata
-una, il punteggio della giornata è zero. Nelle leghe più grandi i cinque componenti
-della rosa formano automaticamente la squadra attiva.
+Nelle leghe piccole il proprietario sceglie un titolare per ogni ruolo. Può salvare
+un cambio da martedì 00:00 a giovedì 23:59:59 nel fuso `Europe/Rome`; il cambio
+diventa efficace il venerdì alle 00:00 e non modifica i punti già acquisiti. Le
+riserve ricevono una valutazione individuale, ma solo i cinque titolari contribuiscono
+al risultato. Nelle leghe con più di cinque fantasy team i cinque componenti della
+rosa formano una squadra attiva fissa e non modificabile.
 
 ## Giornate e punteggi
 
@@ -104,11 +106,11 @@ coefficienti K/A/D/C sono: Top 3,00/2,00/2,00/1,25; Jungle
 è `vision score / 50`: ricevono 1 punto ogni 50 di vision score e i loro CS
 non assegnano punti. CS e vision score sono continui.
 
-In una serie si usa la media delle sole partite disputate dal player; le serie
-della giornata vengono poi sommate. Il punteggio del FantaTeam è la media
-aritmetica dei cinque giocatori attivi. Un giocatore senza statistiche vale zero
-e il divisore resta cinque. I risultati precedenti alla Summer 2026 mantengono
-la formula storica.
+La prestazione di un player è la media cumulativa delle sole partite effettivamente
+disputate nella Summer Split. Una partita non giocata non aggiunge uno zero. Ogni
+slot di ruolo conserva le osservazioni ottenute dal player che era attivo al momento
+della partita; il punteggio del FantaTeam è la media dei cinque slot. Se uno slot non
+ha ancora osservazioni, il totale resta provvisorio e non viene pubblicato come zero.
 
 ## Architettura e tecnologie
 
@@ -217,8 +219,10 @@ Il backend legge queste variabili:
 | `LEC_TOURNAMENT_ID` | Tournament ID PandaScore sincronizzato | `21344` |
 | `LEC_LEAGUE` | Filtro lega Oracle's Elixir | `LEC` |
 | `LEC_SPLIT` | Filtro split Oracle's Elixir | `Summer` |
+| `LEC_TIMEZONE` | Fuso usato per la finestra formazione e l'efficacia del venerdì | `Europe/Rome` |
+| `LEC_BACKFILL_FROM` | Inizio iniziale delle formazioni effettive per il backfill idempotente | `2026-07-24T00:00:00+02:00` |
 | `ORACLE_ELIXIR_CSV_URL` | URL del CSV annuale Oracle's Elixir | vuoto |
-| `LEC_SYNC_CRON` | Pianificazione Spring della sincronizzazione | ogni 6 ore |
+| `LEC_SYNC_CRON` | Espressione cron Spring della sincronizzazione | `0 15 */6 * * *` |
 
 In produzione bisogna usare password robuste, un segreto JWT casuale e sufficientemente
 lungo e un token PandaScore mantenuto esclusivamente sul server. Nessun segreto deve
@@ -261,11 +265,23 @@ node --check fantalol-frontend/js/league-detail.js
 
 ## Integrazioni e dati
 
-PandaScore fornisce calendario, stato delle partite e risultato delle serie. I CSV di
-Oracle's Elixir forniscono le statistiche per partita usate nel calcolo fantasy.
-L'importazione filtra competizione, split, completezza e ruoli, evita di importare due
-volte la stessa partita e prova ad associare i giocatori tramite identificativo esterno
-o nickname.
+PandaScore fornisce calendario, stato delle partite e risultato delle serie. Il CSV
+annuale di Oracle's Elixir fornisce le statistiche per partita usate nel calcolo
+fantasy. Ogni sincronizzazione filtra `LEC`, `Summer`, righe complete e ruoli player,
+quindi salva durevolmente ogni `gameid`: il CSV non viene assegnato in blocco a una
+giornata e una nuova esecuzione non duplica le partite già importate.
+
+La sincronizzazione automatica usa `LEC_SYNC_CRON` (ogni sei ore con il valore
+predefinito). L'ADMIN globale può eseguire `Sincronizza ora`: l'operazione ritenta
+entrambi i provider e il ricalcolo, ma non può creare statistiche che la fonte non ha
+pubblicato in forma completa. Per il primo avvio della Summer 2026, le formazioni
+valide correnti vengono retrodatate in modo idempotente al
+`LEC_BACKFILL_FROM`, per impostazione predefinita
+`2026-07-24T00:00:00+02:00`. Il fuso `LEC_TIMEZONE` (predefinito
+`Europe/Rome`) governa la finestra settimanale e l'efficacia del venerdì. Il
+backfill crea soltanto i periodi effettivi iniziali mancanti: dopo che una
+squadra possiede già dei periodi, cambiare `LEC_BACKFILL_FROM` non riscrive né
+retrodata nuovamente lo storico esistente.
 
 Gli endpoint di importazione e verifica del fornitore sono riservati all'amministratore
 globale. I dettagli operativi sono disponibili in

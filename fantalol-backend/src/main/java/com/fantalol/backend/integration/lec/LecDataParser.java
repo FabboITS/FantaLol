@@ -1,6 +1,7 @@
 package com.fantalol.backend.integration.lec;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fantalol.backend.integration.oracle.ProviderPlayerGameStat;
 import com.fantalol.backend.scoring.GameScoreCalculator;
 import com.fantalol.backend.team.PlayerRole;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,29 @@ public class LecDataParser {
         );
     }
 
-    private List<LecDataSnapshot.Standing> parseStandings(JsonNode matches) {
+    public LecDataSnapshot project(
+            JsonNode pandaMatches,
+            List<ProviderPlayerGameStat> persistedStats,
+            String status,
+            Instant lastUpdatedAt
+    ) {
+        List<LecDataSnapshot.Standing> standings = parseStandings(pandaMatches);
+        List<PlayerRow> rows = persistedStats.stream()
+                .filter(ProviderPlayerGameStat::isActiveSourceVersion)
+                .filter(this::participated)
+                .filter(stat -> stat.getProviderGame() != null && stat.getProviderGame().getPlayedAt() != null)
+                .map(this::persistedRow)
+                .toList();
+        return new LecDataSnapshot(
+                status,
+                lastUpdatedAt,
+                standings.isEmpty() || rows.isEmpty(),
+                standings,
+                buildPerformances(rows),
+                buildMatches(rows));
+    }
+
+    public List<LecDataSnapshot.Standing> parseStandings(JsonNode matches) {
         Map<String, TeamRecord> records = new HashMap<>();
         if (matches != null && matches.isArray()) {
             for (JsonNode match : matches) {
@@ -173,6 +196,34 @@ public class LecDataParser {
         return new LecDataSnapshot.GamePlayer(
                 row.nickname, row.teamName, row.role.name(), row.champion, championPath(row.champion),
                 row.kills, row.deaths, row.assists, row.cs, row.visionScore, kda, perfectKda);
+    }
+
+    private PlayerRow persistedRow(ProviderPlayerGameStat stat) {
+        return new PlayerRow(
+                stat.getProviderGame().getExternalGameId(),
+                stat.getLecPlayer().getNickname(),
+                stat.getSourceTeamName(),
+                stat.getSourceRole(),
+                stat.getSourceChampion(),
+                value(stat.getCorrectedKills(), stat.getRawKills()),
+                value(stat.getCorrectedDeaths(), stat.getRawDeaths()),
+                value(stat.getCorrectedAssists(), stat.getRawAssists()),
+                value(stat.getCorrectedCs(), stat.getRawCs()),
+                value(stat.getCorrectedVisionScore(), stat.getRawVisionScore()),
+                stat.getFantasyScore(),
+                stat.getProviderGame().getPlayedAt()
+                        .atZone(java.time.ZoneId.of("Europe/Rome"))
+                        .toLocalDate());
+    }
+
+    private boolean participated(ProviderPlayerGameStat stat) {
+        return stat.getCorrectedParticipated() != null
+                ? stat.getCorrectedParticipated()
+                : stat.isRawParticipated();
+    }
+
+    private static int value(Integer corrected, int provider) {
+        return corrected == null ? provider : corrected;
     }
 
     private static String championPath(String championName) {

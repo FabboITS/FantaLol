@@ -7,6 +7,8 @@ import com.fantalol.backend.league.dto.RosterEntryResponse;
 import com.fantalol.backend.team.LecPlayer;
 import com.fantalol.backend.team.LecPlayerRepository;
 import com.fantalol.backend.team.PlayerRole;
+import com.fantalol.backend.scoring.CumulativeScoringService;
+import com.fantalol.backend.scoring.dto.CumulativeFantasyTeamScore;
 import com.fantalol.backend.user.User;
 import com.fantalol.backend.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +42,8 @@ class FantaTeamServiceTest {
     private LecPlayerRepository lecPlayerRepository;
     @Mock
     private RosterPolicy rosterPolicy;
+    @Mock
+    private CumulativeScoringService cumulativeScoringService;
 
     @InjectMocks
     private FantaTeamService fantaTeamService;
@@ -55,6 +60,8 @@ class FantaTeamServiceTest {
         fantaTeam = FantaTeam.builder().id(1L).nome("I Signori del Rift").creditiResidui(500).league(league).owner(user).build();
         player = LecPlayer.builder().id(10L).nickname("Caps").ruolo(PlayerRole.MID).quotazione(80).build();
         lenient().when(rosterPolicy.forLeague(league)).thenReturn(new RosterPolicy.Limits(10, 2));
+        lenient().when(cumulativeScoringService.teamScore(any())).thenReturn(
+                new CumulativeFantasyTeamScore(1L, "I Signori del Rift", List.of(), null, true));
     }
 
     @Test
@@ -169,5 +176,38 @@ class FantaTeamServiceTest {
         assertThatThrownBy(() -> fantaTeamService.acquistaPlayer("altro-utente", 1L, new AcquistoPlayerRequest(10L, 90)))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("proprietario");
+    }
+
+    @Test
+    void memberCanReadATeamOnlyAfterLeagueVisibilityIsChecked() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+
+        var response = fantaTeamService.findById("mago", 1L);
+
+        assertThat(response.id()).isEqualTo(1L);
+        verify(leagueService).findById("mago", 1L);
+        verify(cumulativeScoringService, never()).teamScore(1L);
+    }
+
+    @Test
+    void nonMemberCannotReadATeamOrItsCumulativePoints() {
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(leagueService.findById("estraneo", 1L)).thenThrow(new AccessDeniedException("denied"));
+
+        assertThatThrownBy(() -> fantaTeamService.findById("estraneo", 1L))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(cumulativeScoringService, never()).teamScore(1L);
+    }
+
+    @Test
+    void memberCanReadLeagueTeamsWithoutCalculatingCumulativeScores() {
+        when(fantaTeamRepository.findByLeagueId(1L)).thenReturn(List.of(fantaTeam));
+
+        var response = fantaTeamService.findByLeague("mago", 1L);
+
+        assertThat(response).extracting(team -> team.id()).containsExactly(1L);
+        verify(leagueService).findById("mago", 1L);
+        verify(cumulativeScoringService, never()).teamScore(1L);
     }
 }

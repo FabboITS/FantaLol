@@ -109,3 +109,12 @@ test('cumulative UI renders source freshness separately from team provisional sc
   assert.match(script, /state\.cumulativePerformances=performances\.items/);
   assert.match(script, /state\.cumulativeRanking=ranking\.items/);
 });
+
+test('Overview ranking renders only fantasy teams and points, never player names', () => {
+  const start = script.indexOf('function renderCumulativeRanking(');
+  const end = script.indexOf('function renderLecMatches(', start);
+  const renderer = script.slice(start, end);
+  assert.match(renderer, /team\.teamName/);
+  assert.match(renderer, /overallAverage/);
+  assert.doesNotMatch(renderer, /contributingPlayers|slot-contributors|cumulative-slots/);
+});

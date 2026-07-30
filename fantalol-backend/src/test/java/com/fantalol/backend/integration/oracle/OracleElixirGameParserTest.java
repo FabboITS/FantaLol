@@ -36,6 +36,13 @@ class OracleElixirGameParserTest {
     }
 
     @Test
+    void acceptsUtf8BomBeforeTheFirstCsvHeader() {
+        List<OracleGameBatch> games = parser.parse("\uFEFF" + csv(validPlayerRows()), "LEC", "Summer");
+
+        assertThat(games).hasSize(1);
+    }
+
+    @Test
     void excludesRowsOutsideTheRequestedCompletePlayerGameData() {
         String excludedRows = String.join("\n",
                 row("LEC_2026_SPRING", "2026-07-24T16:00:00Z", "LEC", "Spring", "complete", "spring-player", "Spring", "Team A", "mid", "Ahri", 1, 1, 1, 100, 10, 1),

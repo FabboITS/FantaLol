@@ -40,12 +40,13 @@ public class OracleElixirGameParser {
         }
 
         Map<String, List<ParsedPlayerRow>> rowsByGame = new LinkedHashMap<>();
+        String normalizedCsv = csv.startsWith("\uFEFF") ? csv.substring(1) : csv;
         try (CSVParser records = CSVFormat.DEFAULT.builder()
                 .setHeader()
                 .setSkipHeaderRecord(true)
                 .setTrim(true)
                 .build()
-                .parse(new StringReader(csv))) {
+                .parse(new StringReader(normalizedCsv))) {
             for (CSVRecord record : records) {
                 parseEligibleRow(record).ifPresent(row ->
                         rowsByGame.computeIfAbsent(row.externalGameId(), ignored -> new ArrayList<>()).add(row));

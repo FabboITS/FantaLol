@@ -66,6 +66,23 @@ class LecDataParserTest {
     }
 
     @Test
+    void groupsGamesFromTheSameSeriesUnderOneMatch() throws Exception {
+        String csv = """
+                gameid,league,split,datacompleteness,position,playerid,playername,teamname,champion,kills,deaths,assists,total cs,visionscore,result,date
+                G1,LEC,Summer,complete,mid,caps,Caps,G2 Esports,Ahri,1,0,2,100,20,1,2026-07-26
+                G1,LEC,Summer,complete,sup,mikyx,Mikyx,Fnatic,Rakan,0,1,3,30,80,0,2026-07-26
+                G2,LEC,Summer,complete,mid,caps,Caps,G2 Esports,Azir,2,1,4,120,22,0,2026-07-26
+                G2,LEC,Summer,complete,sup,mikyx,Mikyx,Fnatic,Leona,1,2,1,35,75,1,2026-07-26
+                """;
+
+        LecDataSnapshot snapshot = parser.parse(objectMapper.readTree("[]"), csv, "LEC", "Summer");
+
+        assertThat(snapshot.matches()).hasSize(1);
+        assertThat(snapshot.matches().get(0).games()).extracting(LecDataSnapshot.GameSummary::id)
+                .containsExactly("G1", "G2");
+    }
+
+    @Test
     void persistedProjectionKeepsRemovedOverrideActiveUntilExplicitRestore() {
         ProviderPlayerGameStat current = persistedStat("Current", "current", "current");
         current.setRawParticipated(false);

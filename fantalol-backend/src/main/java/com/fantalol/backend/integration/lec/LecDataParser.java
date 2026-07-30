@@ -170,24 +170,42 @@ public class LecDataParser {
     private List<LecDataSnapshot.MatchSummary> buildMatches(List<PlayerRow> rows) {
         Map<String, List<PlayerRow>> byGame = new LinkedHashMap<>();
         rows.forEach(row -> byGame.computeIfAbsent(row.gameId, ignored -> new ArrayList<>()).add(row));
+        Map<String, List<List<PlayerRow>>> bySeries = new LinkedHashMap<>();
+        byGame.values().forEach(gameRows -> bySeries.computeIfAbsent(seriesKey(gameRows), ignored -> new ArrayList<>())
+                .add(gameRows));
         List<LecDataSnapshot.MatchSummary> result = new ArrayList<>();
-        for (Map.Entry<String, List<PlayerRow>> entry : byGame.entrySet()) {
-            List<PlayerRow> gameRows = entry.getValue();
-            Set<String> teams = new LinkedHashSet<>();
-            gameRows.forEach(row -> teams.add(row.teamName));
-            List<LecDataSnapshot.GamePlayer> players = gameRows.stream().map(this::gamePlayer).toList();
-            LocalDate date = gameRows.stream().map(row -> row.date).filter(Objects::nonNull)
+        for (Map.Entry<String, List<List<PlayerRow>>> entry : bySeries.entrySet()) {
+            List<PlayerRow> firstGameRows = entry.getValue().get(0);
+            LocalDate date = firstGameRows.stream().map(row -> row.date).filter(Objects::nonNull)
                     .findFirst().orElse(null);
-            String name = teams.stream().filter(team -> !team.isBlank()).reduce((left, right) -> left + " vs " + right)
-                    .orElse(entry.getKey());
-            LecDataSnapshot.GameSummary game = new LecDataSnapshot.GameSummary(
-                    entry.getKey(), "Game " + (result.size() + 1), players);
+            String name = seriesName(firstGameRows, entry.getKey());
+            List<LecDataSnapshot.GameSummary> games = new ArrayList<>();
+            for (int index = 0; index < entry.getValue().size(); index++) {
+                List<PlayerRow> gameRows = entry.getValue().get(index);
+                List<LecDataSnapshot.GamePlayer> players = gameRows.stream().map(this::gamePlayer).toList();
+                games.add(new LecDataSnapshot.GameSummary(
+                        gameRows.get(0).gameId, "Game " + (index + 1), players));
+            }
             result.add(new LecDataSnapshot.MatchSummary(
-                    entry.getKey(), name, date, "complete", List.of(game)));
+                    entry.getKey(), name, date, "complete", List.copyOf(games)));
         }
         result.sort(Comparator.comparing(LecDataSnapshot.MatchSummary::date,
                 Comparator.nullsLast(Comparator.reverseOrder())));
         return List.copyOf(result);
+    }
+
+    private static String seriesKey(List<PlayerRow> gameRows) {
+        LocalDate date = gameRows.stream().map(row -> row.date).filter(Objects::nonNull)
+                .findFirst().orElse(null);
+        return String.valueOf(date) + "|" + gameRows.stream().map(row -> row.teamName)
+                .filter(team -> !team.isBlank()).distinct().sorted(String.CASE_INSENSITIVE_ORDER)
+                .reduce((left, right) -> left + " vs " + right).orElse("unknown");
+    }
+
+    private static String seriesName(List<PlayerRow> gameRows, String fallback) {
+        return gameRows.stream().map(row -> row.teamName).filter(team -> !team.isBlank()).distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .reduce((left, right) -> left + " vs " + right).orElse(fallback);
     }
 
     private LecDataSnapshot.GamePlayer gamePlayer(PlayerRow row) {

@@ -44,9 +44,13 @@ class LecDataParserTest {
         LecDataSnapshot.GamePlayer support = snapshot.matches().get(0).games().get(0).players().stream()
                 .filter(player -> player.nickname().equals("Mikyx"))
                 .findFirst().orElseThrow();
+        LecDataSnapshot.GamePlayer caps = snapshot.matches().get(0).games().get(0).players().stream()
+                .filter(player -> player.nickname().equals("Caps"))
+                .findFirst().orElseThrow();
         assertThat(support.visionScore()).isEqualTo(87);
         assertThat(support.perfectKda()).isTrue();
         assertThat(support.kda()).isNull();
+        assertThat(caps.fantasyScore()).isEqualTo(4 * 3.0 + 7 * 2.0 - 1 * 2.0 + 245 / 100.0 + 3.0);
     }
 
     @Test

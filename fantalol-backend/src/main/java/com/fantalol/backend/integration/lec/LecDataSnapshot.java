@@ -56,7 +56,8 @@ public record LecDataSnapshot(
             int cs,
             int visionScore,
             Double kda,
-            boolean perfectKda
+            boolean perfectKda,
+            Double fantasyScore
     ) {
     }
 }

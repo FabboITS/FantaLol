@@ -195,7 +195,8 @@ public class LecDataParser {
         Double kda = perfectKda ? null : (row.kills + row.assists) / (double) row.deaths;
         return new LecDataSnapshot.GamePlayer(
                 row.nickname, row.teamName, row.role.name(), row.champion, championPath(row.champion),
-                row.kills, row.deaths, row.assists, row.cs, row.visionScore, kda, perfectKda);
+                row.kills, row.deaths, row.assists, row.cs, row.visionScore, kda, perfectKda,
+                row.fantasyScore);
     }
 
     private PlayerRow persistedRow(ProviderPlayerGameStat stat) {

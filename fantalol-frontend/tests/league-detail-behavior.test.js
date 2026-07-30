@@ -70,6 +70,9 @@ test('LEC views render standings, fantasy averages and selectable per-game stati
   assert.match(script, /Vision \$\{player\.visionScore\}/);
   assert.match(script, /\$\{player\.cs\} CS/);
   assert.match(script, /Perfetto/);
+  assert.match(script, /player\.fantasyScore/);
+  assert.match(script, /Fantapunteggio/);
+  assert.match(script, /game-fantasy-score/);
   assert.doesNotMatch(script, /Fonte ufficiale non collegata|not-connected/);
 });
 

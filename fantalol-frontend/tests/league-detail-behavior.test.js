@@ -91,6 +91,15 @@ test('league page renders cumulative standings, lineup window state, and ADMIN d
   assert.match(script, /La nuova formazione sarà valida da venerdì\./);
 });
 
+test('ADMIN synchronization controls are placed in the LEC standings section', () => {
+  const html = page;
+  const lecSection = html.match(/<section class="league-view hidden" data-view="lec">([\s\S]*?)<\/section>/)?.[1] || '';
+  const performanceSection = html.match(/<section class="league-view hidden" data-view="performance">([\s\S]*?)<\/section>/)?.[1] || '';
+  assert.match(lecSection, /lec-admin-panel/);
+  assert.match(lecSection, /lec-sync-button/);
+  assert.doesNotMatch(performanceSection, /lec-admin-panel/);
+});
+
 test('cumulative UI renders source freshness separately from team provisional scoring', () => {
   assert.match(script, /cumulativePerformanceSection/);
   assert.match(script, /cumulativeRankingSection/);

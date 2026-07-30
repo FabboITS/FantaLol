@@ -46,7 +46,7 @@ public class ProviderSyncState {
     private String lastError;
 
     @Lob
-    @Column(name = "provider_snapshot")
+    @Column(name = "provider_snapshot", columnDefinition = "LONGTEXT")
     private String providerSnapshot;
 
     @Column(name = "inserted_games", nullable = false)

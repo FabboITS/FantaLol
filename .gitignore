@@ -1,3 +1,4 @@
 data/*.csv
 .worktrees/
 .superpowers/
+docs/

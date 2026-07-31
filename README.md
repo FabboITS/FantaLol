@@ -229,7 +229,3 @@ una distribuzione pubblica devono essere sostituiti con password e segreti sicur
 Il progetto è in fase di sviluppo e online sul sito qui presente:
 
 **[FantaLol](https://fantalol.win)**
-
-Al momento il repository non dichiara un deployment pubblico separato; avviando
-Docker Compose, l'applicazione completa è raggiungibile su
-**[http://localhost:8080](http://localhost:8080)**.

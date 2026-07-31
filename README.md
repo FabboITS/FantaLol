@@ -226,9 +226,9 @@ una distribuzione pubblica devono essere sostituiti con password e segreti sicur
 
 ## Link del progetto
 
-Il codice sorgente e la pagina pubblica del progetto sono disponibili su GitHub:
+Il progetto è in fase di sviluppo e online sul sito qui presente:
 
-**[github.com/FabboITS/FantaLol](https://github.com/FabboITS/FantaLol)**
+**[FantaLol](https://fantalol.win)**
 
 Al momento il repository non dichiara un deployment pubblico separato; avviando
 Docker Compose, l'applicazione completa è raggiungibile su

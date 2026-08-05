@@ -121,3 +121,13 @@ test('Overview ranking renders only fantasy teams and points, never player names
   assert.match(renderer, /overallAverage/);
   assert.doesNotMatch(renderer, /contributingPlayers|slot-contributors|cumulative-slots/);
 });
+
+test('matchday formations expose manager and global ADMIN confirmation controls', () => {
+  assert.match(page, /id="confirm-formation-button"/);
+  assert.match(script, /data-confirm-formation/);
+  assert.match(script, /activeFormationMatchdayId.*confirm/);
+  assert.match(script, /confirm-all/);
+  assert.match(script, /state\.user\?\.role==='ADMIN'/);
+  assert.match(script, /Conferma rosa/);
+  assert.match(script, /Conferma tutte le squadre/);
+});

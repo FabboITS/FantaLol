@@ -203,6 +203,43 @@ class FormationServiceTest {
     }
 
     @Test
+    void confermaLaRosaAutomaticaInUnaLegaGrandeDuranteLaFinestra() {
+        fantaTeam.getLeague().setParticipantCount(8);
+        List<LecPlayer> players = validPlayers(20L, "Rosa");
+        List<com.fantalol.backend.league.RosterEntry> roster = players.stream()
+                .map(player -> com.fantalol.backend.league.RosterEntry.builder()
+                        .fantaTeam(fantaTeam).lecPlayer(player).creditiSpesi(1).build())
+                .toList();
+        Instant now = Instant.parse("2026-07-29T10:00:00Z");
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(matchdayRepository.findById(1L)).thenReturn(Optional.of(matchday));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(true, now, "open"));
+        when(rosterEntryRepository.findByFantaTeamId(1L)).thenReturn(roster);
+        when(formationRepository.findByFantaTeamIdAndMatchdayId(1L, 1L)).thenReturn(Optional.empty());
+        when(formationRepository.save(any(Formation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FormationResponse response = formationService.confirmFormation("mago", 1L, 1L);
+
+        assertThat(response.confirmed()).isTrue();
+        verify(effectiveLineupService).scheduleConfirmed("mago", 1L, Set.copyOf(players));
+    }
+
+    @Test
+    void rifiutaLaConfermaFuoriDallaFinestra() {
+        fantaTeam.getLeague().setParticipantCount(8);
+        Instant now = Instant.parse("2026-08-01T10:00:00Z");
+        when(fantaTeamRepository.findById(1L)).thenReturn(Optional.of(fantaTeam));
+        when(matchdayRepository.findById(1L)).thenReturn(Optional.of(matchday));
+        when(clock.instant()).thenReturn(now);
+        when(lineupWindow.status(now)).thenReturn(new LineupWindow.Status(false, now, "closed"));
+
+        assertThatThrownBy(() -> formationService.confirmFormation("mago", 1L, 1L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("martedì");
+    }
+
+    @Test
     void exposesTheBackendLineupWindowBeforeAnyFormationExists() {
         Instant now = Instant.parse("2026-07-29T10:00:00Z");
         Instant effectiveAt = Instant.parse("2026-07-31T22:00:00Z");

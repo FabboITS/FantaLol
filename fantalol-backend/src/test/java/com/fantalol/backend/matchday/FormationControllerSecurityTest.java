@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,5 +62,24 @@ class FormationControllerSecurityTest {
                 org.mockito.ArgumentMatchers.eq("mago"),
                 org.mockito.ArgumentMatchers.eq(7L),
                 org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @WithMockUser(username = "mago", roles = "USER")
+    void regularUserCannotConfirmAllLeagueFormations() throws Exception {
+        mockMvc.perform(post("/api/admin/leagues/1/matchdays/2/formations/confirm-all"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void adminCanConfirmAllLeagueFormations() throws Exception {
+        when(formationService.confirmAllFormations("admin", 1L, 2L)).thenReturn(8);
+
+        mockMvc.perform(post("/api/admin/leagues/1/matchdays/2/formations/confirm-all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.confirmedTeams").value(8));
+
+        verify(formationService).confirmAllFormations("admin", 1L, 2L);
     }
 }

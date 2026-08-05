@@ -57,6 +57,10 @@ public class Formation {
     @Builder.Default
     private FormationSource source = FormationSource.SUBMITTED;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean confirmed = false;
+
     /** Punteggio totale della formazione per la giornata, calcolato a chiusura giornata. */
     private Double punteggioTotale;
 }

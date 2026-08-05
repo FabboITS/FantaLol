@@ -56,4 +56,11 @@ public class FormationController {
                                       @Valid @RequestBody FormationRequest request) {
         return formationService.impostaFormazione(authentication.getName(), fantaTeamId, request);
     }
+
+    @PostMapping("/{matchdayId}/confirm")
+    public FormationResponse confirm(Authentication authentication,
+                                    @PathVariable Long fantaTeamId,
+                                    @PathVariable Long matchdayId) {
+        return formationService.confirmFormation(authentication.getName(), fantaTeamId, matchdayId);
+    }
 }

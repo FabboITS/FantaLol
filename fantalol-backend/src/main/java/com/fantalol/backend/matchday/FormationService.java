@@ -126,6 +126,55 @@ public class FormationService {
     }
 
     @Transactional
+    public FormationResponse confirmFormation(String username, Long fantaTeamId, Long matchdayId) {
+        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
+                .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
+        verifyCanManage(username, fantaTeam);
+        Matchday matchday = matchdayRepository.findById(matchdayId)
+                .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + matchdayId));
+        ensureMatchdayBelongsToLeague(fantaTeam, matchday);
+        validateConfirmationWindow(matchday);
+
+        Set<LecPlayer> players = currentRosterOrFormation(fantaTeam, matchday);
+        validateFiveRoles(players);
+        Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeamId, matchdayId)
+                .orElseGet(() -> Formation.builder().fantaTeam(fantaTeam).matchday(matchday).build());
+        formation.setTitolari(players);
+        formation.setSource(FormationSource.SUBMITTED);
+        formation.setConfirmed(true);
+        Formation saved = formationRepository.save(formation);
+        effectiveLineupService.scheduleConfirmed(username, fantaTeamId, players);
+        return FormationResponse.from(saved, java.util.Map.of());
+    }
+
+    @Transactional
+    public int confirmAllFormations(String username, Long leagueId, Long matchdayId) {
+        if (userService.findByUsernameOrThrow(username).getRole() != Role.ADMIN) {
+            throw new BusinessRuleException("Solo l'ADMIN globale può confermare tutte le squadre");
+        }
+        Matchday matchday = matchdayRepository.findById(matchdayId)
+                .orElseThrow(() -> new ResourceNotFoundException("Giornata non trovata con id: " + matchdayId));
+        if (matchday.getLeague() == null || !leagueId.equals(matchday.getLeague().getId())) {
+            throw new BusinessRuleException("La giornata non appartiene alla lega indicata");
+        }
+        validateConfirmationWindow(matchday);
+        int confirmed = 0;
+        for (FantaTeam team : fantaTeamRepository.findByLeagueId(leagueId)) {
+            Set<LecPlayer> players = currentRosterOrFormation(team, matchday);
+            validateFiveRoles(players);
+            Formation formation = formationRepository.findByFantaTeamIdAndMatchdayId(team.getId(), matchdayId)
+                    .orElseGet(() -> Formation.builder().fantaTeam(team).matchday(matchday).build());
+            formation.setTitolari(players);
+            formation.setSource(FormationSource.SUBMITTED);
+            formation.setConfirmed(true);
+            formationRepository.save(formation);
+            effectiveLineupService.scheduleConfirmed(username, team.getId(), players);
+            confirmed++;
+        }
+        return confirmed;
+    }
+
+    @Transactional
     Formation resolveEffectiveFormation(FantaTeam fantaTeam, Matchday matchday) {
         Optional<Formation> existing = formationRepository.findByFantaTeamIdAndMatchdayId(
                 fantaTeam.getId(), matchday.getId());
@@ -213,6 +262,7 @@ public class FormationService {
 
         formation.setTitolari(titolari);
         formation.setSource(FormationSource.SUBMITTED);
+        formation.setConfirmed(false);
 
         Formation saved = formationRepository.save(formation);
         effectiveLineupService.schedule(username, fantaTeamId, titolari);
@@ -246,6 +296,50 @@ public class FormationService {
                 .map(player -> new FormationPlayerResponse(
                         player.getId(), player.getNickname(), player.getRuolo(), 0.0))
                 .toList();
+    }
+
+    private Set<LecPlayer> currentRosterOrFormation(FantaTeam fantaTeam, Matchday matchday) {
+        if (isFixedRoster(fantaTeam)) {
+            return rosterEntryRepository.findByFantaTeamId(fantaTeam.getId()).stream()
+                    .map(entry -> entry.getLecPlayer())
+                    .collect(java.util.stream.Collectors.toSet());
+        }
+        return formationRepository.findByFantaTeamIdAndMatchdayId(fantaTeam.getId(), matchday.getId())
+                .filter(formation -> formation.getSource() != FormationSource.MISSING)
+                .map(Formation::getTitolari)
+                .orElseGet(() -> effectiveLineupService.scheduledPlayers(fantaTeam.getId()));
+    }
+
+    private void validateConfirmationWindow(Matchday matchday) {
+        if (matchday.isChiusa()) {
+            throw new BusinessRuleException("La giornata è chiusa: non puoi confermare la formazione");
+        }
+        if (matchday.getLeague() != null && matchday.getLeague().isAuctionOpen()) {
+            throw new BusinessRuleException("Termina l'asta prima di confermare la formazione");
+        }
+        LineupWindow.Status status = lineupWindow.status(clock.instant());
+        if (!status.editable()) {
+            throw new BusinessRuleException("La formazione si può confermare da martedì a giovedì");
+        }
+    }
+
+    private void ensureMatchdayBelongsToLeague(FantaTeam fantaTeam, Matchday matchday) {
+        if (matchday.getLeague() != null && !fantaTeam.getLeague().getId().equals(matchday.getLeague().getId())) {
+            throw new BusinessRuleException("La giornata non appartiene alla lega della squadra");
+        }
+    }
+
+    private boolean isFixedRoster(FantaTeam fantaTeam) {
+        Integer participants = fantaTeam.getLeague().getParticipantCount();
+        return participants != null && participants >= 6;
+    }
+
+    private void validateFiveRoles(Set<LecPlayer> players) {
+        if (players == null || players.size() != NUMERO_TITOLARI
+                || players.stream().map(LecPlayer::getId).distinct().count() != NUMERO_TITOLARI
+                || players.stream().map(LecPlayer::getRuolo).distinct().count() != NUMERO_TITOLARI) {
+            throw new BusinessRuleException("La formazione deve contenere esattamente un player per ruolo");
+        }
     }
 
     private void verifyCanManage(String username, FantaTeam fantaTeam) {

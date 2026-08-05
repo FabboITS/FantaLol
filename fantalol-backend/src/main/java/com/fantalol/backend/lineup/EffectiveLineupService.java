@@ -69,6 +69,19 @@ public class EffectiveLineupService {
     }
 
     @Transactional
+    public void scheduleConfirmed(String username, Long fantaTeamId, Set<LecPlayer> players) {
+        FantaTeam fantaTeam = fantaTeamRepository.findById(fantaTeamId)
+                .orElseThrow(() -> new ResourceNotFoundException("FantaTeam non trovata con id: " + fantaTeamId));
+        ensureOwnerOrAdmin(username, fantaTeam);
+        LineupWindow.Status status = lineupWindow.status(clock.instant());
+        if (!status.editable()) {
+            throw new BusinessRuleException("Le formazioni si possono modificare da martedì a giovedì");
+        }
+        validateFiveRoles(players);
+        replaceOpenPeriods(fantaTeam, players, status.nextEffectiveAt(), LineupPeriodOrigin.USER);
+    }
+
+    @Transactional
     void createBackfillPeriods(FantaTeam fantaTeam, Set<LecPlayer> players, Instant effectiveFrom) {
         if (periodRepository.existsByFantaTeamId(fantaTeam.getId())) {
             return;

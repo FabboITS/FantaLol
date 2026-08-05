@@ -15,6 +15,7 @@ public record FormationResponse(
         List<String> titolari,
         List<FormationPlayerResponse> players,
         FormationSource source,
+        boolean confirmed,
         Double punteggioTotale,
         boolean editable,
         Instant nextEffectiveAt,
@@ -31,14 +32,14 @@ public record FormationResponse(
                         scores.getOrDefault(player.getId(), 0.0)))
                 .toList();
         return new FormationResponse(formation.getId(), formation.getFantaTeam().getId(), formation.getMatchday().getId(),
-                titolari, players, formation.getSource(), formation.getPunteggioTotale(), false, null, List.of());
+                titolari, players, formation.getSource(), formation.isConfirmed(), formation.getPunteggioTotale(), false, null, List.of());
     }
 
     public static FormationResponse from(Formation formation, Map<Long, Double> scores, boolean editable,
                                          Instant nextEffectiveAt, List<LecPlayer> effectivePlayers) {
         FormationResponse response = from(formation, scores);
         return new FormationResponse(response.id(), response.fantaTeamId(), response.matchdayId(), response.titolari(),
-                response.players(), response.source(), response.punteggioTotale(), editable, nextEffectiveAt,
+                response.players(), response.source(), response.confirmed(), response.punteggioTotale(), editable, nextEffectiveAt,
                 effectivePlayers.stream().map(LecPlayer::getNickname).toList());
     }
 }

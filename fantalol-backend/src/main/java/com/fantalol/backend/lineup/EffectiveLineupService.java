@@ -2,6 +2,7 @@ package com.fantalol.backend.lineup;
 
 import com.fantalol.backend.common.BusinessRuleException;
 import com.fantalol.backend.common.ResourceNotFoundException;
+import com.fantalol.backend.integration.lec.LecSyncProperties;
 import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.team.LecPlayer;
@@ -31,6 +32,7 @@ public class EffectiveLineupService {
     private final UserService userService;
     private final LineupWindow lineupWindow;
     private final Clock clock;
+    private final LecSyncProperties lecSyncProperties;
 
     @Transactional(readOnly = true)
     public Set<LecPlayer> activePlayersAt(Long fantaTeamId, Instant playedAt) {
@@ -78,7 +80,12 @@ public class EffectiveLineupService {
             throw new BusinessRuleException("Le formazioni si possono modificare da martedì a giovedì");
         }
         validateFiveRoles(players);
-        replaceOpenPeriods(fantaTeam, players, status.nextEffectiveAt(), LineupPeriodOrigin.USER);
+        Instant backfillFrom = lecSyncProperties.backfillFrom().toInstant();
+        if (!periodRepository.existsByFantaTeamIdAndEffectiveFrom(fantaTeamId, backfillFrom)) {
+            createHistoricalPeriods(fantaTeam, players, backfillFrom);
+        } else {
+            replaceOpenPeriods(fantaTeam, players, status.nextEffectiveAt(), LineupPeriodOrigin.USER);
+        }
     }
 
     @Transactional
@@ -88,6 +95,35 @@ public class EffectiveLineupService {
         }
         validateFiveRoles(players);
         List<EffectiveLineupPeriod> periods = newPeriods(fantaTeam, players, effectiveFrom, LineupPeriodOrigin.BACKFILL);
+        periodRepository.saveAll(periods);
+    }
+
+    @Transactional
+    void ensureHistoricalBackfill(FantaTeam fantaTeam, Set<LecPlayer> players, Instant effectiveFrom) {
+        if (!periodRepository.existsByFantaTeamIdAndEffectiveFrom(fantaTeam.getId(), effectiveFrom)) {
+            createHistoricalPeriods(fantaTeam, players, effectiveFrom);
+        }
+    }
+
+    private void createHistoricalPeriods(FantaTeam fantaTeam, Set<LecPlayer> players, Instant effectiveFrom) {
+        List<EffectiveLineupPeriod> openPeriods = periodRepository
+                .findByFantaTeamIdAndEffectiveUntilIsNull(fantaTeam.getId());
+        Instant firstFutureChange = openPeriods.stream()
+                .map(EffectiveLineupPeriod::getEffectiveFrom)
+                .filter(from -> from.isAfter(effectiveFrom))
+                .min(Instant::compareTo)
+                .orElse(null);
+        List<EffectiveLineupPeriod> periods = players.stream()
+                .map(player -> EffectiveLineupPeriod.builder()
+                        .fantaTeam(fantaTeam)
+                        .role(player.getRuolo())
+                        .lecPlayer(player)
+                        .effectiveFrom(effectiveFrom)
+                        .effectiveUntil(firstFutureChange)
+                        .origin(LineupPeriodOrigin.BACKFILL)
+                        .createdAt(clock.instant())
+                        .build())
+                .toList();
         periodRepository.saveAll(periods);
     }
 

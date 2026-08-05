@@ -26,6 +26,8 @@ public interface EffectiveLineupPeriodRepository extends JpaRepository<Effective
 
     boolean existsByFantaTeamId(Long fantaTeamId);
 
+    boolean existsByFantaTeamIdAndEffectiveFrom(Long fantaTeamId, Instant effectiveFrom);
+
     @Query("""
             select period from EffectiveLineupPeriod period
             where period.fantaTeam.id = :fantaTeamId

@@ -1,6 +1,7 @@
 package com.fantalol.backend.lineup;
 
 import com.fantalol.backend.common.BusinessRuleException;
+import com.fantalol.backend.integration.lec.LecSyncProperties;
 import com.fantalol.backend.league.FantaTeam;
 import com.fantalol.backend.league.FantaTeamRepository;
 import com.fantalol.backend.league.League;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,8 @@ class EffectiveLineupServiceTest {
     private FantaTeamRepository fantaTeamRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private LecSyncProperties lecSyncProperties;
     @Captor
     private ArgumentCaptor<List<EffectiveLineupPeriod>> savedPeriods;
 
@@ -48,8 +52,9 @@ class EffectiveLineupServiceTest {
     @BeforeEach
     void setUp() {
         Clock clock = Clock.fixed(Instant.parse("2026-07-29T10:00:00Z"), ZoneOffset.UTC);
+        when(lecSyncProperties.backfillFrom()).thenReturn(OffsetDateTime.parse("2026-07-24T00:00:00+02:00"));
         service = new EffectiveLineupService(periodRepository, fantaTeamRepository, userService,
-                new LineupWindow(), clock);
+                new LineupWindow(), clock, lecSyncProperties);
         fantaTeam = FantaTeam.builder().id(7L).owner(User.builder().username("mago").build())
                 .league(League.builder().participantCount(5).build()).build();
         players = Set.of(
@@ -103,7 +108,7 @@ class EffectiveLineupServiceTest {
     void rejectsSchedulingOutsideTheRomeEditingWindow() {
         Clock friday = Clock.fixed(Instant.parse("2026-07-31T10:00:00Z"), ZoneOffset.UTC);
         service = new EffectiveLineupService(periodRepository, fantaTeamRepository, userService,
-                new LineupWindow(), friday);
+                new LineupWindow(), friday, lecSyncProperties);
         when(fantaTeamRepository.findById(7L)).thenReturn(Optional.of(fantaTeam));
 
         assertThatThrownBy(() -> service.schedule("mago", 7L, players))
@@ -119,6 +124,42 @@ class EffectiveLineupServiceTest {
         assertThatThrownBy(() -> service.schedule("mago", 7L, players))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("almeno 6");
+    }
+
+    @Test
+    void confirmedLineupBackfillsHistoricalGamesWhenNoPeriodsExist() {
+        when(fantaTeamRepository.findById(7L)).thenReturn(Optional.of(fantaTeam));
+        when(periodRepository.existsByFantaTeamId(7L)).thenReturn(false);
+        when(periodRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.scheduleConfirmed("mago", 7L, players);
+
+        verify(periodRepository).saveAll(savedPeriods.capture());
+        assertThat(savedPeriods.getValue()).hasSize(5)
+                .allSatisfy(period -> assertThat(period.getEffectiveFrom())
+                        .isEqualTo(Instant.parse("2026-07-23T22:00:00Z")))
+                .allSatisfy(period -> assertThat(period.getOrigin()).isEqualTo(LineupPeriodOrigin.BACKFILL));
+    }
+
+    @Test
+    void confirmationRepairsFutureOnlyPeriodsWithoutOverwritingTheirFutureChange() {
+        Instant friday = Instant.parse("2026-07-30T22:00:00Z");
+        List<EffectiveLineupPeriod> future = players.stream()
+                .map(player -> EffectiveLineupPeriod.builder().fantaTeam(fantaTeam).role(player.getRuolo())
+                        .lecPlayer(player).effectiveFrom(friday).origin(LineupPeriodOrigin.USER).build())
+                .toList();
+        when(fantaTeamRepository.findById(7L)).thenReturn(Optional.of(fantaTeam));
+        when(periodRepository.existsByFantaTeamIdAndEffectiveFrom(7L, Instant.parse("2026-07-23T22:00:00Z")))
+                .thenReturn(false);
+        when(periodRepository.findByFantaTeamIdAndEffectiveUntilIsNull(7L)).thenReturn(future);
+        when(periodRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.scheduleConfirmed("mago", 7L, players);
+
+        verify(periodRepository).saveAll(savedPeriods.capture());
+        assertThat(savedPeriods.getValue()).hasSize(5)
+                .allSatisfy(period -> assertThat(period.getEffectiveUntil()).isEqualTo(friday));
+        assertThat(future).allSatisfy(period -> assertThat(period.getEffectiveUntil()).isNull());
     }
 
     @Test

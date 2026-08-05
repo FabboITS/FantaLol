@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.Set;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +31,14 @@ public class LineupBackfillService {
     @Transactional
     public void backfill() {
         for (FantaTeam fantaTeam : fantaTeamRepository.findAll()) {
-            if (periodRepository.existsByFantaTeamId(fantaTeam.getId())) {
-                continue;
-            }
-            playersToBackfill(fantaTeam).ifPresent(players ->
-                    effectiveLineupService.createBackfillPeriods(
-                            fantaTeam, players, lecSyncProperties.backfillFrom().toInstant()));
+            Instant effectiveFrom = lecSyncProperties.backfillFrom().toInstant();
+            playersToBackfill(fantaTeam).ifPresent(players -> {
+                if (periodRepository.existsByFantaTeamId(fantaTeam.getId())) {
+                    effectiveLineupService.ensureHistoricalBackfill(fantaTeam, players, effectiveFrom);
+                } else {
+                    effectiveLineupService.createBackfillPeriods(fantaTeam, players, effectiveFrom);
+                }
+            });
         }
     }
 

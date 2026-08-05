@@ -111,8 +111,8 @@ test('participantCreditBalances clamps a projected balance to zero', () => {
 
 test('rankCumulativeTeams preserves the server cumulative order without mutable point sorting', () => {
   const ranking = [
-    { fantasyTeamId: 9, teamName: 'Seconda', overallAverage: 5.3, provisional: false },
-    { fantasyTeamId: 2, teamName: 'Prima', overallAverage: 8.1, provisional: false }
+    { fantasyTeamId: 9, teamName: 'Seconda', overallTotal: 5.3, provisional: false },
+    { fantasyTeamId: 2, teamName: 'Prima', overallTotal: 8.1, provisional: false }
   ];
 
   assert.deepEqual(rankCumulativeTeams(ranking).map(team => team.teamName), ['Seconda', 'Prima']);

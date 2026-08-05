@@ -118,7 +118,8 @@ test('Overview ranking renders only fantasy teams and points, never player names
   const end = script.indexOf('function renderLecMatches(', start);
   const renderer = script.slice(start, end);
   assert.match(renderer, /team\.teamName/);
-  assert.match(renderer, /overallAverage/);
+  assert.match(renderer, /overallTotal/);
+  assert.doesNotMatch(renderer, /pt medi/);
   assert.doesNotMatch(renderer, /contributingPlayers|slot-contributors|cumulative-slots/);
 });
 

@@ -70,7 +70,7 @@ public class CumulativeScoringService {
             return List.of();
         }
         return scoreTeams(teams).stream()
-                .sorted(Comparator.comparing(CumulativeFantasyTeamScore::overallAverage,
+                .sorted(Comparator.comparing(CumulativeFantasyTeamScore::overallTotal,
                         Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(CumulativeFantasyTeamScore::teamName))
                 .toList();
@@ -121,11 +121,10 @@ public class CumulativeScoringService {
                 .map(entry -> entry.getValue().toScore(entry.getKey()))
                 .toList();
         boolean provisional = projections.stream().anyMatch(slot -> slot.gamesPlayed() == 0);
-        Double overallAverage = provisional ? null : projections.stream()
-                .mapToDouble(FantasyRoleSlotScore::average)
-                .average()
-                .orElseThrow();
-        return new CumulativeFantasyTeamScore(team.getId(), team.getNome(), projections, overallAverage, provisional);
+        Double overallTotal = provisional ? null : slots.values().stream()
+                .mapToDouble(SlotAccumulator::total)
+                .sum();
+        return new CumulativeFantasyTeamScore(team.getId(), team.getNome(), projections, overallTotal, provisional);
     }
 
     private CumulativePlayerScore playerScore(List<ProviderPlayerGameStat> playerStats) {
@@ -156,6 +155,10 @@ public class CumulativeScoringService {
         void add(ProviderPlayerGameStat stat) {
             scores.add(stat.getFantasyScore());
             players.add(stat.getLecPlayer().getNickname());
+        }
+
+        double total() {
+            return scores.stream().mapToDouble(Double::doubleValue).sum();
         }
 
         FantasyRoleSlotScore toScore(PlayerRole role) {

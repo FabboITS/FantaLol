@@ -6,7 +6,7 @@ public record CumulativeFantasyTeamScore(
         Long fantasyTeamId,
         String teamName,
         List<FantasyRoleSlotScore> slots,
-        Double overallAverage,
+        Double overallTotal,
         boolean provisional
 ) {
 }

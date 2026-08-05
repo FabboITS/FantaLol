@@ -120,8 +120,22 @@ class CumulativeScoringServiceTest {
         assertThat(support.gamesPlayed()).isZero();
         assertThat(support.average()).isNull();
         assertThat(support.status()).isEqualTo("awaiting-data");
-        assertThat(score.overallAverage()).isNull();
+        assertThat(score.overallTotal()).isNull();
         assertThat(score.provisional()).isTrue();
+    }
+
+    @Test
+    void teamTotalSumsEveryParticipatedGameForTheHistoricallyActiveRoster() {
+        ProviderPlayerGameStat support = stat(starters.get(PlayerRole.SUPPORT), "2026-07-29T12:00:00Z", 14.0);
+        when(statRepository.findAllByOrderByProviderGamePlayedAtAsc()).thenReturn(List.of(
+                stat(starters.get(PlayerRole.TOP), "2026-07-29T12:00:00Z", 11.0),
+                stat(starters.get(PlayerRole.JUNGLE), "2026-07-29T12:00:00Z", 12.0),
+                stat(oldMid, "2026-07-29T12:00:00Z", 10.0),
+                stat(newMid, "2026-08-01T12:00:00Z", 40.0),
+                stat(starters.get(PlayerRole.ADC), "2026-07-29T12:00:00Z", 13.0),
+                support));
+
+        assertThat(service.teamScore(TEAM_ID).overallTotal()).isEqualTo(100.0);
     }
 
     @Test

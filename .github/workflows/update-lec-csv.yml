@@ -16,11 +16,11 @@
             python-version: "3.12"
 
         - name: Install dependencies
-          run: pip install boto3
+          run: pip install boto3 gdown
 
         - name: Download, filter and upload CSV
           env:
-            ORACLE_CSV_URL: ${{ secrets.ORACLE_CSV_URL }}
+            ORACLE_FILE_ID: ${{ secrets.ORACLE_FILE_ID }}
             R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
             R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
             R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -31,12 +31,17 @@
             import csv
             import io
             import os
-            import urllib.request
             import boto3
+            import gdown
 
-            source_url = os.environ["ORACLE_CSV_URL"]
-            response = urllib.request.urlopen(source_url, timeout=120)
-            raw = response.read().decode("utf-8-sig")
+            gdown.download(
+                id=os.environ["ORACLE_FILE_ID"],
+                output="oracle.csv",
+                quiet=False
+            )
+
+            with open("oracle.csv", "r", encoding="utf-8-sig") as file:
+                raw = file.read()
 
             reader = csv.DictReader(io.StringIO(raw))
             rows = []
@@ -65,7 +70,7 @@
             writer.writerows(rows)
 
             r2_endpoint = (
-                "https://" 
+                "https://"
                 + os.environ["R2_ACCOUNT_ID"]
                 + ".r2.cloudflarestorage.com"
             )
@@ -86,5 +91,5 @@
                 CacheControl="no-cache",
             )
 
-            print(f"Caricate {len(rows)} righe nel file R2")
+            print("CSV filtrato e caricato correttamente su R2")
             PY

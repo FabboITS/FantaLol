@@ -228,3 +228,19 @@ def test_openapi_schema_is_served():
 
     response = Client().get("/api/schema/")
     assert response.status_code == 200
+
+
+# --- frontend locale ------------------------------------------------------
+def test_local_frontend_is_served_on_the_same_origin(settings):
+    """In sviluppo Django serve il frontend provvisorio: niente CORS da configurare."""
+    from django.test import Client
+
+    if not settings.LOCAL_FRONTEND_DIR.exists():
+        pytest.skip("frontend provvisorio non presente")
+    client = Client()
+    home = client.get("/")
+    assert home.status_code == 200
+    assert b"FantaLoL" in b"".join(home.streaming_content)
+    assert client.get("/js/app.js").status_code == 200
+    assert client.get("/css/style.css").status_code == 200
+    assert client.get("/lega.html").status_code == 200

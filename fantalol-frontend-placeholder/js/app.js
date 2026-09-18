@@ -10,8 +10,16 @@
   const val = (id) => ($(id) ? $(id).value.trim() : "");
   const idList = (id) => val(id).split(",").map((s) => s.trim()).filter(Boolean).map(Number);
 
+  /* Quando la pagina è servita da Django (stessa origine) l'API sta su /api;
+     aperta da file:// si ripiega sul backend locale. */
+  function defaultApiBase() {
+    return location.protocol.startsWith("http")
+      ? location.origin + "/api"
+      : "http://localhost:8080/api";
+  }
+
   function apiBase() {
-    return (val("api-base") || "http://localhost:8080/api").replace(/\/$/, "");
+    return (val("api-base") || defaultApiBase()).replace(/\/$/, "");
   }
 
   function token() {
@@ -158,6 +166,9 @@
       .then(handler)
       .catch((error) => console.warn("Chiamata fallita:", error.message));
   });
+
+  const apiBaseInput = $("api-base");
+  if (apiBaseInput && !apiBaseInput.value.trim()) apiBaseInput.value = defaultApiBase();
 
   if (token()) setAuthState("Token presente in localStorage", "ok");
 })();

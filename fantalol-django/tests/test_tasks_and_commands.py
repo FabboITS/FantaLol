@@ -104,6 +104,58 @@ def test_seed_base_data_can_set_an_explicit_admin_password():
     assert admin.check_password("supersegreta") is True
 
 
+def test_seed_base_data_admin_can_log_in_with_the_default_password():
+    """L'admin di default deve poter accedere senza configurare nulla."""
+    call_command("seed_base_data", stdout=StringIO())
+    admin = User.objects.get(username="Natsu_Admin")
+    assert admin.check_password("Fr3DdY1e2@!!") is True
+    assert admin.check_password("password-sbagliata") is False
+
+
+def test_seed_base_data_creates_no_other_user():
+    call_command("seed_base_data", stdout=StringIO())
+    assert list(User.objects.values_list("username", flat=True)) == ["Natsu_Admin"]
+
+
+def test_seed_base_data_does_not_reset_an_existing_admin_password():
+    call_command("seed_base_data", "--admin-password", "prima", stdout=StringIO())
+    call_command("seed_base_data", "--admin-password", "seconda", stdout=StringIO())
+    admin = User.objects.get(username="Natsu_Admin")
+    assert admin.check_password("prima") is True
+    call_command("seed_base_data", "--admin-password", "seconda",
+                 "--reset-admin-password", stdout=StringIO())
+    admin.refresh_from_db()
+    assert admin.check_password("seconda") is True
+
+
+# --- reset_users ----------------------------------------------------------
+def test_reset_users_keeps_only_the_admin():
+    call_command("seed_base_data", stdout=StringIO())
+    league = LeagueFactory(admin=UserFactory())
+    FantaTeamFactory(league=league)
+    assert User.objects.count() == 3
+
+    call_command("reset_users", "--yes", stdout=StringIO())
+    assert list(User.objects.values_list("username", flat=True)) == ["Natsu_Admin"]
+    # Le leghe dell'utente cancellato cadono a cascata.
+    assert LeagueFactory._meta.model.objects.count() == 0
+
+
+def test_reset_users_dry_run_deletes_nothing():
+    call_command("seed_base_data", stdout=StringIO())
+    UserFactory(username="mario")
+    call_command("reset_users", "--dry-run", stdout=StringIO())
+    assert User.objects.filter(username="mario").exists()
+
+
+def test_reset_users_leaves_pro_data_untouched():
+    call_command("seed_base_data", stdout=StringIO())
+    UserFactory()
+    call_command("reset_users", "--yes", stdout=StringIO())
+    assert ProPlayer.objects.count() == 50
+    assert ProTeam.objects.count() == 10
+
+
 def test_seed_assigns_the_frontend_asset_paths():
     call_command("seed_base_data", stdout=StringIO())
     caps = ProPlayer.objects.get(nickname="Caps")

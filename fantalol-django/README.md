@@ -1,8 +1,8 @@
 # FantaLoL — backend Django
 
-Backend del fantasy game **FantaLoL**, riscritto in **Python 3.12 / Django 5 /
-Django REST Framework** a partire dal backend Java 17 / Spring Boot 3.3 che vive
-in [`../fantalol-backend`](../fantalol-backend).
+Backend del fantasy game **FantaLoL**, scritto in **Python 3.12 / Django 5 /
+Django REST Framework**. Sostituisce integralmente il precedente backend
+Java 17 / Spring Boot 3.3, che è stato rimosso dal repository.
 
 Tre cose cambiano rispetto alla versione Java:
 
@@ -22,13 +22,14 @@ suite di test blocca qualsiasi deriva numerica.
 ## Indice
 
 - [Avvio rapido](#avvio-rapido)
+- [Esecuzione in locale](#esecuzione-in-locale)
 - [Configurazione](#configurazione)
 - [Regole di gioco](#regole-di-gioco)
 - [Modalità Worlds](#modalità-worlds)
 - [Pipeline di ingest](#pipeline-di-ingest)
 - [API](#api)
 - [Test e qualità](#test-e-qualità)
-- [Migrazione dal backend Java](#migrazione-dal-backend-java)
+- [Utenti e reset](#utenti-e-reset)
 - [Mappa dei package](#mappa-dei-package)
 
 ---
@@ -51,31 +52,72 @@ setup Spring precedente), `worker` (Celery) e `beat` (Celery Beat). Il servizio
 - Schema OpenAPI: <http://localhost:8080/api/schema/>
 - Django admin: <http://localhost:8080/django-admin/>
 
-### In locale, senza Docker
+---
+
+## Esecuzione in locale
+
+Serve **solo Python 3.12+**: niente Docker, niente Postgres, niente Redis.
+Quando `DB_HOST` non è impostata il progetto usa SQLite, e con `DEBUG` attivo
+Django serve anche il frontend provvisorio sulla stessa porta delle API — quindi
+un solo processo e nessun problema di CORS.
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+cd fantalol-django
+
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements/dev.txt
-python manage.py migrate          # senza DB_HOST usa SQLite
-python manage.py seed_base_data
+
+python manage.py migrate             # crea db.sqlite3
+python manage.py seed_base_data      # admin globale + 10 roster LEC
 python manage.py runserver 8080
 ```
 
-Celery, in due terminali separati:
+Poi apri **<http://localhost:8080>** e accedi come `Natsu_Admin`.
+
+| Indirizzo | Cosa c'è |
+| --- | --- |
+| <http://localhost:8080> | frontend provvisorio di collaudo |
+| <http://localhost:8080/lega.html?leagueId=1> | dettaglio di una lega stagionale |
+| <http://localhost:8080/lega.html?worldsLeagueId=1> | dettaglio di una lega Worlds |
+| <http://localhost:8080/api/docs/> | Swagger UI |
+| <http://localhost:8080/django-admin/> | pannello di amministrazione Django |
+
+`psycopg` in `requirements/base.txt` richiede i header di PostgreSQL. Se
+l'installazione fallisce e vuoi restare su SQLite, basta installare le sole
+dipendenze applicative:
+
+```bash
+pip install "Django>=5.0,<5.3" djangorestframework djangorestframework-simplejwt \
+            drf-spectacular celery redis httpx bcrypt \
+            pytest pytest-django factory_boy coverage respx
+```
+
+### Celery serve?
+
+**No, non per il collaudo locale.** I task periodici (sync PandaScore, enrich
+Leaguepedia, deadline Worlds) richiedono Redis, ma il resto del gioco funziona
+senza: le aste scadute vengono chiuse alla prima lettura utile, grazie a
+`FINALIZE_AUCTIONS_ON_READ` (attiva per default).
+
+Se vuoi comunque provarli, con un Redis in ascolto:
 
 ```bash
 celery -A config worker --loglevel=info
 celery -A config beat   --loglevel=info
 ```
 
-### Utenza iniziale
-
-`seed_base_data` crea l'admin globale **`Natsu_Admin`**, riusando lo stesso hash
-BCrypt dell'`AdminAccountInitializer` Java: le credenziali esistenti restano
-valide. Per impostarne una nuova:
+In alternativa, per eseguire un task subito e in-process:
 
 ```bash
-python manage.py seed_base_data --admin-password 'nuova-password'
+python manage.py shell -c "from ingest.tasks import sync_pandascore; print(sync_pandascore())"
+```
+
+### Ricominciare da zero
+
+```bash
+rm db.sqlite3
+python manage.py migrate && python manage.py seed_base_data
 ```
 
 ---
@@ -96,6 +138,10 @@ rilevanti:
 | `AUCTION_SECONDS_PER_BID` | `15` | countdown d'asta, riarmato a ogni rilancio |
 | `SPLIT_BACKFILL_FROM` | `2026-07-24T00:00:00+02:00` | inizio split per lo storico formazioni |
 | `DB_HOST` | — | se assente si usa SQLite (comodo per i test locali) |
+| `DJANGO_DEBUG` | `true` | in produzione va messa a `false` |
+| `SERVE_LOCAL_FRONTEND` | segue `DJANGO_DEBUG` | se attiva, Django serve il frontend provvisorio su `/` |
+| `FINALIZE_AUCTIONS_ON_READ` | `true` | chiude le aste scadute senza bisogno di un worker Celery |
+| `DJANGO_ADMIN_PASSWORD` | — | password dell'admin creato da `seed_base_data` |
 
 `SUPPORTED_PRO_LEAGUES` è l'allowlist delle leghe sincronizzate, nel formato
 `CODICE:pandascore_league_id`. **Nessun id di lega è hardcoded nel client**: le
@@ -118,8 +164,9 @@ fantapunti = uccisioni × K(ruolo)
            + 3 se vittoria
 ```
 
-Coefficienti (da `scoring/RoleScoreWeights.java`, invariati — vedi
-[`scoring/weights.py`](scoring/weights.py)):
+Coefficienti ripresi senza modifiche dall'originale
+`scoring/RoleScoreWeights.java` (ora solo nella storia dei commit) — vedi
+[`scoring/weights.py`](scoring/weights.py):
 
 | Ruolo | K (kill) | A (assist) | D (morte) | risorsa |
 | --- | --- | --- | --- | --- |
@@ -363,38 +410,47 @@ con coverage.
 
 ---
 
-## Migrazione dal backend Java
+## Utenti e reset
 
-### Con accesso al DB legacy MySQL
-
-```bash
-pip install PyMySQL
-python manage.py migrate_from_legacy --mysql-url mysql://user:pass@host:3306/fantalol --dry-run
-python manage.py migrate_from_legacy --mysql-url mysql://user:pass@host:3306/fantalol
-```
-
-Travasa utenti, profili, squadre e player pro, leghe, FantaTeam, rose e storico
-formazioni **preservando gli id**, così i riferimenti lato frontend restano
-validi; al termine riallinea le sequenze Postgres. Gli hash BCrypt di Spring
-Security restano verificabili: `BCryptPasswordHasher` è il primo hasher in
-`PASSWORD_HASHERS`, quindi nessuno deve reimpostare la password.
-
-### Senza accesso al DB legacy
+L'unico account creato dal seed è l'admin globale **`Natsu_Admin`**: non esistono
+utenze di prova, e ogni altro utente nasce dalla registrazione via API.
 
 ```bash
-python manage.py migrate
-python manage.py seed_base_data
+python manage.py seed_base_data                              # crea l'admin se manca
+python manage.py seed_base_data --admin-password 'nuova'     # solo alla creazione
+python manage.py seed_base_data --admin-password 'nuova' --reset-admin-password
 ```
 
-Si parte dallo schema nuovo con l'admin globale e i 10 roster LEC del `DataSeeder`
-Java. **I roster LPL e LCK non sono nel repository Java e non vengono inventati**:
-si importano da PandaScore (`import_pro_rosters --tournament-id <ID>`) oppure si
-caricano da un JSON con la stessa forma di `LEC_TEAMS`
-(`seed_base_data --rosters rosters.json`).
+La password si può anche passare con la variabile `DJANGO_ADMIN_PASSWORD`. In
+assenza di entrambe, il comando usa l'hash BCrypt incluso in
+`accounts/management/commands/seed_base_data.py`.
+
+> **Nota di sicurezza.** Quell'hash è materiale sensibile versionato: chi clona
+> il repository può tentare un attacco a dizionario offline. In produzione
+> imposta `DJANGO_ADMIN_PASSWORD` e ruota la credenziale.
+
+### Svuotare le utenze
+
+```bash
+python manage.py reset_users --dry-run   # mostra chi verrebbe cancellato
+python manage.py reset_users             # chiede conferma
+python manage.py reset_users --yes       # senza conferma
+```
+
+Cancella tutti gli utenti tranne `Natsu_Admin` e, a cascata, le loro leghe,
+FantaTeam, rose, formazioni e storico di titolarità. I dati pro (squadre,
+player, serie, box score) restano intatti. Con `--keep <username>` si preserva
+un utente diverso.
+
+Per azzerare davvero tutto, database compreso, basta eliminare `db.sqlite3` e
+rieseguire `migrate` + `seed_base_data`.
 
 ---
 
 ## Mappa dei package
+
+Il backend Java non è più nel repository; la tabella resta come traccia della
+corrispondenza, utile per orientarsi nella storia dei commit.
 
 | Package Java (`com.fantalol.backend.*`) | App Django |
 | --- | --- |
@@ -418,8 +474,15 @@ Il frontend definitivo resta in [`../fantalol-frontend`](../fantalol-frontend) e
 non è stato toccato. Per il collaudo manuale del backend c'è un placeholder
 minimale in [`../fantalol-frontend-placeholder`](../fantalol-frontend-placeholder)
 (stesse pagine `index.html` / `lega.html`, stessa suddivisione `css/` e `js/`),
-che consuma le nuove API senza curare lo stile:
+che consuma le nuove API senza curare lo stile.
+
+Con `runserver` attivo lo trovi già su <http://localhost:8080>: Django lo serve
+dalla stessa origine delle API, e le immagini di player e loghi arrivano da
+`../fantalol-frontend`. Se preferisci servirlo a parte:
 
 ```bash
 cd ../fantalol-frontend-placeholder && python -m http.server 5500
 ```
+
+In quel caso la pagina punta al backend su `http://localhost:8080/api` e il CORS
+è già aperto in sviluppo (`CORS_ALLOWED_ORIGINS`, default `*`).

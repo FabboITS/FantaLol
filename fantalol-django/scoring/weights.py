@@ -1,8 +1,9 @@
 """Coefficienti della formula fantapunti, per ruolo.
 
-Valori ripresi **senza modifiche** da
-`fantalol-backend/src/main/java/com/fantalol/backend/scoring/RoleScoreWeights.java`
-(record `Weights(kills, assists, deaths, csPerHundred)`).
+Valori ripresi **senza modifiche** dal backend Java originale,
+`com.fantalol.backend.scoring.RoleScoreWeights` (record
+`Weights(kills, assists, deaths, csPerHundred)`), oggi consultabile solo nella
+storia dei commit.
 
     fantapunti = uccisioni x K(ruolo)
                + assist    x A(ruolo)

@@ -139,6 +139,17 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [p for p in [BASE_DIR / "static"] if p.exists()]
 
+# --- Frontend servito da Django (solo sviluppo locale) --------------------
+# Con `SERVE_LOCAL_FRONTEND` attivo, Django serve il frontend provvisorio sulla
+# stessa origine delle API: un solo processo da avviare e nessun problema di
+# CORS. In produzione il frontend viaggia separato e questo resta spento.
+SERVE_LOCAL_FRONTEND = env_bool("SERVE_LOCAL_FRONTEND", DEBUG)
+LOCAL_FRONTEND_DIR = Path(os.environ.get(
+    "LOCAL_FRONTEND_DIR", BASE_DIR.parent / "fantalol-frontend-placeholder"))
+# Immagini di player, champion e loghi: restano nel frontend definitivo.
+LOCAL_ASSETS_DIR = Path(os.environ.get(
+    "LOCAL_ASSETS_DIR", BASE_DIR.parent / "fantalol-frontend"))
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- DRF ------------------------------------------------------------------
@@ -176,6 +187,7 @@ SPECTACULAR_SETTINGS = {
 # --- Celery ---------------------------------------------------------------
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", os.environ.get("REDIS_URL", "redis://redis:6379/0"))
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+# In locale, senza broker Redis, conviene eseguire i task in-process.
 CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_TIMEZONE = "UTC"
@@ -192,6 +204,12 @@ FANTALOL = {
     "AUCTION_SECONDS_PER_BID": env_int("AUCTION_SECONDS_PER_BID", 15),
     # Inizio dello split corrente: le formazioni storiche partono da qui.
     "SPLIT_BACKFILL_FROM": os.environ.get("SPLIT_BACKFILL_FROM", "2026-07-24T00:00:00+02:00"),
+    # Password dell'admin globale creato da `seed_base_data`. Se assente il
+    # comando usa l'hash BCrypt di default incluso nel comando stesso.
+    "ADMIN_PASSWORD": os.environ.get("DJANGO_ADMIN_PASSWORD", ""),
+    # Senza un worker Celery attivo le aste scadute vengono chiuse alla prima
+    # lettura utile, così il gioco resta coerente anche in esecuzione locale.
+    "FINALIZE_AUCTIONS_ON_READ": env_bool("FINALIZE_AUCTIONS_ON_READ", True),
 }
 
 LINEUP_TIMEZONE = ZoneInfo(FANTALOL["LINEUP_TIMEZONE"])

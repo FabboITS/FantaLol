@@ -438,6 +438,14 @@ def place_bid(user, auction_id, fanta_team_id, credits: int) -> AuctionSession:
 
 
 def active_auction(league_id) -> AuctionSession | None:
+    """L'asta attiva della lega, se c'è.
+
+    Quando non gira un worker Celery (tipicamente in locale) le aste scadute
+    vengono chiuse qui, alla prima lettura utile: senza questo, un'asta scaduta
+    resterebbe `ACTIVE` per sempre e il player non verrebbe mai assegnato.
+    """
+    if settings.FANTALOL["FINALIZE_AUCTIONS_ON_READ"]:
+        finalize_expired_auctions()
     return (AuctionSession.objects.select_related("league", "player", "highest_bidder")
             .filter(league_id=league_id, status=AuctionStatus.ACTIVE).order_by("id").first())
 

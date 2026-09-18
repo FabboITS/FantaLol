@@ -166,10 +166,16 @@ class WorldsLeagueAuctionView(APIView):
         return Response(WorldsAuctionSerializer(auction).data, status=status.HTTP_201_CREATED)
 
     def get(self, request, league_id=None):
+        from django.conf import settings
+
         from .models import WorldsAuctionStatus
 
         league = services.get_league_or_404(league_id)
         services.assert_can_view(request.user, league)
+        # Come per le leghe stagionali: senza worker Celery le aste scadute si
+        # chiudono alla prima lettura.
+        if settings.FANTALOL["FINALIZE_AUCTIONS_ON_READ"]:
+            services.finalize_expired_auctions()
         auction = (league.auctions.select_related("player", "highest_bidder")
                    .filter(status=WorldsAuctionStatus.ACTIVE).order_by("id").first())
         return Response(WorldsAuctionSerializer(auction).data if auction else None)

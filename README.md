@@ -7,13 +7,13 @@ acquistare i giocatori professionisti tramite un'asta a crediti, comporre la
 propria rosa e competere in una classifica basata sulle prestazioni reali dei
 player.
 
-> **Stato della migrazione.** Il backend è stato riscritto in **Python 3.12 /
-> Django 5** dentro [`fantalol-django/`](fantalol-django/): stesse regole di gioco,
-> stessi contratti REST, più la modalità Worlds e una pipeline dati basata su
-> **PandaScore + Leaguepedia** al posto dei CSV di Oracle's Elixir. Il backend Java
-> in [`fantalol-backend/`](fantalol-backend/) resta nel repository come riferimento
-> finché la migrazione non è validata in produzione. Il dettaglio completo del
-> nuovo backend è in [`fantalol-django/README.md`](fantalol-django/README.md).
+> **Backend.** Il backend vive in [`fantalol-django/`](fantalol-django/), scritto
+> in **Python 3.12 / Django 5**. Ha sostituito il precedente backend Java /
+> Spring Boot, che è stato rimosso dal repository (resta nella storia dei
+> commit): stesse regole di gioco, stessi contratti REST, più la modalità Worlds
+> e una pipeline dati basata su **PandaScore + Leaguepedia** al posto dei CSV di
+> Oracle's Elixir. Il dettaglio completo è in
+> [`fantalol-django/README.md`](fantalol-django/README.md).
 
 ## Cosa può fare un utente
 
@@ -38,9 +38,11 @@ la propria lega.
 
 ## Cosa può fare un amministratore
 
-All'avvio dell'applicazione viene inizializzato un account con ruolo `ADMIN`.
-Le sue credenziali sono definite dal backend e non devono essere pubblicate nel
-repository.
+Il comando di seed inizializza un unico account con ruolo `ADMIN`, `Natsu_Admin`.
+La sua password si imposta con `DJANGO_ADMIN_PASSWORD` oppure con
+`seed_base_data --admin-password`; in mancanza di entrambe viene usato l'hash
+BCrypt di default incluso nel comando. Non esistono utenze di prova: ogni altro
+account nasce dalla registrazione.
 
 L'amministratore globale può:
 
@@ -204,7 +206,7 @@ La struttura principale del repository è:
 
 ```text
 FantaLol/
-├── fantalol-django/                backend Django (attivo)
+├── fantalol-django/                backend Django
 │   ├── config/ accounts/ core/     configurazione, utenti, utilità comuni
 │   ├── teams/ leagues/ lineups/    squadre pro, leghe, formazioni
 │   ├── matchdays/ scoring/         giornate, punteggi e classifiche
@@ -213,7 +215,6 @@ FantaLol/
 │   ├── requirements/
 │   ├── Dockerfile
 │   └── docker-compose.yml
-├── fantalol-backend/               backend Java/Spring (riferimento storico)
 ├── fantalol-frontend/
 │   ├── assets/                     loghi delle squadre
 │   ├── Player_immage/              immagini di player e champion
@@ -222,9 +223,34 @@ FantaLol/
 │   ├── index.html
 │   └── lega.html
 ├── fantalol-frontend-placeholder/  frontend minimale di collaudo del backend
+├── docs/                           relazione tecnica e note di progetto
 ├── Rules.md
 └── README.md
 ```
+
+## Esecuzione in locale
+
+Serve solo Python 3.12 o superiore: il progetto usa SQLite quando non è
+configurato un database, e in sviluppo Django serve anche il frontend
+provvisorio sulla stessa porta delle API.
+
+```bash
+cd fantalol-django
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements/dev.txt
+
+python manage.py migrate
+python manage.py seed_base_data
+python manage.py runserver 8080
+```
+
+Il sito di collaudo è poi su **[http://localhost:8080](http://localhost:8080)**,
+Swagger su **[http://localhost:8080/api/docs/](http://localhost:8080/api/docs/)**.
+L'unico account creato è l'amministratore globale `Natsu_Admin`.
+
+Dettagli, alternative e comandi di reset in
+[`fantalol-django/README.md`](fantalol-django/README.md#esecuzione-in-locale).
 
 ## Avvio con Docker Compose
 

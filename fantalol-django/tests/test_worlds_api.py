@@ -19,6 +19,21 @@ from .factories import (
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(autouse=True)
+def worlds_open(settings):
+    """Apre la sezione Worlds per i test di questo file.
+
+    Qui si verifica la modalità in sé; il gating "in fase di sviluppo" ha i
+    suoi test dedicati in fondo al file.
+    """
+    settings.FANTALOL = {**settings.FANTALOL, "WORLDS_IN_DEVELOPMENT": False}
+
+
+@pytest.fixture
+def worlds_in_development(settings):
+    settings.FANTALOL = {**settings.FANTALOL, "WORLDS_IN_DEVELOPMENT": True}
+
+
 @pytest.fixture
 def edition():
     edition = WorldsEditionFactory(nome="Worlds 2026", anno=2026)
@@ -221,3 +236,67 @@ def test_recompute_endpoint_is_reserved_to_the_league_admin(auth, user, edition)
     response = auth(user).post(f"/api/worlds/leagues/{league.id}/recompute/")
     assert response.status_code == 200
     assert response.data["recomputed"] == 0
+
+
+# --- sezione in fase di sviluppo -----------------------------------------
+def test_worlds_is_closed_to_regular_users_while_in_development(
+        auth, user, edition, worlds_in_development):
+    """Con il flag attivo ogni rotta Worlds risponde 403 a un utente normale."""
+    league = WorldsLeagueFactory(edition=edition, admin=user)
+    WorldsStageFactory(edition=edition, ordine=1)
+    client = auth(user)
+
+    closed = [
+        ("get", "/api/worlds/editions/"),
+        ("get", f"/api/worlds/editions/{edition.id}/"),
+        ("get", f"/api/worlds/editions/{edition.id}/stages/"),
+        ("get", f"/api/worlds/editions/{edition.id}/pool/"),
+        ("get", "/api/worlds/leagues/"),
+        ("post", "/api/worlds/leagues/"),
+        ("post", "/api/worlds/leagues/join/"),
+        ("get", f"/api/worlds/leagues/{league.id}/"),
+        ("get", f"/api/worlds/leagues/{league.id}/teams/"),
+        ("get", f"/api/worlds/leagues/{league.id}/lineup/"),
+        ("post", f"/api/worlds/leagues/{league.id}/lineup/"),
+        ("get", f"/api/worlds/leagues/{league.id}/standings/"),
+        ("post", f"/api/worlds/leagues/{league.id}/swap/"),
+        ("post", f"/api/worlds/leagues/{league.id}/recompute/"),
+        ("get", f"/api/worlds/leagues/{league.id}/auction/"),
+    ]
+    for method, path in closed:
+        response = getattr(client, method)(path, {}, format="json")
+        assert response.status_code == 403, f"{method.upper()} {path} -> {response.status_code}"
+        assert "in fase di sviluppo" in response.data["message"]
+
+
+def test_worlds_stays_open_to_the_admin_while_in_development(
+        auth, admin_user, edition, worlds_in_development):
+    client = auth(admin_user)
+    assert client.get("/api/worlds/editions/").status_code == 200
+    assert client.get(f"/api/worlds/editions/{edition.id}/stages/").status_code == 200
+    assert client.get("/api/worlds/leagues/").status_code == 200
+
+
+def test_worlds_reopens_to_everyone_when_the_flag_is_off(auth, user, edition):
+    # La fixture autouse ha già spento WORLDS_IN_DEVELOPMENT.
+    assert auth(user).get("/api/worlds/editions/").status_code == 200
+
+
+def test_status_endpoint_tells_regular_users_the_section_is_in_development(
+        auth, user, worlds_in_development):
+    response = auth(user).get("/api/worlds/status/")
+    assert response.status_code == 200
+    assert response.data["inDevelopment"] is True
+    assert response.data["accessible"] is False
+    assert "in fase di sviluppo" in response.data["message"]
+
+
+def test_status_endpoint_marks_the_section_accessible_for_the_admin(
+        auth, admin_user, worlds_in_development):
+    response = auth(admin_user).get("/api/worlds/status/")
+    assert response.data["inDevelopment"] is True
+    assert response.data["accessible"] is True
+
+
+def test_status_endpoint_requires_authentication(api):
+    assert api.get("/api/worlds/status/").status_code == 401

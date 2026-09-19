@@ -123,6 +123,10 @@ quando i dati della fonte non sono ancora completi.
 
 ### 5. Modalità Worlds
 
+> **In fase di sviluppo.** La sezione è accessibile solo all'amministratore
+> globale: gli altri utenti la vedono segnalata come non ancora disponibile.
+> Si apre a tutti impostando `WORLDS_IN_DEVELOPMENT=false`.
+
 Accanto alle leghe stagionali c'è un formato **event-based** legato al mondiale,
 in stile Fantacalcio Champions League. Il player pool è l'unione dei roster
 qualificati, quindi non è vincolato a un singolo campionato; la "giornata" è la
@@ -243,6 +247,13 @@ pip install -r requirements/dev.txt
 python manage.py migrate
 python manage.py seed_base_data
 python manage.py runserver 8080
+```
+
+Il seed porta i 10 roster LEC. Per avere anche LPL e LCK, da Leaguepedia:
+
+```bash
+python manage.py import_rosters_leaguepedia --competition LPL
+python manage.py import_rosters_leaguepedia --competition LCK
 ```
 
 Il sito di collaudo è poi su **[http://localhost:8080](http://localhost:8080)**,

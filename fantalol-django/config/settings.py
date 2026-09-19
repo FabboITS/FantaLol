@@ -210,6 +210,10 @@ FANTALOL = {
     # Senza un worker Celery attivo le aste scadute vengono chiuse alla prima
     # lettura utile, così il gioco resta coerente anche in esecuzione locale.
     "FINALIZE_AUCTIONS_ON_READ": env_bool("FINALIZE_AUCTIONS_ON_READ", True),
+    # La modalità Worlds è ancora in sviluppo: finché questo flag è attivo
+    # `/api/worlds/**` risponde solo all'ADMIN globale. Mettilo a false per
+    # aprirla a tutti gli utenti autenticati.
+    "WORLDS_IN_DEVELOPMENT": env_bool("WORLDS_IN_DEVELOPMENT", True),
 }
 
 LINEUP_TIMEZONE = ZoneInfo(FANTALOL["LINEUP_TIMEZONE"])

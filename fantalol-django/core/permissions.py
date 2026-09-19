@@ -22,3 +22,25 @@ class IsAuthenticatedReadOnlyOrAdmin(BasePermission):
         if request.method in ("GET", "HEAD", "OPTIONS"):
             return True
         return user.is_global_admin
+
+
+class IsWorldsSectionOpen(BasePermission):
+    """Accesso alla modalità Worlds, ancora in fase di sviluppo.
+
+    Finché `FANTALOL["WORLDS_IN_DEVELOPMENT"]` è attivo, `/api/worlds/**`
+    risponde solo all'ADMIN globale: gli altri utenti autenticati ricevono 403
+    con un messaggio che spiega il perché.
+    """
+
+    message = ("La modalità Worlds è in fase di sviluppo: "
+               "l'accesso è riservato all'amministratore.")
+
+    def has_permission(self, request, view) -> bool:
+        from django.conf import settings
+
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+        if user.is_global_admin:
+            return True
+        return not settings.FANTALOL["WORLDS_IN_DEVELOPMENT"]

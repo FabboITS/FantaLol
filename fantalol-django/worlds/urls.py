@@ -16,11 +16,14 @@ from .views import (
     WorldsLineupView,
     WorldsRecomputeView,
     WorldsStandingsView,
+    WorldsStatusView,
     WorldsSwapView,
     WorldsTeamRosterCompleteView,
 )
 
 urlpatterns = [
+    # Stato della sezione: accessibile anche quando il resto è chiuso.
+    path("status/", WorldsStatusView.as_view(), name="worlds-status"),
     path("editions/", EditionListView.as_view(), name="worlds-editions"),
     path("editions/<int:edition_id>/", EditionDetailView.as_view(), name="worlds-edition"),
     path("editions/<int:edition_id>/stages/", EditionStagesView.as_view(), name="worlds-stages"),

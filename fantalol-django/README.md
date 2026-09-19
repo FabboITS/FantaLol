@@ -24,6 +24,7 @@ suite di test blocca qualsiasi deriva numerica.
 - [Avvio rapido](#avvio-rapido)
 - [Esecuzione in locale](#esecuzione-in-locale)
 - [Configurazione](#configurazione)
+- [Roster pro: LEC, LPL e LCK](#roster-pro-lec-lpl-e-lck)
 - [Regole di gioco](#regole-di-gioco)
 - [Modalità Worlds](#modalità-worlds)
 - [Pipeline di ingest](#pipeline-di-ingest)
@@ -142,10 +143,62 @@ rilevanti:
 | `SERVE_LOCAL_FRONTEND` | segue `DJANGO_DEBUG` | se attiva, Django serve il frontend provvisorio su `/` |
 | `FINALIZE_AUCTIONS_ON_READ` | `true` | chiude le aste scadute senza bisogno di un worker Celery |
 | `DJANGO_ADMIN_PASSWORD` | — | password dell'admin creato da `seed_base_data` |
+| `WORLDS_IN_DEVELOPMENT` | `true` | finché è attiva, `/api/worlds/**` risponde solo all'ADMIN |
 
 `SUPPORTED_PRO_LEAGUES` è l'allowlist delle leghe sincronizzate, nel formato
 `CODICE:pandascore_league_id`. **Nessun id di lega è hardcoded nel client**: le
 leghe e i tornei Worlds si aggiungono qui.
+
+---
+
+## Roster pro: LEC, LPL e LCK
+
+`seed_base_data` porta solo i 10 roster **LEC**. LPL e LCK si importano da
+**Leaguepedia**, la stessa fonte da cui l'ingest prende i box score: i nomi
+arrivano quindi già nella forma canonica, e l'aggancio delle statistiche
+funziona senza dover creare alias a mano.
+
+Le query Cargo di lettura non richiedono credenziali bot, quindi il comando
+funziona senza configurare nulla:
+
+```bash
+python manage.py import_rosters_leaguepedia --competition LPL
+python manage.py import_rosters_leaguepedia --competition LCK
+```
+
+| Opzione | Effetto |
+| --- | --- |
+| `--competition` | codice competitivo: `LEC`, `LPL`, `LCK`, `LCS`, `PCS`, ... |
+| `--region` | regione Leaguepedia, se serve forzarla (default dedotto dal competitivo) |
+| `--quotazione N` | quotazione base assegnata ai player importati (default 50) |
+| `--mark-worlds` | marca i player come qualificati a Worlds |
+| `--dry-run` | mostra cosa verrebbe importato, senza scrivere |
+
+Il comando salta le squadre sciolte, i player ritirati e lo staff tecnico, ed è
+idempotente: rieseguirlo aggiorna i roster invece di duplicarli. Se una squadra
+non risponde, le altre vengono importate comunque e l'errore finisce su stderr.
+
+Conviene guardare prima cosa arriverebbe:
+
+```bash
+python manage.py import_rosters_leaguepedia --competition LPL --dry-run
+```
+
+### Quotazioni
+
+Leaguepedia non espone alcun valore economico, quindi tutti i player importati
+partono dalla stessa quotazione. Vanno poi differenziate da
+`/django-admin/teams/proplayer/`, altrimenti l'asta perde di senso: i roster LEC
+del seed, per confronto, vanno da 50 a 100 crediti.
+
+### In alternativa, da PandaScore
+
+```bash
+python manage.py import_pro_rosters --tournament-id <ID> --mark-worlds
+```
+
+Richiede `PANDASCORE_API_TOKEN` e l'id del torneo. Utile soprattutto per le
+regioni minori qualificate a Worlds.
 
 ---
 
@@ -207,6 +260,13 @@ titolare storico e non vengono riscritti.
 ---
 
 ## Modalità Worlds
+
+> **In fase di sviluppo.** Finché `WORLDS_IN_DEVELOPMENT` è attiva (default),
+> tutte le rotte `/api/worlds/**` rispondono **403** a chi non è l'ADMIN
+> globale, con un messaggio che spiega il motivo. Fa eccezione
+> `/api/worlds/status/`, leggibile da qualunque utente autenticato: serve al
+> frontend per mostrare l'avviso senza incassare un errore. Per aprire la
+> sezione a tutti basta `WORLDS_IN_DEVELOPMENT=false`.
 
 Formato **event-based** ispirato al Fantacalcio Champions League, nell'app
 [`worlds/`](worlds/), separato dalle leghe stagionali ma con la stessa formula
@@ -357,6 +417,7 @@ frontend attuale continua a funzionare.
 
 | Metodo | Path |
 | --- | --- |
+| GET | `/api/worlds/status/` — stato della sezione, aperto a ogni utente autenticato |
 | GET | `/api/worlds/editions/`, `/api/worlds/editions/{id}/`, `.../stages/`, `.../pool/` |
 | POST | `/api/worlds/editions/{id}/sync-pool/`, `/api/worlds/stages/{id}/import-matches/` *(admin)* |
 | GET / POST | `/api/worlds/leagues/`, `/api/worlds/leagues/join/`, `/api/worlds/leagues/{id}/` |
@@ -401,7 +462,8 @@ alla pipeline PandaScore/Leaguepedia (risposte mockate, **nessuna chiamata reale
 | `tests/test_cumulative_scoring.py` | `CumulativeScoringServiceTest` |
 | `tests/test_ingest_pipeline.py` | `OracleGameImportServiceTest`, `LecSynchronizationServiceTest` (riadattati) |
 | `tests/test_api_contracts.py`, `tests/test_api_league_flow.py` | `AuthIntegrationTest`, `FormationControllerTest`, `AdminUserDirectoryIntegrationTest` |
-| `tests/test_worlds.py`, `tests/test_worlds_api.py` | nuovi |
+| `tests/test_worlds.py`, `tests/test_worlds_api.py` | nuovi (incluso il gating admin-only) |
+| `tests/test_roster_import.py` | nuovo: import roster da Leaguepedia, Cargo API mockata |
 | `tests/test_tasks_and_commands.py` | `DataSeederRosterCorrectionTest`, `AdminAccountInitializerIntegrationTest` |
 
 CI: [`.github/workflows/django-backend-ci.yml`](../.github/workflows/django-backend-ci.yml)

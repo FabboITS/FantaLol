@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.exceptions import BusinessRuleError
-from core.permissions import IsGlobalAdmin
+from core.permissions import IsGlobalAdmin, IsWorldsSectionOpen
 from teams.serializers import ProPlayerSerializer
 
 from . import services
@@ -27,13 +27,36 @@ from .serializers import (
 )
 
 
+class WorldsStatusView(APIView):
+    """Stato della sezione Worlds, leggibile da qualunque utente autenticato.
+
+    Serve al frontend per mostrare "in fase di sviluppo" senza incassare un 403.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.conf import settings
+
+        in_development = settings.FANTALOL["WORLDS_IN_DEVELOPMENT"]
+        is_admin = bool(request.user and request.user.is_global_admin)
+        return Response({
+            "inDevelopment": in_development,
+            "accessible": is_admin or not in_development,
+            "adminOnly": in_development,
+            "message": ("La modalità Worlds è in fase di sviluppo: "
+                        "l'accesso è riservato all'amministratore.")
+            if in_development else "La modalità Worlds è aperta a tutti i partecipanti.",
+        })
+
+
 def _team_queryset():
     return WorldsTeam.objects.select_related("league", "owner").prefetch_related(
         "rosa__player__team")
 
 
 class EditionListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request):
         editions = (WorldsEdition.objects.prefetch_related("stages", "qualified_teams")
@@ -42,7 +65,7 @@ class EditionListView(APIView):
 
 
 class EditionDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, edition_id=None):
         edition = services.get_edition_or_404(edition_id)
@@ -50,7 +73,7 @@ class EditionDetailView(APIView):
 
 
 class EditionStagesView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, edition_id=None):
         edition = services.get_edition_or_404(edition_id)
@@ -64,7 +87,7 @@ class EditionStagesView(APIView):
 class EditionPoolView(APIView):
     """Player pool dell'edizione: unione dei roster qualificati, multi-regione."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, edition_id=None):
         edition = services.get_edition_or_404(edition_id)
@@ -95,7 +118,7 @@ class StageImportMatchesView(APIView):
 
 
 class WorldsLeagueListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request):
         leagues = services.visible_leagues(request.user)
@@ -118,7 +141,7 @@ class WorldsLeagueListView(APIView):
 
 
 class WorldsLeagueDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, league_id=None):
         league = services.get_league_or_404(league_id)
@@ -127,7 +150,7 @@ class WorldsLeagueDetailView(APIView):
 
 
 class WorldsLeagueJoinView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def post(self, request):
         serializer = WorldsJoinRequestSerializer(data=request.data)
@@ -139,7 +162,7 @@ class WorldsLeagueJoinView(APIView):
 
 
 class WorldsLeagueTeamsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, league_id=None):
         league = services.get_league_or_404(league_id)
@@ -148,7 +171,7 @@ class WorldsLeagueTeamsView(APIView):
 
 
 class WorldsLeagueAuctionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def put(self, request, league_id=None, state=None):
         if state not in {"open", "close"}:
@@ -182,7 +205,7 @@ class WorldsLeagueAuctionView(APIView):
 
 
 class WorldsAuctionBidView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def post(self, request, auction_id=None):
         team_id = request.data.get("fantaTeamId")
@@ -194,7 +217,7 @@ class WorldsAuctionBidView(APIView):
 
 
 class WorldsTeamRosterCompleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def post(self, request, team_id=None):
         team = services.complete_roster_randomly(request.user, team_id)
@@ -204,7 +227,7 @@ class WorldsTeamRosterCompleteView(APIView):
 class WorldsSwapView(APIView):
     """Sostituzione libera fra una fase e l'altra (`allow_reentry_swap`)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def post(self, request, league_id=None):
         serializer = WorldsSwapRequestSerializer(data=request.data)
@@ -218,7 +241,7 @@ class WorldsSwapView(APIView):
 class WorldsLineupView(APIView):
     """`/api/worlds/leagues/{id}/lineup/`: conferma formazione per la fase corrente."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, league_id=None):
         league = services.get_league_or_404(league_id)
@@ -256,7 +279,7 @@ class WorldsLineupView(APIView):
 class WorldsStandingsView(APIView):
     """`/api/worlds/leagues/{id}/standings/`: classifica separata da quelle stagionali."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def get(self, request, league_id=None):
         from django.conf import settings
@@ -272,7 +295,7 @@ class WorldsStandingsView(APIView):
 
 
 class WorldsRecomputeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorldsSectionOpen]
 
     def post(self, request, league_id=None):
         league = services.get_league_or_404(league_id)

@@ -40,6 +40,36 @@
     }
   }
 
+  /* La sezione Worlds è ancora in sviluppo: il backend dice chi può usarla,
+     il frontend si limita a rispecchiare quella risposta. */
+  async function refreshWorldsSection() {
+    const section = $("worlds-section");
+    const notice = $("worlds-notice");
+    if (!section) return;
+    if (!token()) {
+      section.classList.add("locked");
+      if (notice) notice.textContent = "Accedi per sapere se puoi usare questa sezione.";
+      return;
+    }
+    try {
+      const response = await fetch(apiBase() + "/worlds/status/", {
+        headers: { Accept: "application/json", Authorization: "Bearer " + token() },
+      });
+      if (!response.ok) throw new Error(response.statusText);
+      const status = await response.json();
+      section.classList.toggle("locked", !status.accessible);
+      if (notice) {
+        notice.textContent = status.accessible
+          ? status.message + " Puoi usarla come amministratore."
+          : status.message;
+        notice.className = "state " + (status.accessible ? "ok" : "");
+      }
+    } catch (error) {
+      section.classList.add("locked");
+      if (notice) notice.textContent = "Stato della sezione non verificabile: " + error.message;
+    }
+  }
+
   function setAuthState(text, cls) {
     const state = $("auth-state");
     if (state) {
@@ -82,6 +112,7 @@
       });
       localStorage.setItem(TOKEN_KEY, data.token);
       setAuthState("Registrato come " + data.username + " (" + data.role + ")", "ok");
+      refreshWorldsSection();
     },
     async login() {
       const data = await call("/auth/login", {
@@ -90,6 +121,7 @@
       });
       localStorage.setItem(TOKEN_KEY, data.token);
       setAuthState("Autenticato come " + data.username + " (" + data.role + ")", "ok");
+      refreshWorldsSection();
     },
     async me() {
       const data = await call("/users/me");
@@ -98,6 +130,7 @@
     logout() {
       localStorage.removeItem(TOKEN_KEY);
       setAuthState("Non autenticato", "");
+      refreshWorldsSection();
       show("Token rimosso.");
     },
 
@@ -171,4 +204,5 @@
   if (apiBaseInput && !apiBaseInput.value.trim()) apiBaseInput.value = defaultApiBase();
 
   if (token()) setAuthState("Token presente in localStorage", "ok");
+  refreshWorldsSection();
 })();

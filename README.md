@@ -1,10 +1,19 @@
 # FantaLeague
 
-FantaLeague è un'applicazione web fantasy dedicata alla **LEC**, il campionato EMEA
-di League of Legends. Gli utenti possono creare leghe private, invitare altri
-partecipanti, acquistare i giocatori professionisti tramite un'asta a crediti,
-comporre la propria rosa e competere in una classifica basata sulle prestazioni
-reali dei player.
+FantaLeague è un'applicazione web fantasy dedicata al League of Legends
+professionistico — **LEC**, **LPL** e **LCK** — con in più una modalità dedicata ai
+**Worlds**. Gli utenti possono creare leghe private, invitare altri partecipanti,
+acquistare i giocatori professionisti tramite un'asta a crediti, comporre la
+propria rosa e competere in una classifica basata sulle prestazioni reali dei
+player.
+
+> **Backend.** Il backend vive in [`fantalol-django/`](fantalol-django/), scritto
+> in **Python 3.12 / Django 5**. Ha sostituito il precedente backend Java /
+> Spring Boot, che è stato rimosso dal repository (resta nella storia dei
+> commit): stesse regole di gioco, stessi contratti REST, più la modalità Worlds
+> e una pipeline dati basata su **PandaScore + Leaguepedia** al posto dei CSV di
+> Oracle's Elixir. Il dettaglio completo è in
+> [`fantalol-django/README.md`](fantalol-django/README.md).
 
 ## Cosa può fare un utente
 
@@ -29,17 +38,19 @@ la propria lega.
 
 ## Cosa può fare un amministratore
 
-All'avvio dell'applicazione viene inizializzato un account con ruolo `ADMIN`.
-Le sue credenziali sono definite dal backend e non devono essere pubblicate nel
-repository.
+Il comando di seed inizializza un unico account con ruolo `ADMIN`, `Natsu_Admin`.
+La sua password si imposta con `DJANGO_ADMIN_PASSWORD` oppure con
+`seed_base_data --admin-password`; in mancanza di entrambe viene usato l'hash
+BCrypt di default incluso nel comando. Non esistono utenze di prova: ogni altro
+account nasce dalla registrazione.
 
 L'amministratore globale può:
 
 - vedere, aprire ed eliminare qualsiasi lega;
 - gestire squadre e giocatori LEC;
 - controllare le giornate e le operazioni amministrative protette;
-- avviare manualmente la sincronizzazione dei dati LEC;
-- verificare lo stato delle integrazioni PandaScore e Oracle's Elixir;
+- avviare manualmente la sincronizzazione dei dati pro;
+- verificare lo stato delle integrazioni PandaScore e Leaguepedia;
 - consultare la directory degli utenti normali registrati, con username ed email,
   usando `Ctrl+Y` fuori dai campi di scrittura.
 
@@ -86,10 +97,12 @@ storico dei periodi nei quali ciascun player è stato titolare.
 
 ### 4. Punteggi e classifica
 
-PandaScore fornisce calendario, stato e risultati delle serie LEC; Oracle's Elixir
-fornisce le statistiche delle singole partite. Il backend importa i dati senza
+PandaScore fornisce calendario, stato e risultati delle serie; Leaguepedia
+fornisce i box score delle singole partite. Il backend importa i dati senza
 duplicare i game già elaborati e calcola i fantapunti usando uccisioni, assist,
-morti, CS, vision score e vittorie.
+morti, CS, vision score e vittorie. I dati Leaguepedia sono distribuiti con
+licenza **CC BY-SA 3.0** e ogni risposta API che li espone include la relativa
+attribuzione.
 
 ```text
 fantapunti = uccisioni × K(ruolo)
@@ -108,6 +121,23 @@ di ruolo, calcolata usando il player che era titolare al momento di ogni partita
 I risultati alimentano la classifica cumulativa della lega e rimangono provvisori
 quando i dati della fonte non sono ancora completi.
 
+### 5. Modalità Worlds
+
+> **In fase di sviluppo.** La sezione è accessibile solo all'amministratore
+> globale: gli altri utenti la vedono segnalata come non ancora disponibile.
+> Si apre a tutti impostando `WORLDS_IN_DEVELOPMENT=false`.
+
+Accanto alle leghe stagionali c'è un formato **event-based** legato al mondiale,
+in stile Fantacalcio Champions League. Il player pool è l'unione dei roster
+qualificati, quindi non è vincolato a un singolo campionato; la "giornata" è la
+**fase del torneo** (Play-In, gironi/Swiss, Quarti, Semifinali, Finale) e la
+formazione va confermata prima dell'inizio di ciascuna fase. Budget e taglia rosa
+sono configurabili per edizione, la classifica è separata da quelle stagionali e
+prevede bonus per l'MVP di serie, per l'avanzamento di fase e per le serie vinte.
+
+Regolamento e parametri sono descritti in
+[`fantalol-django/README.md`](fantalol-django/README.md#modalità-worlds).
+
 ## Architettura
 
 FantaLeague usa un'architettura client-server composta da un backend REST, un
@@ -118,45 +148,49 @@ Browser
    │
    │ HTML, CSS, JavaScript / richieste REST con JWT
    ▼
-Spring Boot
+Django + DRF (porta 8080)
    ├── autenticazione e utenti
    ├── leghe, aste e rose
    ├── formazioni, giornate e punteggi
-   └── integrazioni PandaScore e Oracle's Elixir
-   │
+   ├── modalità Worlds
+   └── ingest PandaScore + Leaguepedia
+   │         ▲
+   │         │ task periodici
+   │      Celery + Celery Beat ── Redis
    ▼
-MySQL
+PostgreSQL
 ```
 
-Durante la build Maven copia il frontend nelle risorse statiche di Spring Boot.
-L'intera applicazione viene quindi servita dalla stessa porta, senza dover avviare
-separatamente un server frontend.
+Nessuna richiesta del browser raggiunge mai un provider esterno: il frontend
+legge solo dal database, attraverso le API REST di FantaLoL.
 
 ### Backend
 
 Il backend è sviluppato con:
 
-- Java 17 e Spring Boot 3.3;
-- Spring Web MVC per le API REST;
-- Spring Data JPA e MySQL 8 per la persistenza;
-- Spring Security, BCrypt e JWT stateless per autenticazione e autorizzazione;
-- springdoc-openapi per documentazione OpenAPI e Swagger UI;
-- JUnit 5, Mockito, AssertJ, H2 e JaCoCo per test e copertura.
+- Python 3.12 e Django 5;
+- Django REST Framework per le API REST;
+- PostgreSQL 16 per la persistenza;
+- `djangorestframework-simplejwt`, BCrypt e JWT stateless per autenticazione e
+  autorizzazione;
+- Celery e Celery Beat (broker Redis) per sincronizzazioni e job periodici;
+- drf-spectacular per documentazione OpenAPI e Swagger UI;
+- pytest, pytest-django, factory_boy e coverage.py per test e copertura.
 
-I package principali sono:
+Le app principali sono:
 
 ```text
-com.fantalol.backend
-├── common/       gestione centralizzata degli errori API
-├── config/       sicurezza, configurazione e dati iniziali
-├── integration/  sincronizzazione PandaScore e Oracle's Elixir
-├── league/       leghe, FantaTeam, aste e rose
-├── lineup/       finestre e storico delle formazioni effettive
-├── matchday/     giornate, statistiche e formazioni
-├── scoring/      formula, punteggi cumulativi e classifiche
-├── security/     filtro e utilità JWT
-├── team/         squadre e giocatori LEC
-└── user/         registrazione, login, profilo e ruoli
+fantalol-django/
+├── config/     settings, urls, Celery
+├── core/       gestione centralizzata degli errori API, permessi, CORS
+├── accounts/   registrazione, login, profilo e ruoli
+├── teams/      squadre e giocatori pro (LEC/LPL/LCK e regioni Worlds)
+├── leagues/    leghe, FantaTeam, aste e rose
+├── lineups/    finestre e storico delle formazioni effettive
+├── matchdays/  giornate, statistiche e formazioni
+├── scoring/    formula, punteggi cumulativi e classifiche
+├── ingest/     sincronizzazione PandaScore e Leaguepedia
+└── worlds/     modalità Worlds
 ```
 
 Le API sono disponibili sotto `/api`. Le operazioni protette richiedono
@@ -176,53 +210,90 @@ La struttura principale del repository è:
 
 ```text
 FantaLol/
-├── fantalol-backend/
-│   ├── src/main/java/       codice backend
-│   ├── src/main/resources/  configurazione
-│   ├── postman/             collection delle API
-│   ├── sql/                 script SQL di supporto
+├── fantalol-django/                backend Django
+│   ├── config/ accounts/ core/     configurazione, utenti, utilità comuni
+│   ├── teams/ leagues/ lineups/    squadre pro, leghe, formazioni
+│   ├── matchdays/ scoring/         giornate, punteggi e classifiche
+│   ├── ingest/ worlds/             pipeline dati e modalità Worlds
+│   ├── tests/                      suite pytest
+│   ├── requirements/
 │   ├── Dockerfile
 │   └── docker-compose.yml
 ├── fantalol-frontend/
-│   ├── assets/              loghi delle squadre
-│   ├── Player_immage/       immagini di player e champion
-│   ├── css/                 fogli di stile
-│   ├── js/                  logica frontend
+│   ├── assets/                     loghi delle squadre
+│   ├── Player_immage/              immagini di player e champion
+│   ├── css/                        fogli di stile
+│   ├── js/                         logica frontend
 │   ├── index.html
 │   └── lega.html
+├── fantalol-frontend-placeholder/  frontend minimale di collaudo del backend
+├── docs/                           relazione tecnica e note di progetto
 ├── Rules.md
 └── README.md
 ```
+
+## Esecuzione in locale
+
+Serve solo Python 3.12 o superiore: il progetto usa SQLite quando non è
+configurato un database, e in sviluppo Django serve anche il frontend
+provvisorio sulla stessa porta delle API.
+
+```bash
+cd fantalol-django
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements/dev.txt
+
+python manage.py migrate
+python manage.py seed_base_data
+python manage.py runserver 8080
+```
+
+Il seed porta i 10 roster LEC. Per avere anche LPL e LCK, da Leaguepedia:
+
+```bash
+python manage.py import_rosters_leaguepedia --competition LPL
+python manage.py import_rosters_leaguepedia --competition LCK
+```
+
+Il sito di collaudo è poi su **[http://localhost:8080](http://localhost:8080)**,
+Swagger su **[http://localhost:8080/api/docs/](http://localhost:8080/api/docs/)**.
+L'unico account creato è l'amministratore globale `Natsu_Admin`.
+
+Dettagli, alternative e comandi di reset in
+[`fantalol-django/README.md`](fantalol-django/README.md#esecuzione-in-locale).
 
 ## Avvio con Docker Compose
 
 Sono richiesti Docker e Docker Compose. Dalla root del repository eseguire:
 
 ```bash
-docker compose -f fantalol-backend/docker-compose.yml up --build
+cp fantalol-django/.env.example fantalol-django/.env
+docker compose -f fantalol-django/docker-compose.yml up --build
 ```
 
 Docker Compose avvia:
 
-- MySQL 8 sulla porta host `3307`;
-- backend e frontend sulla porta `8080`.
+- PostgreSQL 16 e Redis;
+- il backend Django sulla porta `8080`;
+- un worker Celery e lo scheduler Celery Beat per sincronizzazioni e job periodici.
 
-Una volta completato l'avvio, il sito è disponibile all'indirizzo:
+Una volta completato l'avvio, le API sono disponibili all'indirizzo:
 
-**[http://localhost:8080](http://localhost:8080)**
+**[http://localhost:8080/api/](http://localhost:8080/api/)**
 
 Swagger UI è disponibile su
-**[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**.
+**[http://localhost:8080/api/docs/](http://localhost:8080/api/docs/)**.
 
 Per arrestare i container:
 
 ```bash
-docker compose -f fantalol-backend/docker-compose.yml down
+docker compose -f fantalol-django/docker-compose.yml down
 ```
 
-Il volume Docker `fantalol_mysql_data` conserva il database tra un avvio e
-l'altro. I valori presenti nel file Compose sono adatti allo sviluppo: prima di
-una distribuzione pubblica devono essere sostituiti con password e segreti sicuri.
+Il volume Docker `pgdata` conserva il database tra un avvio e l'altro. I valori
+presenti in `.env.example` sono adatti allo sviluppo: prima di una distribuzione
+pubblica devono essere sostituiti con password e segreti sicuri.
 
 ## Link del progetto
 

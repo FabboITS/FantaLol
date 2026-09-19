@@ -1,0 +1,15 @@
+[run]
+source = accounts,core,teams,leagues,lineups,matchdays,scoring,ingest,worlds
+omit =
+    */migrations/*
+    */tests/*
+    */admin.py
+    */apps.py
+    config/wsgi.py
+    config/asgi.py
+
+[report]
+# Soglia allineata alla copertura del backend Java (nessun gate JaCoCo nel
+# repo di partenza): 75% è il valore proposto, alzabile quando la suite cresce.
+fail_under = 75
+show_missing = true

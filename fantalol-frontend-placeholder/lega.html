@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FantaLoL — dettaglio lega (placeholder)</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>Dettaglio lega</h1>
+  <p class="hint">
+    Apri la pagina con <code>?leagueId=1</code> (oppure <code>?worldsLeagueId=1</code>
+    per una lega Worlds) dopo esserti autenticato dalla home.
+  </p>
+  <label>API base <input id="api-base" placeholder="rilevata automaticamente"></label>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Squadre</h2>
+    <button data-action="detail-teams">Ricarica</button>
+    <div id="teams"></div>
+  </section>
+
+  <section class="card">
+    <h2>Classifica</h2>
+    <button data-action="detail-ranking">Ricarica</button>
+    <div id="ranking"></div>
+  </section>
+
+  <section class="card">
+    <h2>Asta in corso</h2>
+    <button data-action="detail-auction">Ricarica</button>
+    <div id="auction"></div>
+  </section>
+
+  <section class="card">
+    <h2>Risposta</h2>
+    <p id="attribution" class="attribution"></p>
+    <pre id="output">—</pre>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+<script src="js/league-detail.js"></script>
+</body>
+</html>

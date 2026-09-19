@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FantaLoL — placeholder</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>FantaLoL <small>placeholder di verifica</small></h1>
+  <p class="hint">
+    Frontend minimale per collaudare a mano il backend Django. Non cura lo stile:
+    il frontend vero resta in <code>fantalol-frontend/</code>.
+  </p>
+  <label>API base <input id="api-base" placeholder="rilevata automaticamente"></label>
+</header>
+
+<main>
+  <section class="card" id="auth">
+    <h2>1. Accesso</h2>
+    <div class="row">
+      <input id="username" placeholder="username" autocomplete="username">
+      <input id="password" type="password" placeholder="password" autocomplete="current-password">
+      <input id="email" placeholder="email (solo registrazione)">
+    </div>
+    <div class="row">
+      <button data-action="login">Login</button>
+      <button data-action="register">Registrati</button>
+      <button data-action="me">Chi sono</button>
+      <button data-action="logout">Esci</button>
+    </div>
+    <p id="auth-state" class="state">Non autenticato</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Leghe stagionali (LEC / LPL / LCK)</h2>
+    <div class="row">
+      <input id="league-name" placeholder="nome lega">
+      <input id="league-credits" type="number" placeholder="crediti" value="1000">
+      <select id="league-competition">
+        <option>LEC</option><option>LPL</option><option>LCK</option>
+      </select>
+      <button data-action="create-league">Crea lega</button>
+      <button data-action="list-leagues">Le mie leghe</button>
+    </div>
+    <div class="row">
+      <input id="invite-code" placeholder="codice invito">
+      <input id="team-name" placeholder="nome squadra">
+      <button data-action="join-league">Iscrivi squadra</button>
+      <button data-action="my-teams">Le mie squadre</button>
+    </div>
+    <div class="row">
+      <input id="league-id" type="number" placeholder="id lega">
+      <button data-action="open-auction">Apri asta</button>
+      <button data-action="close-auction">Chiudi asta</button>
+      <button data-action="ranking">Classifica</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Player e formazione</h2>
+    <div class="row">
+      <select id="players-competition">
+        <option>LEC</option><option>LPL</option><option>LCK</option>
+      </select>
+      <button data-action="list-players">Elenca player</button>
+      <button data-action="cumulative">Medie cumulative</button>
+    </div>
+    <div class="row">
+      <input id="fanta-team-id" type="number" placeholder="id fantateam">
+      <button data-action="lineup-window">Finestra formazione</button>
+      <button data-action="lineup">Formazione attuale</button>
+    </div>
+    <div class="row">
+      <input id="lineup-ids" placeholder="id titolari separati da virgola">
+      <button data-action="save-lineup">Salva formazione</button>
+    </div>
+  </section>
+
+  <section class="card" id="worlds-section">
+    <h2>4. Worlds <span class="badge">in fase di sviluppo</span></h2>
+    <p class="state" id="worlds-notice">
+      Sezione riservata all'amministratore finché lo sviluppo non è concluso.
+    </p>
+    <div class="row">
+      <button data-action="worlds-editions">Edizioni</button>
+      <input id="worlds-edition-id" type="number" placeholder="id edizione">
+      <button data-action="worlds-stages">Fasi</button>
+      <button data-action="worlds-pool">Player pool</button>
+    </div>
+    <div class="row">
+      <input id="worlds-league-name" placeholder="nome lega Worlds">
+      <button data-action="worlds-create-league">Crea lega Worlds</button>
+      <button data-action="worlds-leagues">Le mie leghe Worlds</button>
+    </div>
+    <div class="row">
+      <input id="worlds-league-id" type="number" placeholder="id lega Worlds">
+      <input id="worlds-team-id" type="number" placeholder="id squadra">
+      <input id="worlds-lineup-ids" placeholder="id titolari (5)">
+      <button data-action="worlds-lineup">Conferma formazione fase</button>
+      <button data-action="worlds-standings">Classifica Worlds</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5. Ingest (admin)</h2>
+    <div class="row">
+      <button data-action="ingest-status">Stato sync</button>
+      <button data-action="sync-pandascore">Forza sync PandaScore</button>
+      <button data-action="sync-leaguepedia">Forza enrich Leaguepedia</button>
+      <button data-action="matches">Serie in cache</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Risposta</h2>
+    <p id="attribution" class="attribution"></p>
+    <pre id="output">—</pre>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

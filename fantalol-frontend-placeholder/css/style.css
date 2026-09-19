@@ -1,0 +1,90 @@
+/* Stile volutamente minimale: serve solo a rendere leggibile la verifica manuale. */
+:root {
+  --bg: #12131a;
+  --card: #1c1e28;
+  --fg: #e7e9f0;
+  --muted: #9aa0b4;
+  --accent: #4f8cff;
+  --border: #2c2f3d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 3rem;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+header { padding: 1.5rem 1rem 1rem; border-bottom: 1px solid var(--border); }
+header h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
+header small { color: var(--muted); font-weight: 400; font-size: .8rem; }
+.hint { color: var(--muted); margin: .25rem 0 .75rem; max-width: 62ch; }
+
+main { display: grid; gap: 1rem; padding: 1rem; max-width: 62rem; margin: 0 auto; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.card h2 { margin: 0 0 .75rem; font-size: 1rem; color: var(--accent); }
+
+.row { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .5rem; }
+
+input, select, button {
+  font: inherit;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #101119;
+  color: var(--fg);
+}
+input { min-width: 10rem; flex: 1 1 10rem; }
+button { background: var(--accent); border-color: var(--accent); color: #06080f; cursor: pointer; }
+button:hover { filter: brightness(1.1); }
+label { color: var(--muted); display: inline-flex; gap: .5rem; align-items: center; }
+
+pre {
+  margin: 0;
+  padding: .75rem;
+  background: #0b0c12;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 26rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.state { color: var(--muted); margin: .25rem 0 0; }
+.state.ok { color: #5fd38d; }
+.state.error { color: #ff7b72; }
+
+/* Attribuzione Leaguepedia (CC BY-SA): va sempre mostrata quando l'API
+   restituisce dati di box score o MVP. */
+.attribution { color: var(--muted); font-size: .8rem; margin: 0 0 .5rem; min-height: 1rem; }
+
+table { width: 100%; border-collapse: collapse; margin-top: .5rem; }
+th, td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 500; }
+
+/* Sezione ancora in sviluppo: visibile a tutti, utilizzabile solo dall'admin. */
+.badge {
+  font-size: .65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .15rem .45rem;
+  border-radius: 999px;
+  background: #4a3a12;
+  color: #ffd479;
+  border: 1px solid #6b5418;
+  vertical-align: middle;
+}
+
+.card.locked { opacity: .55; }
+.card.locked button, .card.locked input, .card.locked select { pointer-events: none; }

@@ -1,0 +1,26 @@
+[
+ {
+  "id": 9001,
+  "full_name": "Rounds 3-5 2026",
+  "name": "Rounds 3-5",
+  "year": 2026,
+  "begin_at": "2026-07-20T00:00:00Z",
+  "end_at": "2026-09-10T00:00:00Z",
+  "tournaments": [
+   {
+    "id": 17001,
+    "name": "Regular Season",
+    "begin_at": "2026-07-20T00:00:00Z",
+    "end_at": "2026-09-01T00:00:00Z"
+   }
+  ]
+ },
+ {
+  "id": 7000,
+  "full_name": "Spring 2025",
+  "year": 2025,
+  "begin_at": "2025-01-15T00:00:00Z",
+  "end_at": "2025-04-10T00:00:00Z",
+  "tournaments": []
+ }
+]

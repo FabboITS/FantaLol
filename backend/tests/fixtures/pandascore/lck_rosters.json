@@ -1,0 +1,254 @@
+{
+ "rosters": [
+  {
+   "id": 2882,
+   "name": "Gen.G",
+   "acronym": "GEN",
+   "slug": "gen.g",
+   "location": "KR",
+   "image_url": "https://cdn.pandascore.test/team/2882.png",
+   "dark_mode_image_url": "https://cdn.pandascore.test/team/2882-dark.png",
+   "players": [
+    {
+     "id": 1,
+     "name": "Kiin",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "top",
+     "image_url": "https://cdn.pandascore.test/player/1.png",
+     "active": true
+    },
+    {
+     "id": 2,
+     "name": "Canyon",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "jun",
+     "image_url": "https://cdn.pandascore.test/player/2.png",
+     "active": true
+    },
+    {
+     "id": 3,
+     "name": "Chovy",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "mid",
+     "image_url": "https://cdn.pandascore.test/player/3.png",
+     "active": true
+    },
+    {
+     "id": 4,
+     "name": "Ruler",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "adc",
+     "image_url": "https://cdn.pandascore.test/player/4.png",
+     "active": true
+    },
+    {
+     "id": 5,
+     "name": "Duro",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "sup",
+     "image_url": "https://cdn.pandascore.test/player/5.png",
+     "active": true
+    },
+    {
+     "id": 99,
+     "name": "Coach",
+     "role": null
+    }
+   ]
+  },
+  {
+   "id": 126061,
+   "name": "T1",
+   "acronym": "T1",
+   "slug": "t1",
+   "location": "KR",
+   "image_url": "https://cdn.pandascore.test/team/126061.png",
+   "dark_mode_image_url": "https://cdn.pandascore.test/team/126061-dark.png",
+   "players": [
+    {
+     "id": 11,
+     "name": "Doran",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "top",
+     "image_url": "https://cdn.pandascore.test/player/11.png",
+     "active": true
+    },
+    {
+     "id": 12,
+     "name": "Oner",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "jun",
+     "image_url": "https://cdn.pandascore.test/player/12.png",
+     "active": true
+    },
+    {
+     "id": 13,
+     "name": "Faker",
+     "first_name": "Sang-hyeok",
+     "last_name": "Lee",
+     "nationality": "KR",
+     "role": "mid",
+     "image_url": "https://cdn.pandascore.test/player/13.png",
+     "active": true
+    },
+    {
+     "id": 14,
+     "name": "Gumayusi",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "adc",
+     "image_url": "https://cdn.pandascore.test/player/14.png",
+     "active": true
+    },
+    {
+     "id": 15,
+     "name": "Keria",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "sup",
+     "image_url": "https://cdn.pandascore.test/player/15.png",
+     "active": true
+    }
+   ]
+  },
+  {
+   "id": 128406,
+   "name": "Nongshim Red Force",
+   "acronym": "NS",
+   "slug": "nongshim-red-force",
+   "location": "KR",
+   "image_url": "https://cdn.pandascore.test/team/128406.png",
+   "dark_mode_image_url": "https://cdn.pandascore.test/team/128406-dark.png",
+   "players": [
+    {
+     "id": 21,
+     "name": "Kingen",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "top",
+     "image_url": "https://cdn.pandascore.test/player/21.png",
+     "active": true
+    },
+    {
+     "id": 22,
+     "name": "Sponge",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "jun",
+     "image_url": "https://cdn.pandascore.test/player/22.png",
+     "active": true
+    },
+    {
+     "id": 23,
+     "name": "Scout",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "mid",
+     "image_url": "https://cdn.pandascore.test/player/23.png",
+     "active": true
+    },
+    {
+     "id": 24,
+     "name": "Jiwoo",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "adc",
+     "image_url": "https://cdn.pandascore.test/player/24.png",
+     "active": true
+    },
+    {
+     "id": 25,
+     "name": "Lehends",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "sup",
+     "image_url": "https://cdn.pandascore.test/player/25.png",
+     "active": true
+    }
+   ]
+  },
+  {
+   "id": 2883,
+   "name": "Hanwha Life Esports",
+   "acronym": "HLE",
+   "slug": "hanwha-life-esports",
+   "location": "KR",
+   "image_url": "https://cdn.pandascore.test/team/2883.png",
+   "dark_mode_image_url": "https://cdn.pandascore.test/team/2883-dark.png",
+   "players": [
+    {
+     "id": 31,
+     "name": "Zeus",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "top",
+     "image_url": "https://cdn.pandascore.test/player/31.png",
+     "active": true
+    },
+    {
+     "id": 32,
+     "name": "Peanut",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "jun",
+     "image_url": "https://cdn.pandascore.test/player/32.png",
+     "active": true
+    },
+    {
+     "id": 33,
+     "name": "Zeka",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "mid",
+     "image_url": "https://cdn.pandascore.test/player/33.png",
+     "active": true
+    },
+    {
+     "id": 34,
+     "name": "Viper",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "adc",
+     "image_url": "https://cdn.pandascore.test/player/34.png",
+     "active": true
+    },
+    {
+     "id": 35,
+     "name": "Delight",
+     "first_name": "",
+     "last_name": "",
+     "nationality": "KR",
+     "role": "sup",
+     "image_url": "https://cdn.pandascore.test/player/35.png",
+     "active": true
+    }
+   ]
+  }
+ ],
+ "type": "Team"
+}

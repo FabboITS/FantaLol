@@ -1,0 +1,574 @@
+{
+ "cargoquery": [
+  {
+   "title": {
+    "Link": "Kiin",
+    "Champion": "Aatrox",
+    "Kills": "3",
+    "Deaths": "1",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "250",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Top",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Doran",
+    "Champion": "Gnar",
+    "Kills": "2",
+    "Deaths": "2",
+    "Assists": "4",
+    "Gold": "12000",
+    "CS": "240",
+    "DamageToChampions": "15000",
+    "VisionScore": "28",
+    "Role": "Top",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Canyon",
+    "Champion": "Vi",
+    "Kills": "4",
+    "Deaths": "1",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "35",
+    "Role": "Jungle",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Oner",
+    "Champion": "Sejuani",
+    "Kills": "2",
+    "Deaths": "3",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "210",
+    "DamageToChampions": "15000",
+    "VisionScore": "32",
+    "Role": "Jungle",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Chovy (Jeong Ji-hoon)",
+    "Champion": "Azir",
+    "Kills": "5",
+    "Deaths": "1",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "190",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Mid",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Faker",
+    "Champion": "Orianna",
+    "Kills": "2",
+    "Deaths": "2",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "180",
+    "DamageToChampions": "15000",
+    "VisionScore": "36",
+    "Role": "Mid",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Ruler",
+    "Champion": "Jinx",
+    "Kills": "6",
+    "Deaths": "1",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "160",
+    "DamageToChampions": "15000",
+    "VisionScore": "45",
+    "Role": "Bot",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Gumayusi",
+    "Champion": "Varus",
+    "Kills": "2",
+    "Deaths": "3",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "150",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Bot",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Duro",
+    "Champion": "Rell",
+    "Kills": "7",
+    "Deaths": "1",
+    "Assists": "9",
+    "Gold": "12000",
+    "CS": "40",
+    "DamageToChampions": "15000",
+    "VisionScore": "90",
+    "Role": "Support",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Keria",
+    "Champion": "Nautilus",
+    "Kills": "2",
+    "Deaths": "2",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "35",
+    "DamageToChampions": "15000",
+    "VisionScore": "80",
+    "Role": "Support",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Kiin",
+    "Champion": "Aatrox",
+    "Kills": "3",
+    "Deaths": "2",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "250",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Top",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Doran",
+    "Champion": "Gnar",
+    "Kills": "3",
+    "Deaths": "2",
+    "Assists": "4",
+    "Gold": "12000",
+    "CS": "240",
+    "DamageToChampions": "15000",
+    "VisionScore": "28",
+    "Role": "Top",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Canyon",
+    "Champion": "Vi",
+    "Kills": "4",
+    "Deaths": "2",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "35",
+    "Role": "Jungle",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Oner",
+    "Champion": "Sejuani",
+    "Kills": "3",
+    "Deaths": "3",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "210",
+    "DamageToChampions": "15000",
+    "VisionScore": "32",
+    "Role": "Jungle",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Chovy (Jeong Ji-hoon)",
+    "Champion": "Azir",
+    "Kills": "5",
+    "Deaths": "2",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "190",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Mid",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Faker",
+    "Champion": "Orianna",
+    "Kills": "3",
+    "Deaths": "2",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "180",
+    "DamageToChampions": "15000",
+    "VisionScore": "36",
+    "Role": "Mid",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Ruler",
+    "Champion": "Jinx",
+    "Kills": "6",
+    "Deaths": "2",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "160",
+    "DamageToChampions": "15000",
+    "VisionScore": "45",
+    "Role": "Bot",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Gumayusi",
+    "Champion": "Varus",
+    "Kills": "3",
+    "Deaths": "3",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "150",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Bot",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Duro",
+    "Champion": "Rell",
+    "Kills": "7",
+    "Deaths": "2",
+    "Assists": "9",
+    "Gold": "12000",
+    "CS": "40",
+    "DamageToChampions": "15000",
+    "VisionScore": "90",
+    "Role": "Support",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Keria",
+    "Champion": "Nautilus",
+    "Kills": "3",
+    "Deaths": "2",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "35",
+    "DamageToChampions": "15000",
+    "VisionScore": "80",
+    "Role": "Support",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Kiin",
+    "Champion": "Aatrox",
+    "Kills": "3",
+    "Deaths": "3",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "250",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Top",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Doran",
+    "Champion": "Gnar",
+    "Kills": "4",
+    "Deaths": "2",
+    "Assists": "4",
+    "Gold": "12000",
+    "CS": "240",
+    "DamageToChampions": "15000",
+    "VisionScore": "28",
+    "Role": "Top",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Canyon",
+    "Champion": "Vi",
+    "Kills": "4",
+    "Deaths": "3",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "35",
+    "Role": "Jungle",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Oner",
+    "Champion": "Sejuani",
+    "Kills": "4",
+    "Deaths": "3",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "210",
+    "DamageToChampions": "15000",
+    "VisionScore": "32",
+    "Role": "Jungle",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Chovy (Jeong Ji-hoon)",
+    "Champion": "Azir",
+    "Kills": "5",
+    "Deaths": "3",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "190",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Mid",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Faker",
+    "Champion": "Orianna",
+    "Kills": "4",
+    "Deaths": "2",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "180",
+    "DamageToChampions": "15000",
+    "VisionScore": "36",
+    "Role": "Mid",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Ruler",
+    "Champion": "Jinx",
+    "Kills": "6",
+    "Deaths": "3",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "160",
+    "DamageToChampions": "15000",
+    "VisionScore": "45",
+    "Role": "Bot",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Gumayusi",
+    "Champion": "Varus",
+    "Kills": "4",
+    "Deaths": "3",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "150",
+    "DamageToChampions": "15000",
+    "VisionScore": "40",
+    "Role": "Bot",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Duro",
+    "Champion": "Rell",
+    "Kills": "7",
+    "Deaths": "3",
+    "Assists": "9",
+    "Gold": "12000",
+    "CS": "40",
+    "DamageToChampions": "15000",
+    "VisionScore": "90",
+    "Role": "Support",
+    "Side": "1",
+    "PlayerWin": "Yes",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "Gen.G",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Keria",
+    "Champion": "Nautilus",
+    "Kills": "4",
+    "Deaths": "2",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "35",
+    "DamageToChampions": "15000",
+    "VisionScore": "80",
+    "Role": "Support",
+    "Side": "2",
+    "PlayerWin": "No",
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team": "T1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  }
+ ]
+}

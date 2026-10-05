@@ -1,0 +1,194 @@
+{
+ "cargoquery": [
+  {
+   "title": {
+    "Link": "Bin",
+    "Champion": "Aatrox",
+    "Kills": "",
+    "Deaths": "3",
+    "Assists": "2",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "25",
+    "Role": "Top",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Bilibili Gaming",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "369",
+    "Champion": "Gnar",
+    "Kills": "4",
+    "Deaths": "1",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "230",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Top",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Top Esports",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "MISSING",
+    "Champion": "Vi",
+    "Kills": "2",
+    "Deaths": "3",
+    "Assists": "3",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "25",
+    "Role": "Jungle",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Bilibili Gaming",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Kanavi",
+    "Champion": "Sejuani",
+    "Kills": "5",
+    "Deaths": "1",
+    "Assists": "7",
+    "Gold": "12000",
+    "CS": "230",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Jungle",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Top Esports",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "knight",
+    "Champion": "Azir",
+    "Kills": "3",
+    "Deaths": "3",
+    "Assists": "4",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "25",
+    "Role": "Mid",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Bilibili Gaming",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "NuovoTalento",
+    "Champion": "Orianna",
+    "Kills": "6",
+    "Deaths": "1",
+    "Assists": "8",
+    "Gold": "12000",
+    "CS": "230",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Mid",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Top Esports",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Elk",
+    "Champion": "Jinx",
+    "Kills": "4",
+    "Deaths": "3",
+    "Assists": "5",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "25",
+    "Role": "Bot",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Bilibili Gaming",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "JackeyLove",
+    "Champion": "Varus",
+    "Kills": "7",
+    "Deaths": "1",
+    "Assists": "9",
+    "Gold": "12000",
+    "CS": "230",
+    "DamageToChampions": "15000",
+    "VisionScore": "30",
+    "Role": "Bot",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Top Esports",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "ON",
+    "Champion": "Rell",
+    "Kills": "5",
+    "Deaths": "3",
+    "Assists": "6",
+    "Gold": "12000",
+    "CS": "220",
+    "DamageToChampions": "15000",
+    "VisionScore": "70",
+    "Role": "Support",
+    "Side": "1",
+    "PlayerWin": "No",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Bilibili Gaming",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  },
+  {
+   "title": {
+    "Link": "Meiko",
+    "Champion": "Nautilus",
+    "Kills": "8",
+    "Deaths": "1",
+    "Assists": "10",
+    "Gold": "12000",
+    "CS": "230",
+    "DamageToChampions": "15000",
+    "VisionScore": "85",
+    "Role": "Support",
+    "Side": "2",
+    "PlayerWin": "Yes",
+    "GameId": "LPL/2026 Season/Split 3_Week 4_2_1",
+    "Team": "Top Esports",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5"
+   }
+  }
+ ]
+}

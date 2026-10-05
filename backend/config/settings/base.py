@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "apps.matchdays",
     "apps.scoring",
     "apps.worlds",
+    "scheduler",
 ]
 
 MIDDLEWARE = [

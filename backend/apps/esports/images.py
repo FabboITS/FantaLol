@@ -1,7 +1,7 @@
 """Copie locali dei loghi dei team e delle foto dei player (fonte: PandaScore, piano gratuito).
 
 * ``MEDIA_ROOT/teams/<slug>.<ext>``
-* ``MEDIA_ROOT/players/<competizione>/<ruolo>/<nickname>.<ext>`` (stessa logica per ruolo di ``Player_immage``)
+* ``MEDIA_ROOT/players/<competizione>/<ruolo>/<nickname>.<ext>`` (cartelle per ruolo come ``Player_immage``)
 
 Le immagini raster sono ridimensionate a massimo 256 px; il download è idempotente (ETag + hash SHA-256).
 Non si scaricano immagini da Leaguepedia/Fandom (licenze dei file eterogenee).

@@ -49,4 +49,5 @@ jobs:
         with:
           node-version: "22"
       - name: Test JavaScript (node:test)
-        run: node --test frontend/tests/
+        working-directory: frontend
+        run: node --test

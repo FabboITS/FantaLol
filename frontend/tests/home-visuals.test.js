@@ -6,7 +6,7 @@ const path = require('node:path');
 const stylesheet = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
 const favicon = fs.readFileSync(path.join(__dirname, '../favicon.svg'), 'utf8');
 const homepage = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-const integrations = fs.readFileSync(path.join(__dirname, '../../fantalol-backend/INTEGRATIONS.md'), 'utf8');
+const pipeline = fs.readFileSync(path.join(__dirname, '../../docs/pro-matches-pipeline.md'), 'utf8');
 
 test('hero portraits use original card sizes and high-resolution player assets', () => {
   assert.match(stylesheet, /\.hero-player-image\{[^}]*object-fit:cover/);
@@ -50,21 +50,40 @@ test('public rules publish the approved Summer 2026 scoring system', () => {
   assert.doesNotMatch(homepage, /MVP <b>\+3<\/b>|VITTORIA <b>\+1<\/b>/);
 });
 
-test('public rules explain cumulative scoring, lineup timing and synchronization', () => {
-  assert.match(homepage, /media aritmetica di tutte le partite effettivamente disputate.*Summer Split/);
-  assert.match(homepage, /non viene aggiunto uno zero alla sua media cumulativa/);
-  assert.match(homepage, /riserve ricevono.*valutazione individuale.*non contribuiscono.*fantasy team/);
+test('public rules explain lineup timing per competition and the new data sources', () => {
+  assert.match(homepage, /media delle partite giocate dal player/);
   assert.match(homepage, /martedì alle 00:00.*giovedì alle 23:59:59.*Europe\/Rome/);
   assert.match(homepage, /efficace dal venerdì alle 00:00/);
-  assert.match(homepage, /più di 5 fantasy team.*formazione è fissa.*non può essere modificata/);
-  assert.match(homepage, /sincronizza automaticamente.*ogni 6 ore/);
-  assert.match(homepage, /Sincronizza ora.*ritenta.*fonti.*non può creare dati.*incompleti/);
-  assert.doesNotMatch(homepage, /scadenze delle formazioni/);
+  assert.match(homepage, /LCK e LPL.*60 minuti prima della prima serie/);
+  assert.match(homepage, /rosa da 5 la formazione è fissa/);
+  assert.match(homepage, /PandaScore ogni ora.*Leaguepedia ogni 30 minuti/);
 });
 
-test('integration guide describes cumulative automatic publication only', () => {
-  assert.match(integrations, /per-game player statistics/);
-  assert.match(integrations, /cumulative average of played Summer games/);
-  assert.doesNotMatch(integrations, /weekly aggregation/i);
-  assert.doesNotMatch(integrations, /waiting-for-postponed|waiting week|matchdayId.*chiudi/i);
+test('rules dialog has a dedicated WORLDS tab with the UCL-style ruleset', () => {
+  assert.match(homepage, /data-rules-tab="worlds"/);
+  assert.match(homepage, /8 player: 5 titolari.*3 panchinari/);
+  assert.match(homepage, /Budget iniziale 100 crediti, \+5 crediti dopo lo Swiss Stage/);
+  assert.match(homepage, /Swiss Stage: massimo 2 player dello stesso team/);
+  assert.match(homepage, /capitano vale doppio/);
+  assert.match(homepage, /Play-In non assegna punti/);
+});
+
+test('home exposes competition chips, team grid, match center and attribution', () => {
+  assert.match(homepage, /id="home-competitions"/);
+  assert.match(homepage, /id="players-competitions"/);
+  assert.match(homepage, /id="matches-competitions"/);
+  assert.match(homepage, /data-match-state="upcoming"/);
+  assert.match(homepage, /data-match-state="results"/);
+  assert.match(homepage, /data-match-state="live"/);
+  assert.match(homepage, /id="match-drawer-attribution"[^>]*>[^<]*CC BY-SA/);
+  assert.match(homepage, /Uso non commerciale\. Loghi, nomi e immagini sono marchi dei rispettivi titolari/);
+  assert.match(homepage, /\/js\/competition-data-source\.js/);
+  assert.doesNotMatch(homepage, /lec-data-source/);
+});
+
+test('pipeline guide documents PandaScore + Leaguepedia', () => {
+  assert.match(pipeline, /PandaScore/);
+  assert.match(pipeline, /Leaguepedia/);
+  assert.match(pipeline, /CC BY-SA/);
+  assert.match(pipeline, /ScoreboardPlayers/);
 });

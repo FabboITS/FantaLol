@@ -1,0 +1,61 @@
+# Avvio: dalla root del repository  →  docker compose -f backend/docker-compose.yml up --build
+# Le variabili sono lette da backend/.env (copia di .env.example): nessun segreto nel repository.
+name: fantalol
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: backend/Dockerfile
+  image: fantalol-backend:latest
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: ${DATABASE_URL:-postgres://fantalol:fantalol@db:5432/fantalol}
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Imposta DJANGO_SECRET_KEY in backend/.env}
+    JWT_SECRET: ${JWT_SECRET:?Imposta JWT_SECRET in backend/.env}
+  volumes:
+    - fantalol_media:/app/media
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fantalol
+      POSTGRES_USER: fantalol
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fantalol}
+    ports:
+      - "5433:5432"
+    volumes:
+      - fantalol_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fantalol -d fantalol"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    <<: *app
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8080/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  scheduler:
+    <<: *app
+    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py run_scheduler"]
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+volumes:
+  fantalol_pg_data:
+  fantalol_media:

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: fantalol
+          POSTGRES_USER: fantalol
+          POSTGRES_PASSWORD: fantalol
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fantalol" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://fantalol:fantalol@localhost:5432/fantalol
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - name: Installa dipendenze
+        run: pip install ".[dev]"
+      - name: Ruff (lint + format)
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Migrazioni senza modifiche pendenti
+        run: python manage.py makemigrations --check --dry-run --settings=config.settings.test
+      - name: Test e coverage (soglia 80% su apps/)
+        run: pytest --cov=apps --cov-report=term-missing --cov-fail-under=80
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test JavaScript (node:test)
+        run: node --test frontend/tests/

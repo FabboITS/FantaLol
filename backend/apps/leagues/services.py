@@ -363,8 +363,12 @@ def _lock_player(player_id: int) -> ProPlayer:
 @transaction.atomic
 def buy_player(user: User, team_id: int, player_id: int, credits: int) -> RosterEntry:
     """Acquisto diretto a crediti (porting di ``acquistaPlayer``), usato fuori dall'asta live."""
-    team = FantaTeam.objects.select_for_update().select_related("league__edition", "owner").filter(
-        pk=team_id).first()
+    team = (
+        FantaTeam.objects.select_for_update()
+        .select_related("league__edition", "owner")
+        .filter(pk=team_id)
+        .first()
+    )
     if team is None:
         raise ResourceNotFoundException(f"FantaTeam non trovata con id: {team_id}")
     assert_owner(team, user)
@@ -376,16 +380,22 @@ def buy_player(user: User, team_id: int, player_id: int, credits: int) -> Roster
     if RosterEntry.objects.filter(league=league, player=player).exists() and not league.is_worlds:
         raise BusinessRuleException(f"Il player {player.nickname} è già stato acquistato in questa lega")
     if credits > team.crediti_residui:
-        raise BusinessRuleException(f"Crediti insufficienti: residui {team.crediti_residui}, offerti {credits}")
+        raise BusinessRuleException(
+            f"Crediti insufficienti: residui {team.crediti_residui}, offerti {credits}"
+        )
     if credits < info.quotazione:
         raise BusinessRuleException(
-            f"L'offerta ({credits}) è inferiore alla quotazione base del player ({info.quotazione})")
+            f"L'offerta ({credits}) è inferiore alla quotazione base del player ({info.quotazione})"
+        )
     limits = policy.roster_limits(league)
     rosa = list(team.rosa.all())
     if len(rosa) >= limits.max_roster_size:
         raise BusinessRuleException(f"Rosa al completo: massimo {limits.max_roster_size} player")
     roster = edition_roster_map(league.edition_id, [e.player_id for e in rosa])
-    if limits.max_per_role is not None and _roles_count(rosa, roster).get(info.role, 0) >= limits.max_per_role:
+    if (
+        limits.max_per_role is not None
+        and _roles_count(rosa, roster).get(info.role, 0) >= limits.max_per_role
+    ):
         raise BusinessRuleException(f"Hai già raggiunto il numero massimo di player per il ruolo {info.role}")
     team.crediti_residui -= credits
     team.save(update_fields=["crediti_residui"])

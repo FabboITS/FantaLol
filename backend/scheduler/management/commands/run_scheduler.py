@@ -21,8 +21,11 @@ ADVISORY_LOCK_KEY = 4_242_2026
 def _dsn() -> str:
     db = settings.DATABASES["default"]
     return psycopg.conninfo.make_conninfo(
-        dbname=db["NAME"], user=db.get("USER") or None, password=db.get("PASSWORD") or None,
-        host=db.get("HOST") or None, port=db.get("PORT") or None,
+        dbname=db["NAME"],
+        user=db.get("USER") or None,
+        password=db.get("PASSWORD") or None,
+        host=db.get("HOST") or None,
+        port=db.get("PORT") or None,
     )
 
 
@@ -44,10 +47,12 @@ def acquire_lock(wait_seconds: float = 30.0, attempts: int | None = None):
 
 def build_scheduler() -> BlockingScheduler:
     scheduler = BlockingScheduler(timezone="UTC", job_defaults={"coalesce": True, "max_instances": 1})
-    scheduler.add_job(jobs.pandascore_sync, "interval", minutes=60, id="pandascore_sync",
-                      next_run_time=_now())
-    scheduler.add_job(jobs.leaguepedia_enrich, "interval", minutes=30, id="leaguepedia_enrich",
-                      next_run_time=_now())
+    scheduler.add_job(
+        jobs.pandascore_sync, "interval", minutes=60, id="pandascore_sync", next_run_time=_now()
+    )
+    scheduler.add_job(
+        jobs.leaguepedia_enrich, "interval", minutes=30, id="leaguepedia_enrich", next_run_time=_now()
+    )
     scheduler.add_job(jobs.auction_sweeper, "interval", seconds=1, id="auction_sweeper")
     scheduler.add_job(jobs.matchdays_maintenance, "interval", minutes=5, id="matchdays_maintenance")
     scheduler.add_job(jobs.manual_sync_requests, "interval", seconds=15, id="manual_sync_requests")

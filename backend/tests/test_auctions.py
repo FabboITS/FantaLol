@@ -24,7 +24,14 @@ def setup(db):
     league = LeagueFactory(edition=edition, participant_count=2, auction_open=True)
     mine = FantaTeamFactory(league=league, owner=owner, crediti_residui=1000)
     theirs = FantaTeamFactory(league=league, owner=rival, crediti_residui=1000)
-    return {"league": league, "entries": entries, "owner": owner, "rival": rival, "mine": mine, "theirs": theirs}
+    return {
+        "league": league,
+        "entries": entries,
+        "owner": owner,
+        "rival": rival,
+        "mine": mine,
+        "theirs": theirs,
+    }
 
 
 def test_nomina_e_rilancio_rifiutati_ad_asta_della_lega_chiusa(setup):
@@ -40,7 +47,9 @@ def test_nomina_e_rilancio_rifiutati_ad_asta_della_lega_chiusa(setup):
 
 def test_nomina_con_scadenza_a_quindici_secondi(setup):
     before = timezone.now()
-    auction = auctions.start(setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id)
+    auction = auctions.start(
+        setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id
+    )
     after = timezone.now()
     assert before + timedelta(seconds=15) <= auction.ends_at <= after + timedelta(seconds=15)
     assert auction.current_bid == setup["entries"][0].quotazione and auction.highest_bidder == setup["mine"]
@@ -49,7 +58,9 @@ def test_nomina_con_scadenza_a_quindici_secondi(setup):
 
 
 def test_rilancio_valido_riavvia_il_timer(setup):
-    auction = auctions.start(setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id)
+    auction = auctions.start(
+        setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id
+    )
     before = timezone.now()
     result = auctions.bid(setup["rival"], auction.id, setup["theirs"].id, auction.current_bid + 1)
     assert result.ends_at >= before + timedelta(seconds=15)
@@ -62,7 +73,9 @@ def test_rilancio_valido_riavvia_il_timer(setup):
 
 
 def test_offerta_di_tutti_i_crediti_e_rilancio_successivo_rifiutato(setup):
-    auction = auctions.start(setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id)
+    auction = auctions.start(
+        setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id
+    )
     assert auctions.bid(setup["rival"], auction.id, setup["theirs"].id, 1000).current_bid == 1000
     with pytest.raises(BusinessRuleException, match="Crediti insufficienti"):
         auctions.bid(setup["owner"], auction.id, setup["mine"].id, 1001)
@@ -81,13 +94,17 @@ def test_finalizzazione_allo_scadere_assegna_il_player_e_scala_i_crediti(setup):
 
 
 def test_finalizzazione_pigra_su_lettura_e_su_rilancio(setup):
-    auction = auctions.start(setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id)
+    auction = auctions.start(
+        setup["owner"], setup["league"].id, setup["entries"][0].player_id, setup["mine"].id
+    )
     with freeze_time(timezone.now() + timedelta(seconds=20)):
         with pytest.raises(BusinessRuleException, match="L'asta è terminata"):
             auctions.bid_or_finalize(setup["rival"], auction.id, setup["theirs"].id, 50)
         auction.refresh_from_db()
         assert auction.status == AuctionStatus.WON
-    second = auctions.start(setup["owner"], setup["league"].id, setup["entries"][1].player_id, setup["mine"].id)
+    second = auctions.start(
+        setup["owner"], setup["league"].id, setup["entries"][1].player_id, setup["mine"].id
+    )
     with freeze_time(timezone.now() + timedelta(seconds=20)):
         assert auctions.active(setup["league"].id) is None
     second.refresh_from_db()
@@ -98,7 +115,9 @@ def test_vincoli_di_rosa_per_ruolo(setup):
     league = setup["league"]
     mids = [e for e in setup["entries"] if e.role == "MID"][:3]
     for entry in mids[:2]:
-        RosterEntry.objects.create(fanta_team=setup["mine"], league=league, player=entry.player, crediti_spesi=1)
+        RosterEntry.objects.create(
+            fanta_team=setup["mine"], league=league, player=entry.player, crediti_spesi=1
+        )
     with pytest.raises(BusinessRuleException, match="limite per il ruolo MID"):
         auctions.start(setup["owner"], league.id, mids[2].player_id, setup["mine"].id)
     with pytest.raises(BusinessRuleException, match="già assegnato"):
@@ -108,15 +127,29 @@ def test_vincoli_di_rosa_per_ruolo(setup):
 def test_api_aste(setup):
     client = auth_client(setup["owner"])
     league, entry = setup["league"], setup["entries"][0]
-    started = client.post("/api/auctions", {"leagueId": league.id, "lecPlayerId": entry.player_id,
-                                            "fantaTeamId": setup["mine"].id}, format="json")
+    started = client.post(
+        "/api/auctions",
+        {"leagueId": league.id, "lecPlayerId": entry.player_id, "fantaTeamId": setup["mine"].id},
+        format="json",
+    )
     assert started.status_code == 201
     body = started.json()
-    assert set(body) >= {"id", "leagueId", "lecPlayerId", "playerNickname", "playerRole", "currentBid",
-                         "highestBidderId", "highestBidderName", "endsAt", "status"}
+    assert set(body) >= {
+        "id",
+        "leagueId",
+        "lecPlayerId",
+        "playerNickname",
+        "playerRole",
+        "currentBid",
+        "highestBidderId",
+        "highestBidderName",
+        "endsAt",
+        "status",
+    }
     assert client.get(f"/api/auctions/active?leagueId={league.id}").json()["id"] == body["id"]
-    rival = auth_client(setup["rival"]).post(f"/api/auctions/{body['id']}/bids",
-                                             {"fantaTeamId": setup["theirs"].id, "credits": 50}, format="json")
+    rival = auth_client(setup["rival"]).post(
+        f"/api/auctions/{body['id']}/bids", {"fantaTeamId": setup["theirs"].id, "credits": 50}, format="json"
+    )
     assert rival.status_code == 200 and rival.json()["highestBidderName"] == setup["theirs"].nome
     assert client.get("/api/auctions/active").status_code == 400
 

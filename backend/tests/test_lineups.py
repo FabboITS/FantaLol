@@ -38,8 +38,14 @@ def ctx():
     team = FantaTeamFactory(league=league, owner=owner)
     starters, reserves = teams[0], teams[1]
     give_roster(team, starters + reserves)
-    return {"league": league, "team": team, "owner": owner, "starters": starters, "reserves": reserves,
-            "others": teams[2]}
+    return {
+        "league": league,
+        "team": team,
+        "owner": owner,
+        "starters": starters,
+        "reserves": reserves,
+        "others": teams[2],
+    }
 
 
 def players(entries):
@@ -56,7 +62,9 @@ def test_programma_cinque_periodi_dal_venerdi_e_chiude_quelli_correnti(ctx):
     team = ctx["team"]
     lineups.create_backfill_periods(team, players(ctx["starters"]), datetime(2026, 7, 24, tzinfo=UTC))
     lineups.schedule(ctx["owner"], team.id, players(ctx["reserves"]))
-    old = EffectiveLineupPeriod.objects.filter(fanta_team=team, effective_from=datetime(2026, 7, 24, tzinfo=UTC))
+    old = EffectiveLineupPeriod.objects.filter(
+        fanta_team=team, effective_from=datetime(2026, 7, 24, tzinfo=UTC)
+    )
     assert all(p.effective_until == FRIDAY for p in old)
     new = EffectiveLineupPeriod.objects.filter(fanta_team=team, effective_from=FRIDAY)
     assert new.count() == 5 and {p.origin for p in new} == {LineupPeriodOrigin.USER}
@@ -105,8 +113,9 @@ def test_conferma_ripara_periodi_solo_futuri_senza_sovrascriverli(ctx):
     future = periods(team, LineupPeriodOrigin.USER)
     assert len(future) == 5 and all(p.effective_until is None for p in future)
     lineups.schedule_confirmed(ctx["owner"], team.id, players(ctx["reserves"]))
-    assert {p.player_id for p in EffectiveLineupPeriod.objects.filter(fanta_team=team, effective_until=None)} == \
-        {e.player_id for e in ctx["reserves"]}
+    assert {
+        p.player_id for p in EffectiveLineupPeriod.objects.filter(fanta_team=team, effective_until=None)
+    } == {e.player_id for e in ctx["reserves"]}
 
 
 @freeze_time(WEDNESDAY)
@@ -119,8 +128,9 @@ def test_player_attivo_all_istante_e_selezione_programmata(ctx):
     assert mid_now.player_id == ctx["starters"][2].player_id
     assert mid_later.player_id == ctx["reserves"][2].player_id
     assert {p.id for p in lineups.scheduled_players(team.id)} == {e.player_id for e in ctx["reserves"]}
-    assert {p.id for p in lineups.active_players_at(team.id, datetime(2026, 7, 29, tzinfo=UTC))} == \
-        {e.player_id for e in ctx["starters"]}
+    assert {p.id for p in lineups.active_players_at(team.id, datetime(2026, 7, 29, tzinfo=UTC))} == {
+        e.player_id for e in ctx["starters"]
+    }
 
 
 def test_formazione_non_valida(ctx):
@@ -189,8 +199,9 @@ def test_finestra_esposta_e_bloccata_per_le_rose_fisse(ctx):
 def test_lineup_settimanale_selezione_ed_effettivi_separati(ctx):
     team = ctx["team"]
     lineups.create_backfill_periods(team, players(ctx["starters"]), BACKFILL)
-    response = formations.schedule_lineup(ctx["owner"], team.id,
-                                          {"titolari_ids": [e.player_id for e in ctx["reserves"]]})
+    response = formations.schedule_lineup(
+        ctx["owner"], team.id, {"titolari_ids": [e.player_id for e in ctx["reserves"]]}
+    )
     assert {p["id"] for p in response["players"]} == {e.player_id for e in ctx["reserves"]}
     assert {p["id"] for p in response["effective_players"]} == {e.player_id for e in ctx["starters"]}
     assert response["next_effective_at"] == FRIDAY
@@ -198,9 +209,14 @@ def test_lineup_settimanale_selezione_ed_effettivi_separati(ctx):
     found = formations.find_lineup(ctx["owner"], team.id)
     assert {p["nickname"] for p in found["players"]} == {e.player.nickname for e in ctx["reserves"]}
     with pytest.raises(BusinessRuleException, match="un player per ruolo"):
-        formations.schedule_lineup(ctx["owner"], team.id, {"titolari_ids": [
-            e.player_id for e in ctx["starters"][:4] + ctx["reserves"][:1]]})
-    formations.schedule_lineup(AdminFactory(), team.id, {"titolari_ids": [e.player_id for e in ctx["starters"]]})
+        formations.schedule_lineup(
+            ctx["owner"],
+            team.id,
+            {"titolari_ids": [e.player_id for e in ctx["starters"][:4] + ctx["reserves"][:1]]},
+        )
+    formations.schedule_lineup(
+        AdminFactory(), team.id, {"titolari_ids": [e.player_id for e in ctx["starters"]]}
+    )
 
 
 @freeze_time(WEDNESDAY)
@@ -226,8 +242,12 @@ def test_sicurezza_dei_controller_formazioni(ctx, api):
     assert api.put(url, {"titolariIds": [1]}, format="json").status_code == 401
     owner = auth_client(ctx["owner"])
     ok = owner.put(url, {"titolariIds": [e.player_id for e in ctx["starters"]]}, format="json")
-    assert ok.status_code == 200 and set(ok.json()) >= {"players", "effectivePlayers", "editable",
-                                                       "nextEffectiveAt"}
+    assert ok.status_code == 200 and set(ok.json()) >= {
+        "players",
+        "effectivePlayers",
+        "editable",
+        "nextEffectiveAt",
+    }
     day = Matchday.objects.create(league=ctx["league"], numero=1)
     confirm_all = f"/api/admin/leagues/{ctx['league'].id}/matchdays/{day.id}/formations/confirm-all"
     assert owner.post(confirm_all).status_code == 403
@@ -237,8 +257,11 @@ def test_sicurezza_dei_controller_formazioni(ctx, api):
     assert history[0]["confirmed"] is True
     single = owner.get(f"/api/fanta-teams/{ctx['team'].id}/formazioni/{day.id}")
     assert single.status_code == 200
-    put = owner.put(f"/api/fanta-teams/{ctx['team'].id}/formazioni",
-                    {"matchdayId": day.id, "titolariIds": [e.player_id for e in ctx["reserves"]]}, format="json")
+    put = owner.put(
+        f"/api/fanta-teams/{ctx['team'].id}/formazioni",
+        {"matchdayId": day.id, "titolariIds": [e.player_id for e in ctx["reserves"]]},
+        format="json",
+    )
     assert put.status_code == 200 and put.json()["source"] == "SUBMITTED"
     assert owner.post(f"/api/fanta-teams/{ctx['team'].id}/formazioni/{day.id}/confirm").status_code == 200
     assert owner.get(f"/api/fanta-teams/{ctx['team'].id}/formazioni/9999").status_code == 404

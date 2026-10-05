@@ -69,7 +69,7 @@ def matchdays_maintenance():
 
 @job
 def manual_sync_requests():
-    """Esegue le sincronizzazioni richieste dall'admin con ``POST /api/admin/competitions/{code}/synchronize``."""
+    """Esegue le sincronizzazioni richieste dall'admin (POST /api/admin/competitions/{code}/synchronize)."""
     from apps.providers.leaguepedia.worker import LeaguepediaEnrichWorker
     from apps.providers.pandascore.worker import EsportsSyncWorker
 

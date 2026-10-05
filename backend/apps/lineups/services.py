@@ -256,7 +256,9 @@ def backfill_all() -> int:
         if players is None:
             continue
         if EffectiveLineupPeriod.objects.filter(fanta_team=team).exists():
-            if not EffectiveLineupPeriod.objects.filter(fanta_team=team, effective_from=effective_from).exists():
+            if not EffectiveLineupPeriod.objects.filter(
+                fanta_team=team, effective_from=effective_from
+            ).exists():
                 ensure_historical_backfill(team, players, effective_from)
                 created += 1
         else:
@@ -267,5 +269,8 @@ def backfill_all() -> int:
 
 def _valid_lineup(team: FantaTeam, players: list[ProPlayer]) -> bool:
     roles = player_roles(team, players)
-    return len({p.id for p in players}) == len(ROLE_VALUES) and sorted(roles.values()) == sorted(ROLE_VALUES) \
+    return (
+        len({p.id for p in players}) == len(ROLE_VALUES)
+        and sorted(roles.values()) == sorted(ROLE_VALUES)
         and len(players) == len(ROLE_VALUES)
+    )

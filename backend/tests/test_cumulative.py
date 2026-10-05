@@ -31,23 +31,43 @@ EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
 
 def obs(player, played_at: str, score: float) -> Observation:
-    return Observation(game_id=hash((player.id, played_at)), match_id=1, game_number=1, leaguepedia_game_id=None,
-                       player_id=player.id, nickname=player.nickname, team_name="", role="MID", champion="",
-                       kills=0, deaths=0, assists=0, cs=0, vision_score=0, win=False,
-                       played_at=datetime.fromisoformat(played_at.replace("Z", "+00:00")), participated=True,
-                       overridden=False, complete=True, score=score)
+    return Observation(
+        game_id=hash((player.id, played_at)),
+        match_id=1,
+        game_number=1,
+        leaguepedia_game_id=None,
+        player_id=player.id,
+        nickname=player.nickname,
+        team_name="",
+        role="MID",
+        champion="",
+        kills=0,
+        deaths=0,
+        assists=0,
+        cs=0,
+        vision_score=0,
+        win=False,
+        played_at=datetime.fromisoformat(played_at.replace("Z", "+00:00")),
+        participated=True,
+        overridden=False,
+        complete=True,
+        score=score,
+    )
 
 
 @pytest.fixture
 def ctx(monkeypatch):
     league = LeagueFactory()
     team = FantaTeamFactory(league=league, nome="Blue Phoenix")
-    p = {name: PlayerFactory(nickname=name) for name in
-         ("Old Mid", "New Mid", "Bench Mid", "Top", "Jungle", "Adc", "Support")}
+    p = {
+        name: PlayerFactory(nickname=name)
+        for name in ("Old Mid", "New Mid", "Bench Mid", "Top", "Jungle", "Adc", "Support")
+    }
 
     def period(t, role, player, start, end=None):
-        EffectiveLineupPeriod.objects.create(fanta_team=t, role=role, player=player, effective_from=start,
-                                             effective_until=end, origin="USER")
+        EffectiveLineupPeriod.objects.create(
+            fanta_team=t, role=role, player=player, effective_from=start, effective_until=end, origin="USER"
+        )
 
     period(team, "TOP", p["Top"], EPOCH)
     period(team, "JUNGLE", p["Jungle"], EPOCH)
@@ -55,10 +75,16 @@ def ctx(monkeypatch):
     period(team, "MID", p["New Mid"], FRIDAY)
     period(team, "ADC", p["Adc"], EPOCH)
     period(team, "SUPPORT", p["Support"], EPOCH)
-    stats = [obs(p["Old Mid"], "2026-07-28T12:00:00Z", 10), obs(p["Old Mid"], "2026-07-29T12:00:00Z", 20),
-             obs(p["Old Mid"], "2026-07-30T12:00:00Z", 30), obs(p["New Mid"], "2026-08-01T12:00:00Z", 40),
-             obs(p["Bench Mid"], "2026-07-29T12:00:00Z", 100), obs(p["Top"], "2026-07-29T12:00:00Z", 11),
-             obs(p["Jungle"], "2026-07-29T12:00:00Z", 12), obs(p["Adc"], "2026-07-29T12:00:00Z", 13)]
+    stats = [
+        obs(p["Old Mid"], "2026-07-28T12:00:00Z", 10),
+        obs(p["Old Mid"], "2026-07-29T12:00:00Z", 20),
+        obs(p["Old Mid"], "2026-07-30T12:00:00Z", 30),
+        obs(p["New Mid"], "2026-08-01T12:00:00Z", 40),
+        obs(p["Bench Mid"], "2026-07-29T12:00:00Z", 100),
+        obs(p["Top"], "2026-07-29T12:00:00Z", 11),
+        obs(p["Jungle"], "2026-07-29T12:00:00Z", 12),
+        obs(p["Adc"], "2026-07-29T12:00:00Z", 13),
+    ]
     state = {"stats": stats}
 
     def fake_observations(edition_id=None, player_ids=None, **kwargs):
@@ -87,17 +113,22 @@ def test_titolare_senza_osservazioni_rende_il_team_provvisorio(ctx):
     score = cumulative.team_score(ctx["team"])
     support = next(s for s in score["slots"] if s["role"] == "SUPPORT")
     assert {s["role"] for s in score["slots"]} == {"TOP", "JUNGLE", "MID", "ADC", "SUPPORT"}
-    assert support["games_played"] == 0 and support["average"] is None and support["status"] == "awaiting-data"
+    assert (
+        support["games_played"] == 0 and support["average"] is None and support["status"] == "awaiting-data"
+    )
     assert score["overall_total"] is None and score["provisional"] is True
 
 
 def test_totale_somma_ogni_game_giocato_dalla_rosa_storicamente_attiva(ctx):
     p = ctx["p"]
-    ctx["state"]["stats"] = [obs(p["Top"], "2026-07-29T12:00:00Z", 11), obs(p["Jungle"], "2026-07-29T12:00:00Z", 12),
-                             obs(p["Old Mid"], "2026-07-29T12:00:00Z", 10),
-                             obs(p["New Mid"], "2026-08-01T12:00:00Z", 40),
-                             obs(p["Adc"], "2026-07-29T12:00:00Z", 13),
-                             obs(p["Support"], "2026-07-29T12:00:00Z", 14)]
+    ctx["state"]["stats"] = [
+        obs(p["Top"], "2026-07-29T12:00:00Z", 11),
+        obs(p["Jungle"], "2026-07-29T12:00:00Z", 12),
+        obs(p["Old Mid"], "2026-07-29T12:00:00Z", 10),
+        obs(p["New Mid"], "2026-08-01T12:00:00Z", 40),
+        obs(p["Adc"], "2026-07-29T12:00:00Z", 13),
+        obs(p["Support"], "2026-07-29T12:00:00Z", 14),
+    ]
     assert cumulative.team_score(ctx["team"])["overall_total"] == 100.0
 
 
@@ -110,8 +141,9 @@ def test_classifica_di_lega_attribuzione_e_ordine(ctx):
         ctx["period"](zeta, role, player, EPOCH)
     for role, name in (("TOP", "Top"), ("JUNGLE", "Jungle"), ("MID", "Old Mid"), ("ADC", "Adc")):
         ctx["period"](ghost, role, p[name], EPOCH)
-    ctx["state"]["stats"] = [obs(p[n], "2026-07-29T12:00:00Z", 10) for n in ("Top", "Jungle", "Old Mid", "Adc",
-                                                                             "Support")]
+    ctx["state"]["stats"] = [
+        obs(p[n], "2026-07-29T12:00:00Z", 10) for n in ("Top", "Jungle", "Old Mid", "Adc", "Support")
+    ]
     ctx["state"]["stats"] += [obs(p["New Mid"], "2026-08-01T12:00:00Z", 30)]
     ctx["state"]["stats"] += [obs(z, "2026-07-29T12:00:00Z", 50) for z in zeta_players]
     ranking = cumulative.league_ranking(ctx["league"])
@@ -164,7 +196,9 @@ def test_classifica_privata_e_punteggio_team_richiedono_membership(api):
     response = auth_client(member).get(url)
     assert response.status_code == 200 and response.json()["status"] == "awaiting-data"
     assert response.json()["items"][0]["teamName"] == team.nome
-    assert auth_client(member).get(f"/api/fanta-teams/{team.id}/cumulative-score").json()["provisional"] is True
+    assert (
+        auth_client(member).get(f"/api/fanta-teams/{team.id}/cumulative-score").json()["provisional"] is True
+    )
     assert auth_client(UserFactory()).get(f"/api/fanta-teams/{team.id}/cumulative-score").status_code == 403
 
 
@@ -176,8 +210,17 @@ def test_dati_per_competizione_e_alias_lec(api):
     for number in (1, 2):
         game = add_game(match, number, played_at=match.begin_at + timedelta(hours=number), winner=a)
         for entry in rosters[a] + rosters[b]:
-            add_stat(game, entry.player, kills=2, deaths=0 if entry.team == a else 2, assists=3, cs=200,
-                     vision=40, win=entry.team == a, team=entry.team)
+            add_stat(
+                game,
+                entry.player,
+                kills=2,
+                deaths=0 if entry.team == a else 2,
+                assists=3,
+                cs=200,
+                vision=40,
+                win=entry.team == a,
+                team=entry.team,
+            )
     standings = api.get("/api/lec/standings").json()
     assert standings["items"][0] == {"position": 1, "teamName": a.name, "seriesWins": 1, "seriesLosses": 0}
     assert api.get("/api/competitions/LEC/standings").json()["items"] == standings["items"]

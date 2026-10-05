@@ -27,8 +27,13 @@ def test_lock_advisory_consente_un_solo_scheduler():
 
 def test_registrazione_dei_job():
     ids = {j.id for j in build_scheduler().get_jobs()}
-    assert ids == {"pandascore_sync", "leaguepedia_enrich", "auction_sweeper", "matchdays_maintenance",
-                   "manual_sync_requests"}
+    assert ids == {
+        "pandascore_sync",
+        "leaguepedia_enrich",
+        "auction_sweeper",
+        "matchdays_maintenance",
+        "manual_sync_requests",
+    }
 
 
 @pytest.mark.django_db
@@ -61,7 +66,9 @@ def test_richiesta_di_sync_admin_eseguita_dallo_scheduler(admin_client):
     assert not ProviderSyncState.objects.filter(sync_requested_at__isnull=False).exists()
     assert edition.matches.count() == 3
     status = admin_client.get("/api/admin/competitions/LCK/synchronization").json()
-    assert status["providers"][0]["provider"] == "PANDASCORE" and status["providers"][0]["status"] == "SUCCESS"
+    assert (
+        status["providers"][0]["provider"] == "PANDASCORE" and status["providers"][0]["status"] == "SUCCESS"
+    )
 
 
 @pytest.mark.django_db
@@ -70,8 +77,9 @@ def test_comandi_di_gestione(capsys):
     with respx.mock(assert_all_called=False) as router:
         mock_lck(router)
         router.get("https://api.pandascore.test/leagues/293/series").respond(200, json=[])
-        router.get("https://api.pandascore.test/lol/leagues").respond(200, json=[{"id": 297, "name":
-                                                                                 "World Championship"}])
+        router.get("https://api.pandascore.test/lol/leagues").respond(
+            200, json=[{"id": 297, "name": "World Championship"}]
+        )
         cargo_router(router, [])
         call_command("sync_pandascore", competition="LCK", discover=True)
         assert json.loads(capsys.readouterr().out)["competitions"]["LCK"]["matches"] == 3

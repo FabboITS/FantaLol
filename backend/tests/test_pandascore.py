@@ -35,8 +35,9 @@ def test_token_obbligatorio(settings):
 
 @respx.mock
 def test_parametri_e_header_degli_endpoint_di_lista():
-    route = respx.get(f"{PANDA}/leagues/293/matches/past").mock(return_value=httpx.Response(
-        200, json=[], headers={"Link": '<x>; rel="next"'}))
+    route = respx.get(f"{PANDA}/leagues/293/matches/past").mock(
+        return_value=httpx.Response(200, json=[], headers={"Link": '<x>; rel="next"'})
+    )
     page = PandaScoreClient().league_matches(293, "past", page=2, per_page=50)
     request = route.calls.last.request
     assert request.headers["Authorization"] == "Bearer test-token"
@@ -45,7 +46,8 @@ def test_parametri_e_header_degli_endpoint_di_lista():
     assert request.url.params["per_page"] == "50"
     assert page.has_next
     upcoming = respx.get(f"{PANDA}/leagues/293/matches/upcoming").mock(
-        return_value=httpx.Response(200, json=[{"id": 1}], headers={"X-Total": "120"}))
+        return_value=httpx.Response(200, json=[{"id": 1}], headers={"X-Total": "120"})
+    )
     page = PandaScoreClient().league_matches(293, "upcoming")
     assert upcoming.calls.last.request.url.params["sort"] == "begin_at"
     assert page.total == 120 and page.has_next
@@ -53,8 +55,9 @@ def test_parametri_e_header_degli_endpoint_di_lista():
 
 @respx.mock
 def test_retry_con_backoff_su_errore_5xx():
-    route = respx.get(f"{PANDA}/tournaments/1/rosters").mock(side_effect=[
-        httpx.Response(502), httpx.Response(200, json={"rosters": [{"id": 1}]})])
+    route = respx.get(f"{PANDA}/tournaments/1/rosters").mock(
+        side_effect=[httpx.Response(502), httpx.Response(200, json={"rosters": [{"id": 1}]})]
+    )
     assert PandaScoreClient().tournament_rosters(1) == [{"id": 1}]
     assert route.call_count == 2
 
@@ -101,13 +104,20 @@ def test_quotazioni_admin_non_sovrascritte_e_cambio_squadra_chiude_il_periodo():
     entries = EditionRoster.objects.filter(edition=edition, player__nickname="Faker").order_by("active_from")
     assert entries.count() == 2
     assert entries[0].active_to is not None
-    assert entries[1].team.acronym == "NS" and entries[1].quotazione == 42 and entries[1].quotazione_set_by_admin
+    assert (
+        entries[1].team.acronym == "NS" and entries[1].quotazione == 42 and entries[1].quotazione_set_by_admin
+    )
 
 
 def test_fallimento_parziale_di_una_lega_non_blocca_le_altre():
     lck_edition()
-    CompetitionEdition.objects.create(competition=Competition.objects.get(code="LEC"), year=2026, name="LEC",
-                                      starts_at=datetime(2026, 7, 20, tzinfo=UTC), is_active=True)
+    CompetitionEdition.objects.create(
+        competition=Competition.objects.get(code="LEC"),
+        year=2026,
+        name="LEC",
+        starts_at=datetime(2026, 7, 20, tzinfo=UTC),
+        is_active=True,
+    )
     with respx.mock(assert_all_called=False) as router:
         mock_lck(router)
         router.get(url__regex=rf"{PANDA}/leagues/4197/.*").mock(return_value=httpx.Response(500))
@@ -132,8 +142,9 @@ def test_errore_su_un_singolo_match_non_ferma_la_lega():
 
 def test_scoperta_edizioni_dalle_serie_pandascore():
     with respx.mock(assert_all_called=False) as router:
-        router.get(f"{PANDA}/leagues/293/series").mock(return_value=httpx.Response(
-            200, json=load("pandascore/lck_series.json")))
+        router.get(f"{PANDA}/leagues/293/series").mock(
+            return_value=httpx.Response(200, json=load("pandascore/lck_series.json"))
+        )
         editions = EsportsSyncWorker().discover_editions(Competition.objects.get(code="LCK"))
     assert len(editions) == 1
     edition = editions[0]
@@ -145,8 +156,9 @@ def test_id_worlds_ricavato_dalla_ricerca_e_non_indovinato():
     worlds = Competition.objects.get(code="WORLDS")
     assert worlds.pandascore_league_id is None
     with respx.mock(assert_all_called=False) as router:
-        router.get(f"{PANDA}/lol/leagues").mock(return_value=httpx.Response(
-            200, json=load("pandascore/worlds_leagues.json")))
+        router.get(f"{PANDA}/lol/leagues").mock(
+            return_value=httpx.Response(200, json=load("pandascore/worlds_leagues.json"))
+        )
         EsportsSyncWorker().resolve_league_id(worlds)
     worlds.refresh_from_db()
     assert worlds.pandascore_league_id == 297
@@ -170,8 +182,13 @@ def test_riconoscimento_fasi_worlds(tournament, match, expected):
 
 def test_match_worlds_con_torneo_non_riconosciuto_ha_stage_nullo(caplog):
     edition = CompetitionEdition.objects.create(
-        competition=Competition.objects.get(code="WORLDS"), year=2026, name="Worlds 2026",
-        pandascore_serie_id=9500, starts_at=datetime(2026, 10, 1, tzinfo=UTC), is_active=True)
+        competition=Competition.objects.get(code="WORLDS"),
+        year=2026,
+        name="Worlds 2026",
+        pandascore_serie_id=9500,
+        starts_at=datetime(2026, 10, 1, tzinfo=UTC),
+        is_active=True,
+    )
     raw = load("pandascore/lck_past.json")[0]
     raw.update({"serie_id": 9500, "tournament": {"id": 1, "name": "Showmatch"}, "name": "All-Stars"})
     match = EsportsSyncWorker(client=object()).upsert_match(raw, edition)

@@ -37,7 +37,8 @@ def test_admin_globale_vede_tutte_le_leghe_utente_solo_le_sue_senza_duplicati(le
     FantaTeamFactory(league=created, owner=alice)
     LeagueFactory(admin=bob, edition=lec[0])
     assert [league.id for league in services.accessible_leagues(AdminFactory())] == list(
-        League.objects.order_by("id").values_list("id", flat=True))
+        League.objects.order_by("id").values_list("id", flat=True)
+    )
     assert [league.id for league in services.accessible_leagues(alice)] == [created.id, joined.id]
 
 
@@ -89,10 +90,17 @@ def test_chiusura_rifiutata_con_asta_player_attiva(lec):
     league = LeagueFactory(admin=creator, edition=lec[0], participant_count=2, auction_open=True)
     from django.utils import timezone
 
-    AuctionSession.objects.create(league=league, player=lec[1][0].player, current_bid=10,
-                                  ends_at=timezone.now(), status=AuctionStatus.ACTIVE)
-    with pytest.raises(BusinessRuleException,
-                       match="Attendi la fine dell'asta del player prima di terminare l'asta della lega"):
+    AuctionSession.objects.create(
+        league=league,
+        player=lec[1][0].player,
+        current_bid=10,
+        ends_at=timezone.now(),
+        status=AuctionStatus.ACTIVE,
+    )
+    with pytest.raises(
+        BusinessRuleException,
+        match="Attendi la fine dell'asta del player prima di terminare l'asta della lega",
+    ):
         services.close_auction(creator, league.id)
     league.refresh_from_db()
     assert league.auction_open
@@ -117,8 +125,9 @@ def test_creatore_completa_ogni_ruolo_mancante(lec):
 def test_completamento_rifiutato_ad_asta_aperta(lec):
     creator = UserFactory()
     league = LeagueFactory(admin=creator, edition=lec[0], auction_open=True)
-    with pytest.raises(BusinessRuleException,
-                       match="Termina l'asta della lega prima di completare casualmente le rose"):
+    with pytest.raises(
+        BusinessRuleException, match="Termina l'asta della lega prima di completare casualmente le rose"
+    ):
         services.complete_all_rosters_randomly(creator, league.id)
 
 
@@ -203,22 +212,35 @@ def test_esclusivita_vale_solo_per_le_leghe_regionali(lec):
 
 
 # --------------------------------------------------------------------------- API e contratto JSON
-LEAGUE_KEYS = {"id", "nome", "codiceInvito", "creditiIniziali", "adminUsername", "numeroSquadre", "auctionOpen",
-               "participantCount", "competitionStarted", "maxRosterSize", "maxPerRole"}
+LEAGUE_KEYS = {
+    "id",
+    "nome",
+    "codiceInvito",
+    "creditiIniziali",
+    "adminUsername",
+    "numeroSquadre",
+    "auctionOpen",
+    "participantCount",
+    "competitionStarted",
+    "maxRosterSize",
+    "maxPerRole",
+}
 TEAM_KEYS = {"id", "nome", "creditiResidui", "leagueId", "leagueNome", "ownerUsername", "punti", "rosa"}
 ENTRY_KEYS = {"id", "lecPlayerId", "lecPlayerNickname", "ruolo", "creditiSpesi", "dataAcquisto"}
 
 
 def test_contratto_api_leghe_e_fanta_team(lec, user, user_client):
-    created = user_client.post("/api/leagues", {"nome": "Lega API", "creditiIniziali": 700, "competition": "lec"},
-                               format="json")
+    created = user_client.post(
+        "/api/leagues", {"nome": "Lega API", "creditiIniziali": 700, "competition": "lec"}, format="json"
+    )
     assert created.status_code == 201
     body = created.json()
     assert LEAGUE_KEYS <= set(body)
     assert body["competition"] == "LEC" and body["ruleset"] == "REGIONAL" and body["creditiIniziali"] == 700
     assert body["maxRosterSize"] == 10 and body["maxPerRole"] == 2 and body["maxParticipants"] == 10
-    joined = user_client.post("/api/fanta-teams/join", {"codiceInvito": body["codiceInvito"],
-                                                        "nomeSquadra": "Blue"}, format="json")
+    joined = user_client.post(
+        "/api/fanta-teams/join", {"codiceInvito": body["codiceInvito"], "nomeSquadra": "Blue"}, format="json"
+    )
     assert joined.status_code == 201 and TEAM_KEYS <= set(joined.json())
     team_id = joined.json()["id"]
     give_roster(FantaTeam.objects.get(pk=team_id), lec[1][:1], credits=12)
@@ -237,7 +259,10 @@ def test_validazione_creazione_lega(user_client, lec):
     assert "creditiIniziali: I crediti iniziali devono essere positivi" in response.json()["details"]
     missing = user_client.post("/api/leagues", {"nome": "X"}, format="json")
     assert missing.status_code == 422
-    assert user_client.post("/api/leagues", {"nome": "X", "competition": "LPL"}, format="json").status_code == 422
+    assert (
+        user_client.post("/api/leagues", {"nome": "X", "competition": "LPL"}, format="json").status_code
+        == 422
+    )
     assert user_client.post("/api/leagues", {"nome": "X", "editionId": 999}, format="json").status_code == 404
 
 
@@ -247,8 +272,11 @@ def test_lega_worlds_usa_budget_e_impostazioni_di_default(user_client):
     assert body["ruleset"] == "WORLDS" and body["creditiIniziali"] == 100
     assert body["settings"]["freeTransfersPerMatchday"] == 2 and body["maxParticipants"] == 50
     assert body["maxRosterSize"] == 8 and body["maxPerRole"] is None
-    exclusive = user_client.post("/api/leagues", {"nome": "W2", "editionId": edition.id,
-                                                  "settings": {"worlds_exclusive": True}}, format="json")
+    exclusive = user_client.post(
+        "/api/leagues",
+        {"nome": "W2", "editionId": edition.id, "settings": {"worlds_exclusive": True}},
+        format="json",
+    )
     assert exclusive.status_code == 422
 
 

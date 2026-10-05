@@ -21,19 +21,28 @@ def load(name: str):
 
 def lck_edition() -> CompetitionEdition:
     return CompetitionEdition.objects.create(
-        competition=Competition.objects.get(code="LCK"), year=2026, name="LCK 2026 Rounds 3-5",
-        pandascore_serie_id=9001, pandascore_tournament_ids=[17001],
-        starts_at=datetime(2026, 7, 20, tzinfo=UTC), ends_at=datetime(2026, 9, 10, tzinfo=UTC), is_active=True)
+        competition=Competition.objects.get(code="LCK"),
+        year=2026,
+        name="LCK 2026 Rounds 3-5",
+        pandascore_serie_id=9001,
+        pandascore_tournament_ids=[17001],
+        starts_at=datetime(2026, 7, 20, tzinfo=UTC),
+        ends_at=datetime(2026, 9, 10, tzinfo=UTC),
+        is_active=True,
+    )
 
 
 def mock_lck(router: respx.MockRouter) -> None:
-    router.get(f"{PANDA}/leagues/293/matches/past").mock(return_value=httpx.Response(
-        200, json=load("pandascore/lck_past.json"), headers={"X-Total": "3"}))
-    router.get(f"{PANDA}/leagues/293/matches/upcoming").mock(return_value=httpx.Response(
-        200, json=load("pandascore/lck_upcoming.json")))
+    router.get(f"{PANDA}/leagues/293/matches/past").mock(
+        return_value=httpx.Response(200, json=load("pandascore/lck_past.json"), headers={"X-Total": "3"})
+    )
+    router.get(f"{PANDA}/leagues/293/matches/upcoming").mock(
+        return_value=httpx.Response(200, json=load("pandascore/lck_upcoming.json"))
+    )
     router.get(f"{PANDA}/leagues/293/matches/running").mock(return_value=httpx.Response(200, json=[]))
-    router.get(f"{PANDA}/tournaments/17001/rosters").mock(return_value=httpx.Response(
-        200, json=load("pandascore/lck_rosters.json")))
+    router.get(f"{PANDA}/tournaments/17001/rosters").mock(
+        return_value=httpx.Response(200, json=load("pandascore/lck_rosters.json"))
+    )
 
 
 def sync_lck() -> CompetitionEdition:

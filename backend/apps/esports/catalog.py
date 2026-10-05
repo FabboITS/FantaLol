@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from django.db import IntegrityError, transaction
-from django.db.models import ProtectedError
+from django.db.models import F, ProtectedError
 
 from apps.common.exceptions import BusinessRuleException, ResourceNotFoundException
 from apps.common.utils import now, role_index
@@ -168,7 +168,7 @@ def player_detail(player_id: int, edition_id: int | None = None) -> dict:
     qs = EditionRoster.objects.select_related("player", "team", "edition__competition").filter(player=player)
     if edition_id is not None:
         qs = qs.filter(edition_id=edition_id)
-    entry = qs.order_by("active_to", "-edition__starts_at").first()
+    entry = qs.order_by(F("active_to").desc(nulls_first=True), "-edition__starts_at", "-active_from").first()
     if entry is None:
         return {
             "id": player.id,

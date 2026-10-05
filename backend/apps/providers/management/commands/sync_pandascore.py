@@ -12,8 +12,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--competition", help="LEC, LCK, LPL o WORLDS (default: tutte)")
-        parser.add_argument("--discover", action="store_true",
-                            help="Crea/aggiorna le edizioni a partire dalle serie PandaScore")
+        parser.add_argument(
+            "--discover",
+            action="store_true",
+            help="Crea/aggiorna le edizioni a partire dalle serie PandaScore",
+        )
 
     def handle(self, *args, **options):
         report = EsportsSyncWorker().run(options.get("competition"), discover=options["discover"])

@@ -44,7 +44,7 @@ def test_job_che_fallisce_non_ferma_lo_scheduler(monkeypatch, caplog):
 @pytest.mark.django_db
 def test_job_aste_e_giornate():
     assert jobs.auction_sweeper() == 0
-    assert jobs.matchdays_maintenance() == {"worlds_leagues": 0, "closed": 0, "waiting": 0}
+    assert jobs.matchdays_maintenance() == {"worlds_leagues": 0, "backfilled": 0, "closed": 0, "waiting": 0}
 
 
 @pytest.mark.django_db

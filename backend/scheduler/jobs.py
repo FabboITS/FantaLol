@@ -58,11 +58,13 @@ def auction_sweeper():
 
 @job
 def matchdays_maintenance():
+    from apps.lineups.services import backfill_all
     from apps.matchdays.services import auto_close_matchdays
     from apps.worlds.services import refresh_all_worlds_matchdays
 
     refreshed = refresh_all_worlds_matchdays()
-    return {"worlds_leagues": refreshed, **auto_close_matchdays()}
+    backfilled = backfill_all()
+    return {"worlds_leagues": refreshed, "backfilled": backfilled, **auto_close_matchdays()}
 
 
 @job

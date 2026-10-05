@@ -490,14 +490,34 @@ def test_regole_di_mercato_e_lega_worlds_senza_asta(worlds):
 def test_formazione_worlds_via_api_lineup(worlds):
     ctx = worlds
     services.generate_matchdays(ctx["league"])
-    for code, role in [("A", "TOP"), ("A", "MID"), ("B", "JUNGLE"), ("B", "ADC"), ("C", "SUPPORT"), ("C", "MID")]:
+    for code, role in [
+        ("A", "TOP"),
+        ("A", "MID"),
+        ("B", "JUNGLE"),
+        ("B", "ADC"),
+        ("C", "SUPPORT"),
+        ("C", "MID"),
+    ]:
         buy(ctx, ctx["mine"], player(ctx, code, role))
     owner = auth_client(ctx["owner"])
     url = f"/api/fanta-teams/{ctx['mine'].id}/formazioni/lineup"
-    starters = [player(ctx, "A", "TOP"), player(ctx, "B", "JUNGLE"), player(ctx, "A", "MID"),
-                player(ctx, "B", "ADC"), player(ctx, "C", "SUPPORT")]
-    response = owner.put(url, {"titolariIds": starters, "panchinaIds": [player(ctx, "C", "MID")],
-                               "capitanoId": starters[2], "viceCapitanoId": starters[0]}, format="json")
+    starters = [
+        player(ctx, "A", "TOP"),
+        player(ctx, "B", "JUNGLE"),
+        player(ctx, "A", "MID"),
+        player(ctx, "B", "ADC"),
+        player(ctx, "C", "SUPPORT"),
+    ]
+    response = owner.put(
+        url,
+        {
+            "titolariIds": starters,
+            "panchinaIds": [player(ctx, "C", "MID")],
+            "capitanoId": starters[2],
+            "viceCapitanoId": starters[0],
+        },
+        format="json",
+    )
     assert response.status_code == 200
     body = response.json()
     assert body["capitanoId"] == starters[2] and [b["id"] for b in body["bench"]] == [player(ctx, "C", "MID")]

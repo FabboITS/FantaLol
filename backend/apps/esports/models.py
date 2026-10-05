@@ -19,6 +19,7 @@ class ProTeam(models.Model):
     image_url_dark = models.CharField(max_length=500, blank=True, default="")
     logo_file = models.CharField(max_length=255, blank=True, default="")
     logo_hash = models.CharField(max_length=64, blank=True, default="")
+    logo_etag = models.CharField(max_length=200, blank=True, default="")
     leaguepedia_name = models.CharField(max_length=120, blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -45,6 +46,7 @@ class ProPlayer(models.Model):
     image_url = models.CharField(max_length=500, blank=True, default="")
     image_file = models.CharField(max_length=255, blank=True, default="")
     image_hash = models.CharField(max_length=64, blank=True, default="")
+    image_etag = models.CharField(max_length=200, blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

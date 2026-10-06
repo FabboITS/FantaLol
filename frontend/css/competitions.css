@@ -1,0 +1,90 @@
+/* Componenti FantaLol v2: selettore competizione, roster per team, match center, Worlds. */
+.competition-chips{display:flex;flex-wrap:wrap;gap:6px}
+.competition-chip{border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--muted);font:700 11px var(--font-display);letter-spacing:.12em;padding:10px 16px;text-transform:uppercase;transition:.2s}
+.competition-chip:hover{border-color:var(--lime);color:var(--white)}
+.competition-chip.active{background:linear-gradient(135deg,var(--lime),var(--violet));border-color:transparent;color:var(--ink)}
+.competition-picker{margin-top:28px;display:grid;gap:10px}
+.competition-picker-label,.field-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.players-competitions{margin-bottom:22px}
+.players-edition{color:var(--muted);font-size:12px;margin:-10px 0 18px}
+.competition-tag{display:inline-block;font:700 10px var(--font-display);letter-spacing:.12em;color:var(--lime);text-transform:uppercase}
+
+/* Roster per team */
+.team-roster-grid{display:grid;gap:34px}
+.team-roster{border-top:1px solid var(--line);padding-top:22px}
+.team-roster-head{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.team-roster-head h3{font:600 26px var(--font-display);margin:0}
+.team-roster-head>div>span{color:var(--muted);font-size:11px;letter-spacing:.14em}
+.team-logo-wrap{position:relative;width:54px;height:54px;display:grid;place-items:center}
+.team-logo-wrap>*{grid-area:1/1}
+.team-logo-large{width:54px;height:54px;object-fit:contain;position:relative;z-index:1;background:var(--ink)}
+.team-initials,.initials{display:grid;place-items:center;color:#fff;font:700 18px var(--font-display);width:54px;height:54px;border-radius:50%}
+.team-initials.small{width:28px;height:28px;font-size:10px}
+.team-roster .players-grid{grid-template-columns:repeat(5,1fr)}
+.avatar .initials{width:96px;height:96px;font-size:34px;margin:auto}
+
+/* Match center */
+.matches-section{background:#0b0e14}
+.matches-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:12px}
+.match-tabs{margin:0;border:0}
+.freshness{font-size:12px;color:var(--muted);margin:0 0 20px}
+.freshness.stale{color:#ffb35c}
+.matches-list{display:grid;gap:10px}
+.match-card{display:grid;grid-template-columns:200px 1fr auto;align-items:center;gap:20px;background:var(--panel);border:1px solid var(--line);padding:16px 20px}
+.match-card.running{border-color:#ff4d6d;box-shadow:0 0 0 1px rgba(255,77,109,.3)}
+.match-meta{display:grid;gap:4px}
+.match-meta time{font-size:12px;color:var(--muted)}
+.match-teams{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.match-team{display:flex;align-items:center;gap:8px;font-family:var(--font-display)}
+.match-team img{width:28px;height:28px;object-fit:contain}
+.match-team b{font-size:20px;color:var(--muted)}
+.match-team.winner b,.match-team.winner strong{color:var(--lime)}
+.versus{color:#5a6278;font-size:11px;text-transform:uppercase}
+.match-status{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.match-drawer{position:fixed;inset:0;background:rgba(3,5,8,.7);backdrop-filter:blur(6px);display:flex;justify-content:flex-end;opacity:0;pointer-events:none;transition:.25s;z-index:40}
+.match-drawer.open{opacity:1;pointer-events:auto}
+.match-drawer-panel{position:relative;width:min(760px,100%);height:100%;overflow-y:auto;background:#12161c;border-left:1px solid #3a414d;padding:38px 32px 30px;transform:translateX(30px);transition:.25s}
+.match-drawer.open .match-drawer-panel{transform:none}
+.match-drawer-panel h2{font:700 32px var(--font-display);margin:8px 0 22px}
+.drawer-game{margin-bottom:26px}
+.drawer-game h3{font:600 18px var(--font-display);color:var(--lime)}
+.drawer-game h4{font:600 14px var(--font-display);margin:14px 0 6px}
+.box-row{display:grid;grid-template-columns:28px 1.2fr .8fr .8fr .8fr .8fr 1fr;align-items:center;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid #20252d}
+.box-row img{width:28px;height:28px}
+.box-row span,.box-row em{color:var(--muted);font-style:normal}
+.attribution{font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:18px}
+.legal-note{display:block;margin-top:6px;font-size:11px;color:#6d7488}
+.legal-note a{color:var(--lime)}
+
+/* Creazione lega */
+.league-modal{width:min(560px,calc(100% - 30px))}
+.modal select{background:#0a0d11;border:1px solid #303640;color:white;padding:13px;outline:none}
+.field-group{display:grid;gap:8px}
+.worlds-summary{border:1px solid var(--violet);background:rgba(139,92,246,.08);padding:14px 18px}
+.worlds-summary h3{font:600 15px var(--font-display);margin:0 0 6px;color:#c4b5fd}
+.worlds-summary ul{margin:0;padding-left:18px;color:#c5cada;font-size:12px;line-height:1.6}
+
+/* Lega WORLDS */
+.market-toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.market-toolbar select{background:#0a0d11;border:1px solid #303640;color:white;padding:10px}
+.market-list{display:grid;gap:8px}
+.market-row{display:grid;grid-template-columns:70px 1fr 120px 90px 150px;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);padding:10px 14px}
+.market-row.owned{border-color:var(--lime)}
+.market-row.eliminated{opacity:.55}
+.market-row strong{font-family:var(--font-display)}
+.market-row small{color:var(--muted)}
+.team-counters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.team-counter{border:1px solid var(--line);padding:6px 10px;font-size:12px}
+.team-counter.over{border-color:#ff6a4d;color:#ff8b73}
+.transfer-status{font-size:13px;color:var(--lime);margin:4px 0 12px}
+.transfer-history{display:grid;gap:6px;margin-top:16px}
+.transfer-history article{display:flex;justify-content:space-between;gap:10px;font-size:12px;border-bottom:1px solid #20252d;padding:6px 0}
+.transfer-history .penalty{color:#ff8b73}
+.captain-badge{display:inline-block;margin-left:6px;font:700 10px var(--font-display);color:var(--ink);background:var(--lime);padding:2px 6px}
+.vice-badge{background:var(--violet);color:#fff}
+.worlds-lineup{display:grid;gap:12px}
+.worlds-lineup label{display:grid;gap:6px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#9ba2ae}
+
+@media(max-width:1000px){.team-roster .players-grid{grid-template-columns:repeat(3,1fr)}.match-card{grid-template-columns:1fr}.market-row{grid-template-columns:60px 1fr 90px;}.market-row>:nth-child(4),.market-row>:nth-child(5){grid-column:span 3}}
+@media(max-width:720px){.team-roster .players-grid{grid-template-columns:repeat(2,1fr)}.box-row{grid-template-columns:28px 1fr 1fr;}.box-row>:nth-child(n+5){grid-column:span 1}.match-drawer-panel{padding:30px 18px}}
+@media(max-width:460px){.team-roster .players-grid{grid-template-columns:1fr}.competition-chip{padding:9px 12px}}

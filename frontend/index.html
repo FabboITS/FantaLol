@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="FantaLeague — il fantasy di League of Legends per LEC, LCK, LPL e Worlds.">
+    <title>FantaLeague — Build your legacy</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/player-images.css">
+    <link rel="stylesheet" href="/css/auction.css">
+    <link rel="stylesheet" href="/css/live-auction.css">
+    <link rel="stylesheet" href="/css/user-directory.css">
+    <link rel="stylesheet" href="/css/competitions.css">
+</head>
+<body>
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+<header class="site-header">
+    <a class="brand" href="#home" aria-label="FantaLeague home"><span class="brand-mark">F</span><span>FANTA<span>LEAGUE</span></span></a>
+    <nav aria-label="Navigazione principale">
+        <a class="active" href="#home">Home</a><a href="#leagues">Le mie leghe</a><a href="#players">Players</a><a href="#matches">Partite</a>
+    </nav>
+    <div class="header-actions">
+        <span id="user-chip" class="user-chip hidden"></span>
+        <button id="auth-button" class="button button-ghost">Accedi</button>
+        <button id="logout-button" class="icon-button hidden" title="Esci" aria-label="Esci">↗</button>
+    </div>
+</header>
+
+<main>
+    <section id="home" class="hero section">
+        <div class="hero-copy">
+            <p class="eyebrow"><span></span> Fantasy league. Real competition.</p>
+            <h1>BUILD YOUR<br><em>LEGACY.</em></h1>
+            <p class="hero-text">Crea la tua squadra, sfida i tuoi amici e domina la competizione che preferisci: LEC, LCK, LPL o i Worlds. Ogni pick conta. Ogni punto scrive la storia.</p>
+            <div class="competition-picker" role="group" aria-label="Competizione">
+                <span class="competition-picker-label">Competizione</span>
+                <div id="home-competitions" class="competition-chips"></div>
+            </div>
+            <div class="hero-actions"><div class="hero-primary-actions"><button class="button button-primary" data-auth-action>Inizia a giocare <span>→</span></button><button id="rules-button" class="rules-trigger" type="button">REGOLAMENTO</button></div><a class="text-link" href="#players">Esplora i player ↓</a></div>
+            <div class="stats"><div><strong id="player-count">—</strong><span>Pro players</span></div><div><strong id="team-count">—</strong><span id="team-count-label">Team LEC</span></div><div><strong id="match-count">—</strong><span>Partite in programma</span></div></div>
+        </div>
+        <div class="hero-visual">
+            <div class="orbit orbit-a" aria-hidden="true"></div><div class="orbit orbit-b" aria-hidden="true"></div>
+            <article class="player-card card-back">
+                <img class="hero-player-image" src="/Player_immage/other/BB_1.webp" alt="BrokenBlade, top laner">
+                <div class="card-shade" aria-hidden="true"></div>
+                <div class="card-back-copy"><span>TOPLANER</span><b>BROKENBLADE</b></div>
+            </article>
+            <article class="player-card card-main">
+                <img class="hero-player-image" src="/Player_immage/other/Caps_1.webp" alt="Caps, mid laner for G2 Esports">
+                <div class="card-shade" aria-hidden="true"></div>
+                <div class="card-top"><span>MID</span><small>G2</small></div>
+                <div class="card-main-copy"><h2>CAPS</h2><p>G2 ESPORTS · MID LANER</p></div>
+                <div class="rating"><strong>100</strong><span>QUOTAZIONE</span></div>
+            </article>
+            <div class="float-pill pill-one" aria-hidden="true">⚔ KILL <b>+3</b></div><div class="float-pill pill-two" aria-hidden="true">◆ VITTORIA <b>+3</b></div>
+        </div>
+    </section>
+
+    <section id="leagues" class="section content-section league-section">
+        <div class="section-heading"><div><p class="eyebrow">La tua arena</p><h2>LEAGUES &amp; <em>ROSTERS.</em></h2></div><div class="section-actions"><button id="create-league-button" class="button button-primary">+ Crea lega</button><button id="join-league-button" class="button button-ghost">Entra con codice</button></div></div>
+        <div id="league-guest" class="empty-state"><span>⌁</span><h3>Accedi per entrare in campo</h3><p>Crea leghe private, partecipa all'asta o al mercato Worlds e schiera la formazione.</p><button class="button button-primary" data-auth-action>Accedi o registrati</button></div>
+        <div id="league-dashboard" class="hidden"><div id="leagues-list" class="league-list"></div></div>
+    </section>
+
+    <section id="players" class="section content-section">
+        <div class="section-heading"><div><p class="eyebrow">Il mercato</p><h2>SCOUT THE <em>BEST.</em></h2></div><p>Studia i roster ufficiali di ogni squadra, filtra per ruolo e trova il prossimo campione della tua rosa.</p></div>
+        <div id="players-competitions" class="competition-chips players-competitions" role="group" aria-label="Competizione dei player"></div>
+        <div class="toolbar"><div id="role-filters" class="filters"><button class="active" data-role="">Tutti</button><button data-role="TOP">Top</button><button data-role="JUNGLE">Jungle</button><button data-role="MID">Mid</button><button data-role="ADC">ADC</button><button data-role="SUPPORT">Support</button></div><label class="search"><span>⌕</span><input id="player-search" type="search" placeholder="Cerca player o team..." aria-label="Cerca player o team"></label></div>
+        <p id="players-edition" class="players-edition"></p>
+        <div id="players-grid" class="team-roster-grid"><p class="loading">Caricamento roster…</p></div>
+    </section>
+
+    <section id="matches" class="section content-section matches-section">
+        <div class="section-heading"><div><p class="eyebrow">Calendario ufficiale</p><h2>MATCH <em>CENTER.</em></h2></div><p>Calendario e risultati da PandaScore, statistiche per game da Leaguepedia. Apri una partita conclusa per il box score.</p></div>
+        <div class="matches-toolbar"><div id="matches-competitions" class="competition-chips" role="group" aria-label="Competizione delle partite"></div><div id="match-tabs" class="tabs match-tabs" role="tablist"><button class="active" data-match-state="upcoming" role="tab">Upcoming</button><button data-match-state="results" role="tab">Results</button><button data-match-state="live" role="tab">Live</button></div></div>
+        <p id="matches-freshness" class="freshness"></p>
+        <div id="matches-list" class="matches-list"><p class="loading">Caricamento partite…</p></div>
+    </section>
+</main>
+
+<aside id="match-drawer" class="match-drawer" aria-hidden="true" aria-labelledby="match-drawer-title">
+    <div class="match-drawer-panel">
+        <button class="modal-close" id="match-drawer-close" aria-label="Chiudi">×</button>
+        <p class="eyebrow">Box score</p>
+        <h2 id="match-drawer-title">PARTITA</h2>
+        <div id="match-drawer-games" class="match-drawer-games"></div>
+        <p id="match-drawer-attribution" class="attribution">Statistiche delle partite da Leaguepedia (lol.fandom.com), contenuti disponibili con licenza CC BY-SA 3.0.</p>
+    </div>
+</aside>
+
+<footer><a class="brand" href="#home" aria-label="FantaLeague home"><span class="brand-mark">F</span><span>FANTA<span>LEAGUE</span></span></a><p>Built for the rift. Powered by competition. Developed by Natsu.<br><small class="legal-note">Uso non commerciale. Loghi, nomi e immagini sono marchi dei rispettivi titolari. Calendari: PandaScore · Statistiche: <a href="https://lol.fandom.com" rel="noopener">Leaguepedia</a> (CC BY-SA 3.0).</small></p><a href="/swagger-ui.html">API Docs ↗</a></footer>
+
+<dialog id="auth-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Welcome, summoner</p><h2 id="auth-title">ACCEDI</h2><div class="tabs"><button class="active" data-auth-tab="login">Login</button><button data-auth-tab="register">Registrati</button></div><form id="auth-form"><label>Username<input name="username" required minlength="3" autocomplete="username"></label><label id="email-field" class="hidden">Email<input name="email" type="email" autocomplete="email"></label><label>Password<input name="password" type="password" required minlength="6" autocomplete="current-password"></label><button class="button button-primary" type="submit">Entra nel gioco →</button><p class="form-error" role="alert"></p></form></dialog>
+
+<dialog id="league-dialog" class="modal league-modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow" id="league-kicker">Nuova competizione</p><h2 id="league-modal-title">CREA LEGA</h2><form id="league-form"><div id="create-fields"><label>Nome della lega<input name="nome" maxlength="100"></label><div class="field-group"><span class="field-label">Competizione</span><div id="league-competitions" class="competition-chips"></div></div><label>Edizione<select name="editionId" id="league-edition"></select></label><label id="credits-field">Crediti iniziali<input name="creditiIniziali" type="number" value="1000" min="1"></label><section id="worlds-summary" class="worlds-summary hidden" aria-label="Regole Worlds"><h3>Regolamento WORLDS</h3><ul id="worlds-summary-list"></ul></section></div><div id="join-fields" class="hidden"><label>Codice invito<input name="codiceInvito" maxlength="20"></label><label>Nome della tua squadra<input name="nomeSquadra" maxlength="80"></label></div><button class="button button-primary" type="submit">Conferma →</button><p class="form-error" role="alert"></p></form></dialog>
+
+<dialog id="rules-dialog" class="modal rules-dialog"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Come si gioca</p><h2>Regole FantaLeague</h2><div class="tabs" role="tablist"><button class="active" data-rules-tab="regional">LEC · LCK · LPL</button><button data-rules-tab="worlds">WORLDS</button></div><div class="rules-content">
+    <div data-rules="regional">
+        <p>Crea la tua squadra scegliendo i giocatori professionisti della competizione scelta (LEC, LCK o LPL) e sfida gli altri partecipanti della lega. Il regolamento è lo stesso per le tre competizioni regionali.</p>
+        <h3>Creazione della lega</h3><p>Il creatore sceglie la competizione e l’edizione da seguire. Il numero massimo di fantasy team è pari al numero di squadre reali dell’edizione (10 in LEC e LCK; in LPL quante sono le squadre dell’edizione). Ogni partecipante gestisce un solo fantasy team per lega.</p>
+        <h3>Composizione della rosa</h3><p>Con T squadre reali: se i partecipanti sono al massimo T/2 ogni fantasy team ha 10 giocatori (5 titolari e 5 riserve, due per ruolo), altrimenti 5 giocatori, uno per ruolo, che formano la squadra attiva. Con 10 squadre: da 2 a 5 partecipanti rosa da 10, da 6 a 10 partecipanti rosa da 5.</p><p>Ogni professionista è esclusivo e può appartenere a un solo fantasy team all’interno della lega.</p>
+        <h3>Asta</h3><p>Durante l’asta i partecipanti usano i crediti disponibili per acquistare i giocatori. Ogni rilancio riavvia il conto alla rovescia di 15 secondi; allo scadere il player va al miglior offerente.</p>
+        <h3>Formazione</h3><p>La creazione della prima giornata blocca il numero di partecipanti della lega e apre automaticamente l’asta. Nelle leghe con riserve, in LEC la formazione si modifica dal martedì alle 00:00 al giovedì alle 23:59:59 (Europe/Rome) ed è efficace dal venerdì alle 00:00; in LCK e LPL è modificabile fino a 60 minuti prima della prima serie della giornata e le modifiche successive valgono dalla giornata seguente. I punti già ottenuti restano ai player che erano titolari.</p><p>Nelle leghe con rosa da 5 la formazione è fissa e coincide con la rosa.</p>
+        <h3>Punteggi</h3><p>Il punteggio è calcolato per ogni singola partita con coefficienti per ruolo, nell’ordine kill / assist / morte / 100 CS:</p><ul><li>Top: 3,00 / 2,00 / -2,00 / 1,25;</li><li>Jungle: 3,00 / 2,25 / -2,00 / 0,70;</li><li>Mid: 3,00 / 2,00 / -2,00 / 1,00;</li><li>ADC: 3,25 / 1,75 / -2,25 / 1,10;</li><li>Support: 2,15 / 2,55 / -1,75, più 1 punto ogni 50 di vision score.</li></ul><p>I CS dei Support non assegnano punti. Per gli altri ruoli i CS sono calcolati in modo continuo; anche il vision score dei Support è continuo. Ogni vittoria assegna 3 punti.</p><p>In una serie conta la media delle partite giocate dal player; più serie nella stessa giornata si sommano. Il punteggio di giornata del fantasy team è la media dei cinque slot (un player senza statistiche vale 0) e la classifica somma le giornate chiuse.</p>
+        <h3>Aggiornamento dei risultati</h3><p>Calendario e risultati arrivano da PandaScore ogni ora, le statistiche per partita da Leaguepedia ogni 30 minuti. I risultati restano provvisori finché mancano statistiche; le serie rinviate mettono la giornata in attesa. L’amministratore può correggere manualmente le statistiche.</p>
+        <h3>Comportamento dei partecipanti</h3><p>Non sono consentiti account multipli nella stessa lega, accordi per alterare la competizione, scambi fraudolenti o lo sfruttamento di errori tecnici.</p>
+    </div>
+    <div data-rules="worlds" class="hidden">
+        <p>La modalità WORLDS si ispira al fantacalcio della Champions League: listone a prezzi fissi, nessuna esclusività, capitano e cambi a numero limitato.</p>
+        <h3>Rosa e listone</h3><p>Ogni squadra ha 8 player: 5 titolari (uno per ruolo) e 3 panchinari ordinati. Budget iniziale 100 crediti, +5 crediti dopo lo Swiss Stage. Il listone contiene i player delle 16 squadre dello Swiss Stage, con quotazioni fisse da 5 a 20 crediti; lo stesso player può essere in più squadre.</p>
+        <h3>Limite per team reale</h3><ul><li>Swiss Stage: massimo 2 player dello stesso team;</li><li>Quarti di finale: 3;</li><li>Semifinali: 4;</li><li>Finale: 5.</li></ul>
+        <h3>Giornate</h3><p>G1–G5 corrispondono ai cinque round dello Swiss Stage, G6 ai quarti, G7 alle semifinali, G8 alla finale. Il Play-In non assegna punti.</p>
+        <h3>Formazione, capitano e sostituzioni</h3><p>Fino a 60 minuti prima della prima serie della giornata scegli titolari, ordine della panchina, capitano e vice. Il capitano vale doppio; se non gioca, il raddoppio passa al vice. Un titolare che non gioca è sostituito dal primo panchinaro dello stesso ruolo che ha giocato.</p>
+        <h3>Cambi</h3><p>Prima di G1 e prima di quarti, semifinali e finale i cambi sono illimitati e gratuiti. Durante lo Swiss hai 2 cambi gratuiti per giornata; ogni cambio extra costa 3 punti. Vendere un player di una squadra eliminata è sempre gratuito.</p>
+        <h3>Classifica</h3><p>Il punteggio di giornata è la somma dei 5 titolari effettivi più il bonus capitano, meno le penalità. Spareggi: miglior giornata, punti totali dei capitani, data di iscrizione.</p>
+    </div>
+</div></dialog>
+
+<dialog id="user-directory-dialog" class="modal"><button class="modal-close" data-close aria-label="Chiudi">×</button><p class="eyebrow">Area amministratore</p><h2>UTENTI REGISTRATI</h2><p class="directory-hint">Scorciatoia: Ctrl+Y</p><p id="user-directory-count" class="directory-count"></p><div id="user-directory-list" class="user-directory" aria-live="polite"></div></dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/js/competition-state.js"></script>
+<script src="/js/players-view.js"></script>
+<script src="/js/matches-view.js"></script>
+<script src="/js/worlds-ui.js"></script>
+<script src="/js/competition-data-source.js"></script>
+<script src="/js/app.js" defer></script>
+</body>
+</html>

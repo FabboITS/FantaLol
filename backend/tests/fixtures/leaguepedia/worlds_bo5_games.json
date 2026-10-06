@@ -1,0 +1,56 @@
+{
+ "cargoquery": [
+  {
+   "title": {
+    "GameId": "Worlds/2026 Season/Knockout Stage_Final_1_1",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "Gen.G",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-11-14 08:00:00",
+    "GameInMatch": "1",
+    "OverviewPage": "Worlds/2026 Season/Knockout Stage",
+    "MVP": ""
+   }
+  },
+  {
+   "title": {
+    "GameId": "Worlds/2026 Season/Knockout Stage_Final_1_2",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "T1",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-11-14 09:00:00",
+    "GameInMatch": "2",
+    "OverviewPage": "Worlds/2026 Season/Knockout Stage",
+    "MVP": ""
+   }
+  },
+  {
+   "title": {
+    "GameId": "Worlds/2026 Season/Knockout Stage_Final_1_3",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "Gen.G",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-11-14 010:00:00",
+    "GameInMatch": "3",
+    "OverviewPage": "Worlds/2026 Season/Knockout Stage",
+    "MVP": ""
+   }
+  },
+  {
+   "title": {
+    "GameId": "Worlds/2026 Season/Knockout Stage_Final_1_4",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "Gen.G",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-11-14 011:00:00",
+    "GameInMatch": "4",
+    "OverviewPage": "Worlds/2026 Season/Knockout Stage",
+    "MVP": ""
+   }
+  }
+ ]
+}

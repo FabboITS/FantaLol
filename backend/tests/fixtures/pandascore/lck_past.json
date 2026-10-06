@@ -1,0 +1,164 @@
+[
+ {
+  "id": 1100001,
+  "name": "GEN vs T1",
+  "status": "finished",
+  "begin_at": "2026-08-01T08:00:00Z",
+  "scheduled_at": "2026-08-01T08:00:00Z",
+  "end_at": "2026-08-01T10:40:00Z",
+  "number_of_games": 3,
+  "winner_id": 2882,
+  "serie_id": 9001,
+  "tournament_id": 17001,
+  "league_id": 293,
+  "tournament": {
+   "id": 17001,
+   "name": "Regular Season"
+  },
+  "opponents": [
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 2882,
+     "name": "Gen.G",
+     "acronym": "GEN",
+     "slug": "gen.g",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/2882.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/2882-dark.png"
+    }
+   },
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 126061,
+     "name": "T1",
+     "acronym": "T1",
+     "slug": "t1",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/126061.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/126061-dark.png"
+    }
+   }
+  ],
+  "results": [
+   {
+    "team_id": 2882,
+    "score": 2
+   },
+   {
+    "team_id": 126061,
+    "score": 1
+   }
+  ],
+  "games": []
+ },
+ {
+  "id": 1100002,
+  "name": "NS vs HLE",
+  "status": "finished",
+  "begin_at": "2026-07-31T08:00:00Z",
+  "scheduled_at": "2026-07-31T08:00:00Z",
+  "end_at": "2026-07-31T09:50:00Z",
+  "number_of_games": 3,
+  "winner_id": 2883,
+  "serie_id": 9001,
+  "tournament_id": 17001,
+  "league_id": 293,
+  "tournament": {
+   "id": 17001,
+   "name": "Regular Season"
+  },
+  "opponents": [
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 128406,
+     "name": "Nongshim Red Force",
+     "acronym": "NS",
+     "slug": "nongshim-red-force",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/128406.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/128406-dark.png"
+    }
+   },
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 2883,
+     "name": "Hanwha Life Esports",
+     "acronym": "HLE",
+     "slug": "hanwha-life-esports",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/2883.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/2883-dark.png"
+    }
+   }
+  ],
+  "results": [
+   {
+    "team_id": 128406,
+    "score": 0
+   },
+   {
+    "team_id": 2883,
+    "score": 2
+   }
+  ],
+  "games": []
+ },
+ {
+  "id": 1099999,
+  "name": "T1 vs HLE",
+  "status": "finished",
+  "begin_at": "2026-05-01T08:00:00Z",
+  "scheduled_at": "2026-05-01T08:00:00Z",
+  "end_at": "2026-05-01T10:00:00Z",
+  "number_of_games": 3,
+  "winner_id": 126061,
+  "serie_id": 8000,
+  "tournament_id": 16000,
+  "league_id": 293,
+  "tournament": {
+   "id": 16000,
+   "name": "Regular Season"
+  },
+  "opponents": [
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 126061,
+     "name": "T1",
+     "acronym": "T1",
+     "slug": "t1",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/126061.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/126061-dark.png"
+    }
+   },
+   {
+    "type": "Team",
+    "opponent": {
+     "id": 2883,
+     "name": "Hanwha Life Esports",
+     "acronym": "HLE",
+     "slug": "hanwha-life-esports",
+     "location": "KR",
+     "image_url": "https://cdn.pandascore.test/team/2883.png",
+     "dark_mode_image_url": "https://cdn.pandascore.test/team/2883-dark.png"
+    }
+   }
+  ],
+  "results": [
+   {
+    "team_id": 126061,
+    "score": 2
+   },
+   {
+    "team_id": 2883,
+    "score": 0
+   }
+  ],
+  "games": []
+ }
+]

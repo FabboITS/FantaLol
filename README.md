@@ -1,231 +1,169 @@
 # FantaLeague
 
-FantaLeague è un'applicazione web fantasy dedicata alla **LEC**, il campionato EMEA
-di League of Legends. Gli utenti possono creare leghe private, invitare altri
-partecipanti, acquistare i giocatori professionisti tramite un'asta a crediti,
-comporre la propria rosa e competere in una classifica basata sulle prestazioni
-reali dei player.
+FantaLeague è un'applicazione web fantasy di **League of Legends** per quattro competizioni:
+
+| Codice | Competizione | Modalità |
+| --- | --- | --- |
+| `LEC` | LoL EMEA Championship | Regionale ([Rules.md](Rules.md)) |
+| `LCK` | LoL Champions Korea | Regionale ([Rules.md](Rules.md)) |
+| `LPL` | LoL Pro League | Regionale ([Rules.md](Rules.md)) |
+| `WORLDS` | World Championship | Worlds, stile FantaChampions ([Rules-WORLDS.md](Rules-WORLDS.md)) |
+
+Gli utenti creano leghe private agganciate a una competizione e a un'edizione (stagione/split),
+invitano gli amici, costruiscono la rosa (asta a crediti nel regionale, listone a prezzi fissi ai
+Worlds), schierano la formazione e competono in classifica con i punti calcolati sulle prestazioni
+reali dei pro player.
 
 ## Cosa può fare un utente
 
-Un visitatore può consultare giocatori e squadre LEC, leggere il regolamento,
-registrarsi e accedere al sito.
+Un visitatore può consultare player e squadre di ogni competizione (con loghi e foto), il calendario
+e i risultati con il box score delle partite, leggere i regolamenti, registrarsi e accedere.
 
-Dopo l'accesso, un utente con ruolo `USER` può:
+Un utente con ruolo `USER` può:
 
-- creare una lega privata e condividerne il codice di invito;
-- entrare nelle leghe create da altri utenti;
-- creare un solo FantaTeam per ogni lega;
-- partecipare all'asta e rilanciare usando i crediti disponibili;
-- consultare budget, rosa e giocatori ancora acquistabili;
-- scegliere un titolare per ciascun ruolo quando la lega prevede le riserve;
-- seguire partite LEC, prestazioni dei player, fantapunteggi e classifica;
-- modificare i dati del proprio profilo;
-- eliminare una lega della quale è il creatore.
+- creare una lega scegliendo competizione ed edizione e condividerne il codice di invito;
+- entrare nelle leghe create da altri (un solo FantaTeam per lega);
+- **regionale:** partecipare all'asta live, schierare i titolari nella finestra della competizione;
+- **Worlds:** comprare dal listone, fare cambi (2 gratuiti per giornata Swiss), scegliere capitano,
+  vice e ordine della panchina;
+- seguire classifica della competizione, prestazioni dei player, fantapunteggi e classifica di lega;
+- modificare il profilo ed eliminare le leghe di cui è creatore.
 
-Il creatore della lega ne diventa l'amministratore locale e può aprire o chiudere
-l'asta, completare casualmente le rose incomplete, gestire le giornate ed eliminare
-la propria lega.
+Il creatore di una lega ne è l'amministratore locale: apre/chiude l'asta, completa casualmente le
+rose, crea le giornate (o genera il calendario Worlds) e le chiude.
 
 ## Cosa può fare un amministratore
 
-All'avvio dell'applicazione viene inizializzato un account con ruolo `ADMIN`.
-Le sue credenziali sono definite dal backend e non devono essere pubblicate nel
-repository.
-
-L'amministratore globale può:
-
-- vedere, aprire ed eliminare qualsiasi lega;
-- gestire squadre e giocatori LEC;
-- controllare le giornate e le operazioni amministrative protette;
-- avviare manualmente la sincronizzazione dei dati LEC;
-- verificare lo stato delle integrazioni PandaScore e Oracle's Elixir;
-- consultare la directory degli utenti normali registrati, con username ed email,
-  usando `Ctrl+Y` fuori dai campi di scrittura.
-
-Password, hash e account amministrativi non vengono mostrati nella directory.
-
-## Come funziona il sito
-
-### 1. Creazione della lega
-
-Un utente autenticato crea una lega scegliendo il nome. Il sistema assegna
-all'utente il ruolo di amministratore della lega e genera un codice di invito
-univoco. Gli altri partecipanti usano quel codice per entrare e dare un nome al
-proprio FantaTeam.
-
-Ogni utente può possedere un solo FantaTeam nella stessa lega. All'avvio della
-competizione viene congelato il numero dei partecipanti, dal quale dipende anche
-la dimensione delle rose.
-
-### 2. Asta
-
-L'amministratore della lega apre l'asta. Ogni partecipante dispone inizialmente di
-crediti virtuali e può fare offerte sui player LEC nel rispetto del budget residuo
-e della quotazione minima.
-
-Ogni rilancio riavvia il conto alla rovescia. Alla scadenza, il miglior offerente
-acquista il giocatore. Lo stesso player non può appartenere a due FantaTeam della
-medesima lega. L'amministratore può chiudere l'asta quando le rose sono complete
-oppure completare casualmente quelle rimaste incomplete.
-
-### 3. Rosa e formazione
-
-La rosa deve coprire i cinque ruoli di League of Legends: `TOP`, `JUNGLE`, `MID`,
-`ADC` e `SUPPORT`.
-
-- con 2-5 partecipanti, ogni FantaTeam possiede 10 giocatori, due per ruolo, e
-  sceglie cinque titolari;
-- con 6-10 partecipanti, ogni FantaTeam possiede 5 giocatori, uno per ruolo, che
-  formano la squadra attiva.
-
-Nelle leghe con riserve, la formazione può essere modificata da martedì 00:00 a
-giovedì 23:59:59 nel fuso `Europe/Rome`. Il cambio diventa effettivo il venerdì
-alle 00:00 e non altera i punti già maturati: il backend conserva infatti lo
-storico dei periodi nei quali ciascun player è stato titolare.
-
-### 4. Punteggi e classifica
-
-PandaScore fornisce calendario, stato e risultati delle serie LEC; Oracle's Elixir
-fornisce le statistiche delle singole partite. Il backend importa i dati senza
-duplicare i game già elaborati e calcola i fantapunti usando uccisioni, assist,
-morti, CS, vision score e vittorie.
-
-```text
-fantapunti = uccisioni × K(ruolo)
-            + assist × A(ruolo)
-            - morti × D(ruolo)
-            + risorsa(ruolo)
-            + 3 punti in caso di vittoria
-```
-
-Per `TOP`, `JUNGLE`, `MID` e `ADC` la risorsa dipende dai CS; per `SUPPORT`
-dipende dal vision score. I coefficienti sono specifici per ruolo.
-
-La prestazione di un player è la media cumulativa delle partite effettivamente
-giocate nella Summer Split. Il punteggio del FantaTeam è la media dei cinque slot
-di ruolo, calcolata usando il player che era titolare al momento di ogni partita.
-I risultati alimentano la classifica cumulativa della lega e rimangono provvisori
-quando i dati della fonte non sono ancora completi.
+L'account con ruolo `ADMIN` viene creato all'avvio dal comando `ensure_admin` con le credenziali delle
+variabili `ADMIN_USERNAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` (mai nel repository). L'amministratore
+globale può vedere ed eliminare qualsiasi lega, gestire team e player, richiedere una
+sincronizzazione, consultare lo stato di PandaScore e Leaguepedia, correggere manualmente le
+statistiche per game, associare le righe Leaguepedia non riconosciute (alias), pubblicare il listone
+Worlds e correggerne le quotazioni, e consultare con `Ctrl+Y` la directory degli utenti registrati.
 
 ## Architettura
 
-FantaLeague usa un'architettura client-server composta da un backend REST, un
-frontend statico e un database relazionale:
-
 ```text
-Browser
-   │
-   │ HTML, CSS, JavaScript / richieste REST con JWT
+Browser (HTML5 + CSS + JavaScript vanilla, nessun build step)
+   │  REST JSON camelCase, JWT "Authorization: Bearer <token>"
    ▼
-Spring Boot
-   ├── autenticazione e utenti
-   ├── leghe, aste e rose
-   ├── formazioni, giornate e punteggi
-   └── integrazioni PandaScore e Oracle's Elixir
+Django 5.2 + DRF  (gunicorn, porta 8080; whitenoise serve anche il frontend)
+   ├── apps/users         utenti, JWT, profilo, admin bootstrap, migrazione dal MySQL Java
+   ├── apps/competitions  Competition, CompetitionEdition, Stage, LineupPolicy
+   ├── apps/esports       team, player, roster per edizione, serie, game, statistiche, alias
+   ├── apps/providers     client e worker PandaScore + Leaguepedia, stato dei provider
+   ├── apps/leagues       leghe, FantaTeam, rose, asta
+   ├── apps/lineups       finestre di formazione e storico dei titolari
+   ├── apps/matchdays     giornate, formazioni, aggregati per giornata, chiusura automatica
+   ├── apps/scoring       formule e punteggi cumulativi
+   └── apps/worlds        listone, cambi, capitano, sostituzioni, classifica Worlds
    │
-   ▼
-MySQL
+   ├──▶ PostgreSQL 16
+   └──  processo scheduler (APScheduler, lock advisory Postgres):
+        sync PandaScore ogni 60', arricchimento Leaguepedia ogni 30', sweeper aste ogni 1",
+        manutenzione giornate ogni 5', richieste di sync admin ogni 15"
 ```
 
-Durante la build Maven copia il frontend nelle risorse statiche di Spring Boot.
-L'intera applicazione viene quindi servita dalla stessa porta, senza dover avviare
-separatamente un server frontend.
+Le view HTTP leggono solo dal database; i provider sono interrogati esclusivamente dallo scheduler.
+Il design della pipeline dati è in [docs/pro-matches-pipeline.md](docs/pro-matches-pipeline.md), le
+decisioni architetturali in [docs/adr/](docs/adr/README.md).
 
-### Backend
+### Fonti dati e attribuzioni
 
-Il backend è sviluppato con:
+- **PandaScore** (piano gratuito "Fixtures"): calendario, risultati, squadre, player, roster, loghi e
+  foto. Si usano solo gli endpoint di lista disponibili nel piano gratuito.
+- **Leaguepedia** (`lol.fandom.com`): statistiche per game (`ScoreboardGames`, `ScoreboardPlayers`,
+  `MatchScheduleGame`). I contenuti Leaguepedia sono disponibili con licenza **CC BY-SA 3.0**:
+  l'attribuzione è restituita dalle API (`source`, `attribution`) e mostrata nell'interfaccia.
+- Loghi, nomi e immagini di squadre e player sono marchi dei rispettivi titolari; il progetto è a
+  uso non commerciale. Non si scaricano immagini da Leaguepedia/Fandom.
+- La precedente fonte CSV delle statistiche e il relativo workflow GitHub sono stati rimossi: vedi
+  [CHANGELOG.md](CHANGELOG.md).
 
-- Java 17 e Spring Boot 3.3;
-- Spring Web MVC per le API REST;
-- Spring Data JPA e MySQL 8 per la persistenza;
-- Spring Security, BCrypt e JWT stateless per autenticazione e autorizzazione;
-- springdoc-openapi per documentazione OpenAPI e Swagger UI;
-- JUnit 5, Mockito, AssertJ, H2 e JaCoCo per test e copertura.
-
-I package principali sono:
-
-```text
-com.fantalol.backend
-├── common/       gestione centralizzata degli errori API
-├── config/       sicurezza, configurazione e dati iniziali
-├── integration/  sincronizzazione PandaScore e Oracle's Elixir
-├── league/       leghe, FantaTeam, aste e rose
-├── lineup/       finestre e storico delle formazioni effettive
-├── matchday/     giornate, statistiche e formazioni
-├── scoring/      formula, punteggi cumulativi e classifiche
-├── security/     filtro e utilità JWT
-├── team/         squadre e giocatori LEC
-└── user/         registrazione, login, profilo e ruoli
-```
-
-Le API sono disponibili sotto `/api`. Le operazioni protette richiedono
-l'header `Authorization: Bearer TOKEN`.
-
-### Frontend
-
-Il frontend è sviluppato senza framework, usando:
-
-- HTML5 per homepage e dettaglio della lega;
-- CSS modulare e responsive;
-- JavaScript per autenticazione, chiamate REST, asta, rosa, formazione, dati live
-  e classifica;
-- asset locali per loghi, player e champion.
-
-La struttura principale del repository è:
+### Struttura del repository
 
 ```text
 FantaLol/
-├── fantalol-backend/
-│   ├── src/main/java/       codice backend
-│   ├── src/main/resources/  configurazione
-│   ├── postman/             collection delle API
-│   ├── sql/                 script SQL di supporto
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── fantalol-frontend/
-│   ├── assets/              loghi delle squadre
-│   ├── Player_immage/       immagini di player e champion
-│   ├── css/                 fogli di stile
-│   ├── js/                  logica frontend
-│   ├── index.html
-│   └── lega.html
-├── Rules.md
-└── README.md
+├── backend/            progetto Django (manage.py, pyproject.toml, Dockerfile, docker-compose.yml)
+│   ├── config/         settings base/dev/prod/test, urls
+│   ├── apps/           app di dominio (vedi sopra)
+│   ├── scheduler/      job e comando run_scheduler
+│   └── tests/          pytest (+ fixture JSON PandaScore/Leaguepedia)
+├── frontend/           index.html, lega.html, css/, js/, tests/ (node:test), asset statici
+├── docs/               pipeline dati e ADR
+├── Rules.md            regolamento regionale (LEC · LCK · LPL)
+├── Rules-WORLDS.md     regolamento Worlds
+└── CHANGELOG.md
 ```
 
 ## Avvio con Docker Compose
 
-Sono richiesti Docker e Docker Compose. Dalla root del repository eseguire:
+Requisiti: Docker e Docker Compose.
 
 ```bash
-docker compose -f fantalol-backend/docker-compose.yml up --build
+cp backend/.env.example backend/.env    # imposta almeno DJANGO_SECRET_KEY e JWT_SECRET (≥ 32 caratteri)
+docker compose -f backend/docker-compose.yml up --build
 ```
 
-Docker Compose avvia:
+Servizi:
 
-- MySQL 8 sulla porta host `3307`;
-- backend e frontend sulla porta `8080`.
+- `db`: PostgreSQL 16 (porta host `5433`, volume `fantalol_pg_data`);
+- `web`: gunicorn su **[http://localhost:8080](http://localhost:8080)** (API + frontend), esegue
+  `migrate` ed `ensure_admin` all'avvio;
+- `scheduler`: `python manage.py run_scheduler` (stessa immagine).
 
-Una volta completato l'avvio, il sito è disponibile all'indirizzo:
+Swagger UI: **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)** ·
+schema OpenAPI: `/v3/api-docs` · health check: `/api/health`.
 
-**[http://localhost:8080](http://localhost:8080)**
-
-Swagger UI è disponibile su
-**[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**.
-
-Per arrestare i container:
+### Primo popolamento dei dati
 
 ```bash
-docker compose -f fantalol-backend/docker-compose.yml down
+docker compose -f backend/docker-compose.yml exec web python manage.py sync_pandascore --discover
+docker compose -f backend/docker-compose.yml exec web python manage.py enrich_leaguepedia
+docker compose -f backend/docker-compose.yml exec web python manage.py download_esports_images --competition LCK
+docker compose -f backend/docker-compose.yml exec web python manage.py compute_worlds_prices
 ```
 
-Il volume Docker `fantalol_mysql_data` conserva il database tra un avvio e
-l'altro. I valori presenti nel file Compose sono adatti allo sviluppo: prima di
-una distribuzione pubblica devono essere sostituiti con password e segreti sicuri.
+`sync_pandascore --discover` crea le edizioni dalle serie PandaScore (attive se in corso o imminenti);
+le edizioni e le fasi si possono rifinire dall'admin Django (`/django-admin/`). Altri comandi:
+`resolve_pandascore_leagues` (ID PandaScore della lega Worlds), `import_legacy_assets` (loghi e foto
+LEC dell'originale), `migrate_from_mysql --mysql-url mysql://…` (dati del backend Java, richiede
+`pip install ".[mysql]"`).
+
+## Variabili d'ambiente
+
+| Variabile | Default | Effetto se assente |
+| --- | --- | --- |
+| `DJANGO_SECRET_KEY` | — | avvio rifiutato in produzione |
+| `DATABASE_URL` | `postgres://fantalol:fantalol@db:5432/fantalol` | — |
+| `JWT_SECRET`, `JWT_EXPIRATION_MS` | —, `86400000` | avvio rifiutato in produzione |
+| `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | — | nessun admin creato (warning) |
+| `PANDASCORE_API_TOKEN` | — | sync non eseguito, si serve la cache |
+| `PANDASCORE_API_BASE` | `https://api.pandascore.co` | — |
+| `LEAGUEPEDIA_BOT_USERNAME`, `LEAGUEPEDIA_BOT_PASSWORD` | — | arricchimento non eseguito, si serve la cache |
+| `LEAGUEPEDIA_API_BASE` | `https://lol.fandom.com` | — |
+| `LEAGUEPEDIA_ENRICH_BATCH_SIZE`, `LEAGUEPEDIA_GIVE_UP_DAYS` | `10`, `7` | — |
+| `ESPORTS_STALE_AFTER_MINUTES` | `90` | — |
+| `AUCTION_SECONDS_PER_BID` | `15` | — |
+| `CREDITI_INIZIALI_DEFAULT` | `1000` (regionale) | — |
+
+L'elenco completo è in [backend/.env.example](backend/.env.example).
+
+## Sviluppo e test
+
+```bash
+cd backend
+python3.12 -m venv .venv && . .venv/bin/activate
+pip install ".[dev]"
+export DATABASE_URL=postgres://fantalol:fantalol@localhost:5432/fantalol
+pytest --cov=apps          # test backend (soglia di coverage 80% su apps/)
+ruff check . && ruff format --check .
+cd ../frontend && node --test   # test JavaScript
+```
+
+La CI GitHub (`.github/workflows/ci.yml`) esegue ruff, controllo delle migrazioni, pytest con
+coverage su un PostgreSQL di servizio e i test JavaScript.
 
 ## Link del progetto
-
-Il progetto è in fase di sviluppo e online sul sito qui presente:
 
 **[FantaLol](https://fantalol.win)**

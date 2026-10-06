@@ -1,0 +1,43 @@
+{
+ "cargoquery": [
+  {
+   "title": {
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_1",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "Gen.G",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-08-01 08:10:00",
+    "GameInMatch": "1",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5",
+    "MVP": "Chovy"
+   }
+  },
+  {
+   "title": {
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_2",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "T1",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-08-01 09:00:00",
+    "GameInMatch": "2",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5",
+    "MVP": ""
+   }
+  },
+  {
+   "title": {
+    "GameId": "LCK/2026 Season/Rounds 3-5_Week 2_1_3",
+    "Team1": "Gen.G",
+    "Team2": "T1",
+    "WinTeam": "Gen.G",
+    "GameLengthMinutes": "31.5",
+    "DateTimeUTC": "2026-08-01 09:55:00",
+    "GameInMatch": "3",
+    "OverviewPage": "LCK/2026 Season/Rounds 3-5",
+    "MVP": ""
+   }
+  }
+ ]
+}
